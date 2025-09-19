@@ -4,14 +4,50 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Staff Rater — Elevate your Discord staff with fair feedback</title>
-  <meta name="description" content="Staff Rater is a sleek Discord bot for staff ratings, tickets, applications, leaderboards, and profiles. Beautiful UI, fast setup, and honest moderation workflows." />
-  <link rel="icon" href="staff-rater-icon.png">
 
-  <!-- Open Graph for richer embeds when you share your site -->
+  <!-- Basic SEO -->
+  <meta name="description" content="Staff Rater is a sleek Discord bot for staff ratings, tickets, applications, leaderboards, and profiles. Beautiful UI, fast setup, and honest moderation workflows." />
+  <link rel="canonical" href="https://www.staffrater.xyz" />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#0c1322" />
+
+  <!-- Icons -->
+  <link rel="icon" href="/staff-rater-icon.png" />
+
+  <!-- Open Graph (link previews) -->
+  <meta property="og:site_name" content="Staff Rater" />
+  <meta property="og:url" content="https://www.staffrater.xyz" />
   <meta property="og:title" content="Staff Rater — Elevate your Discord staff" />
   <meta property="og:description" content="A sleek Discord bot for staff ratings, tickets, applications, leaderboards, and profiles." />
-  <meta property="og:image" content="staff-rater-icon.png" />
+  <meta property="og:image" content="https://www.staffrater.xyz/staff-rater-icon.png" />
   <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Staff Rater — Elevate your Discord staff" />
+  <meta name="twitter:description" content="Ratings, tickets, applications, leaderboards & profiles in one Discord bot." />
+  <meta name="twitter:image" content="https://www.staffrater.xyz/staff-rater-icon.png" />
+
+  <!-- Structured Data (helps search engines) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Staff Rater",
+    "applicationCategory": "CommunicationApplication",
+    "operatingSystem": "Web",
+    "url": "https://www.staffrater.xyz/",
+    "downloadUrl": "https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands",
+    "image": "https://www.staffrater.xyz/staff-rater-icon.png",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "sameAs": ["https://discord.gg/BR7zmffNFC"]
+  }
+  </script>
+
+  <!-- Fonts (optional but nice since you reference Inter & JetBrains Mono) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 
   <!-- Tailwind via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -57,9 +93,9 @@
     html, body { background: #070b14; }
 
     /* Gradient mesh background */
-    .mesh { position: fixed; inset: 0; pointer-events:none; z-index: -1; }
+    .mesh { position: fixed; inset: 0; pointer-events: none; z-index: -1; }
     .mesh:before, .mesh:after {
-      content: ""; position:absolute; width: 1200px; height: 1200px; filter: blur(90px); opacity:.25; border-radius: 50%;
+      content: ""; position: absolute; width: 1200px; height: 1200px; filter: blur(90px); opacity: .25; border-radius: 50%;
     }
     .mesh:before { left: -300px; top: -300px; background: radial-gradient(600px 600px at 50% 50%, #22d3ee33, transparent 70%); }
     .mesh:after { right: -200px; bottom: -300px; background: radial-gradient(600px 600px at 50% 50%, #a78bfa33, transparent 70%); }
@@ -68,9 +104,15 @@
     .tilt { transform-style: preserve-3d; transform: perspective(1000px); }
     .tilt:hover .tilt-up { transform: translateZ(24px); }
 
-    /* Fancy gradient border utility */
+    /* Fancy gradient border utility (keeps your -webkit-mask version) */
     .gborder { position: relative; }
-    .gborder:before { content:''; position:absolute; inset:0; border-radius: 20px; padding: 1px; background: linear-gradient(120deg, rgba(34,211,238,.5), rgba(99,102,241,.5)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+    .gborder:before {
+      content: '';
+      position: absolute; inset: 0; border-radius: 20px; padding: 1px;
+      background: linear-gradient(120deg, rgba(34,211,238,.5), rgba(99,102,241,.5));
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude;
+    }
 
     /* Scroll reveal base */
     .reveal { opacity: 0; transform: translateY(24px); }
@@ -82,6 +124,7 @@
     }
   </style>
 </head>
+
 <body class="text-white font-sans selection:bg-cyan-400/20">
   <div class="mesh"></div>
 
@@ -479,3 +522,4 @@
   </script>
 </body>
 </html>
+
