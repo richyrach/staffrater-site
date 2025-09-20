@@ -1,74 +1,108 @@
-const { createHmac } = require("crypto");
-const TOKEN_URL = "https://discord.com/api/oauth2/token";
-const USER_URL  = "https://discord.com/api/users/@me";
+// /api/callback.js
+import crypto from "crypto";
 
-function setCookie(res, name, value, opts = {}) {
-  const parts = [`${name}=${encodeURIComponent(value)}`];
-  if (opts.httpOnly) parts.push("HttpOnly");
-  if (opts.secure) parts.push("Secure");
-  parts.push(`SameSite=${opts.sameSite || "Lax"}`);
-  parts.push(`Path=${opts.path || "/"}`);
-  if (opts.maxAge) parts.push(`Max-Age=${opts.maxAge}`);
-  res.setHeader("Set-Cookie", parts.join("; "));
+const kvUrl =
+  process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || "";
+const kvToken =
+  process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || "";
+
+function b64url(str) {
+  return Buffer.from(str).toString("base64").replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function sign(data, secret) {
+  return crypto.createHmac("sha256", secret).update(data).digest("base64").replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
 }
 
-function sign(payload, secret) {
-  return createHmac("sha256", secret).update(payload).digest("base64url");
-}
-
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   try {
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    const code = url.searchParams.get("code");
-    if (!code) { res.writeHead(302, { Location: "/?login=error" }); return res.end(); }
+    const SITE = process.env.SITE_BASE_URL || `https://${req.headers.host}`;
+    const redirectUri = `${SITE.replace(/\/$/, "")}/api/callback`;
 
-    // 1) exchange code for token
+    const url = new URL(req.url, SITE);
+    const code = url.searchParams.get("code");
+    const state = url.searchParams.get("state");
+    const cookie = req.headers.cookie || "";
+    const m = cookie.match(/(?:^|;\s*)sr_state=([^;]+)/);
+    const savedState = m ? decodeURIComponent(m[1]) : null;
+    if (!code || !state || state !== savedState) {
+      res.status(400).send("Bad state.");
+      return;
+    }
+
+    // Exchange code for token
     const body = new URLSearchParams({
       client_id: process.env.DISCORD_CLIENT_ID,
       client_secret: process.env.DISCORD_CLIENT_SECRET,
       grant_type: "authorization_code",
       code,
-      redirect_uri: process.env.OAUTH_REDIRECT_URI
+      redirect_uri: redirectUri,
     });
-    const tokenRes = await fetch(TOKEN_URL, {
+    const tokenResp = await fetch("https://discord.com/api/oauth2/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body
+      body,
     });
-    if (!tokenRes.ok) { res.writeHead(302, { Location: "/?login=token_failed" }); return res.end(); }
-    const token = await tokenRes.json(); // {access_token, refresh_token, expires_in, ...}
+    if (!tokenResp.ok) {
+      const t = await tokenResp.text();
+      console.error("token exchange failed:", t);
+      res.status(500).send("OAuth failed");
+      return;
+    }
+    const tokenJson = await tokenResp.json();
+    const accessToken = tokenJson.access_token;
 
-    // 2) get user profile
-    const meRes = await fetch(USER_URL, { headers: { Authorization: `Bearer ${token.access_token}` }});
-    if (!meRes.ok) { res.writeHead(302, { Location: "/?login=user_failed" }); return res.end(); }
-    const me = await meRes.json();
+    // Get user + guilds
+    const [meResp, guildsResp] = await Promise.all([
+      fetch("https://discord.com/api/users/@me", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }),
+      fetch("https://discord.com/api/users/@me/guilds", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }),
+    ]);
+    const me = await meResp.json();
+    const guilds = await guildsResp.json();
 
-    // 3) session cookie (profile only)
-    const sessionData = {
-      id: me.id,
-      username: me.username,
-      global_name: me.global_name || null,
-      avatar: me.avatar || null
+    // Create session payload
+    const sid = crypto.randomBytes(16).toString("hex");
+    const session = {
+      sid,
+      user: {
+        id: me.id,
+        username: `${me.username}${me.discriminator === "0" ? "" : "#" + me.discriminator}`,
+        avatar: me.avatar,
+      },
+      guilds,
+      createdAt: Date.now(),
     };
-    const sessPayload = Buffer.from(JSON.stringify(sessionData)).toString("base64url");
-    const sessSig = sign(sessPayload, process.env.SESSION_SECRET);
-    setCookie(res, "sr_session", `${sessPayload}.${sessSig}`, {
-      httpOnly: true, secure: true, sameSite: "Lax", path: "/", maxAge: 60*60*24*30
-    });
 
-    // 4) auth cookie (token & expiry) — also signed
-    const expiresAt = Math.floor(Date.now()/1000) + (token.expires_in || 3600);
-    const authData = { access_token: token.access_token, refresh_token: token.refresh_token || null, exp: expiresAt };
-    const authPayload = Buffer.from(JSON.stringify(authData)).toString("base64url");
-    const authSig = sign(authPayload, process.env.SESSION_SECRET);
-    setCookie(res, "sr_auth", `${authPayload}.${authSig}`, {
-      httpOnly: true, secure: true, sameSite: "Lax", path: "/", maxAge: 60*60*24*30
-    });
+    // Prefer KV (7 days TTL); else cookie-only
+    if (kvUrl && kvToken) {
+      const key = `sr:sessions:${sid}`;
+      // Upstash REST: /set/<key>/<value> with TTL
+      const payload = JSON.stringify(session);
+      const setUrl = `${kvUrl.replace(/\/$/,"")}/set/${encodeURIComponent(key)}/${encodeURIComponent(payload)}?EX=604800`;
+      const r = await fetch(setUrl, { method: "POST", headers: { Authorization: `Bearer ${kvToken}` }});
+      if (!r.ok) console.error("KV set failed", await r.text());
+      res.setHeader(
+        "Set-Cookie",
+        `sr_session=${encodeURIComponent(sid)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`
+      );
+    } else {
+      // Signed cookie session
+      const secret = process.env.SESSION_SECRET || "dev-secret";
+      const json = JSON.stringify(session);
+      const token = b64url(json) + "." + sign(json, secret);
+      res.setHeader(
+        "Set-Cookie",
+        `sr_session=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`
+      );
+    }
 
-    res.writeHead(302, { Location: "/?logged=1" });
+    res.writeHead(302, { Location: "/dashboard.html" });
     res.end();
   } catch (e) {
-    res.writeHead(302, { Location: "/?login=exception" });
-    res.end();
+    console.error(e);
+    res.status(500).send("Callback error");
   }
-};
+}
