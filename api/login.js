@@ -5,7 +5,7 @@ module.exports = async (req, res) => {
     client_id: process.env.DISCORD_CLIENT_ID,
     redirect_uri: process.env.OAUTH_REDIRECT_URI,
     response_type: "code",
-    scope: "identify",
+    scope: "identify guilds",
     prompt: "none"
   });
   res.statusCode = 302;
