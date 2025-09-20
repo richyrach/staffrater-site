@@ -8,16 +8,43 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root { color-scheme: dark; }
-    body { background:#070b14; color:#e5e7eb; }
-    .card { background:#0c1322; border:1px solid rgba(255,255,255,.08); border-radius:16px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+    body { background:#070b14; color:#e5e7eb; overflow-x:hidden; }
+    /* animated gradient backdrop */
+    .backdrop {
+      position: fixed; inset: 0; pointer-events:none; z-index:-1;
+      background:
+        radial-gradient(800px 800px at 0% 0%, #22d3ee22, transparent 70%),
+        radial-gradient(800px 800px at 100% 100%, #a78bfa22, transparent 70%),
+        linear-gradient(180deg, #060a13 0%, #0a1120 100%);
+      filter: saturate(1.1);
+    }
+    .orb { position:absolute; width:420px; height:420px; border-radius:50%; filter:blur(60px); opacity:.35; mix-blend:screen; }
+    .orb.cyan { background:#22d3ee; left:-120px; top:-80px; animation: float 8s ease-in-out infinite; }
+    .orb.purple { background:#a78bfa; right:-120px; bottom:-80px; animation: float 9s ease-in-out infinite reverse; }
+    @keyframes float { 0%,100%{ transform:translateY(0)} 50%{ transform:translateY(-20px)} }
+
+    /* cards */
+    .card { background:#0c1322; border:1px solid rgba(255,255,255,.08); border-radius:18px; box-shadow: 0 12px 40px rgba(0,0,0,.35); }
+    .card:hover { box-shadow: 0 20px 60px rgba(0,0,0,.55); transform: translateY(-2px); transition:.35s ease; }
     .input { background:#0b1120; border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:.65rem .8rem; width:100%; outline:none; }
-    .input:focus { border-color:#6366f1; box-shadow:0 0 0 2px #6366f144; }
-    .btn { background:#4f46e5; color:white; border-radius:10px; padding:.6rem .9rem; }
-    .btn:disabled { opacity:.5; }
-    a.link { color:#93c5fd; }
+    .input:focus { border-color:#6366f1; box-shadow:0 0 0 3px #6366f133; }
+    .btn { background:linear-gradient(135deg,#6366f1,#22d3ee); color:white; border-radius:10px; padding:.6rem .9rem; box-shadow:0 10px 20px rgba(99,102,241,.25); }
+    .btn:disabled { opacity:.6; }
+    .chip { background:#111827; border:1px solid rgba(255,255,255,.08); border-radius:999px; padding:.25rem .6rem; font-size:.75rem; }
+
+    /* log lines */
+    .logline { display:grid; grid-template-columns: 110px auto; gap:.75rem; align-items:center; padding:.5rem .6rem; border-bottom:1px dashed rgba(255,255,255,.06);}
+    .logline:hover { background:rgba(255,255,255,.03); }
+    .logcmd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    @media (max-width: 640px) {
+      .logline { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
+  <div class="backdrop"><div class="orb cyan"></div><div class="orb purple"></div></div>
+
   <!-- top -->
   <header class="sticky top-0 z-40 backdrop-blur bg-black/30 border-b border-white/10">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -25,20 +52,21 @@
         <img src="/staff-rater-icon.png" class="w-7 h-7 rounded" alt="">
         <span class="font-semibold">Staff Rater</span>
       </a>
-      <div id="auth-box" class="flex items-center gap-3">
-        <!-- filled by script (profile or login) -->
-      </div>
+      <div id="auth-box" class="flex items-center gap-3"></div>
     </div>
   </header>
 
   <main class="max-w-6xl mx-auto px-4 py-8 space-y-6">
-    <h1 class="text-2xl font-semibold">Dashboard</h1>
+    <div class="flex items-center justify-between">
+      <h1 class="text-3xl font-semibold">Dashboard</h1>
+      <span class="chip" id="status">Loading…</span>
+    </div>
 
     <!-- Pick server -->
     <section class="card p-4">
       <div class="flex items-center gap-3">
-        <img src="/staff-rater-icon.png" class="w-6 h-6 opacity-70" alt="">
-        <h2 class="font-semibold">Select a server (you must be Owner/Admin/Manage Server)</h2>
+        <img src="/staff-rater-icon.png" class="w-6 h-6 opacity-80" alt="">
+        <h2 class="font-semibold">Select a server (Owner/Admin/Manage Server)</h2>
       </div>
       <div class="mt-4 grid sm:grid-cols-2 gap-3">
         <select id="guildSelect" class="input">
@@ -46,48 +74,44 @@
         </select>
         <button id="reloadGuilds" class="btn">Refresh</button>
       </div>
-      <p class="mt-3 text-sm opacity-80">Tip: enable Discord “Developer Mode” to copy IDs (User Settings → Advanced). Right-click channels/roles to copy ID.</p>
+      <p class="mt-3 text-sm opacity-80">
+        Tip: enable Discord “Developer Mode” to copy IDs (User Settings → Advanced). Right-click channels/roles to copy ID.
+      </p>
     </section>
 
-    <!-- Settings form -->
+    <!-- Settings -->
     <section class="card p-4">
       <div class="flex items-center gap-3">
-        <span class="font-semibold">Guild Settings</span>
-        <span id="status" class="text-sm opacity-80"></span>
+        <h2 class="font-semibold">Guild Settings</h2>
       </div>
-
       <div class="mt-4 grid md:grid-cols-2 gap-4">
-        <div>
-          <label class="text-sm opacity-80">Rating Channel ID</label>
-          <input id="rating_channel" class="input" placeholder="e.g. 123456789012345678" />
-        </div>
-        <div>
-          <label class="text-sm opacity-80">Result Channel ID</label>
-          <input id="result_channel" class="input" placeholder="e.g. 123456789012345678" />
-        </div>
-        <div>
-          <label class="text-sm opacity-80">Ticket Category ID</label>
-          <input id="ticket_category" class="input" placeholder="e.g. 123456789012345678" />
-        </div>
-        <div>
-          <label class="text-sm opacity-80">Ticket Staff Role ID</label>
-          <input id="ticket_staff_role" class="input" placeholder="e.g. 123456789012345678" />
-        </div>
-        <div>
-          <label class="text-sm opacity-80">Ticket Log Channel ID (optional)</label>
-          <input id="ticket_log_channel" class="input" placeholder="e.g. 123456789012345678" />
-        </div>
+        <div><label class="text-sm opacity-80">Rating Channel ID</label><input id="rating_channel" class="input" placeholder="123456789012345678" /></div>
+        <div><label class="text-sm opacity-80">Result Channel ID</label><input id="result_channel" class="input" placeholder="123456789012345678" /></div>
+        <div><label class="text-sm opacity-80">Ticket Category ID</label><input id="ticket_category" class="input" placeholder="123456789012345678" /></div>
+        <div><label class="text-sm opacity-80">Ticket Staff Role ID</label><input id="ticket_staff_role" class="input" placeholder="123456789012345678" /></div>
+        <div><label class="text-sm opacity-80">Ticket Log Channel ID (optional)</label><input id="ticket_log_channel" class="input" placeholder="123456789012345678" /></div>
       </div>
-
-      <div class="mt-4 flex gap-3">
+      <div class="mt-4 flex gap-3 items-center">
         <button id="saveBtn" class="btn">Save Settings</button>
         <span id="saveMsg" class="text-sm"></span>
       </div>
     </section>
+
+    <!-- Live Command Log -->
+    <section class="card p-0 overflow-hidden">
+      <div class="px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <h2 class="font-semibold">Live Command Log</h2>
+          <span class="chip">last 200</span>
+        </div>
+        <button id="clearLog" class="chip" title="Clearing soon™ (we can add later)">Clear</button>
+      </div>
+      <div id="log" class="divide-y divide-white/10 max-h-[420px] overflow-auto"></div>
+    </section>
   </main>
 
   <script>
-  // Reuse top-bar auth UI from earlier
+  // topbar auth (same as home)
   (async function authUI(){
     const box = document.getElementById('auth-box');
     const el = (t,a={},c=[])=>{const e=document.createElement(t);Object.entries(a).forEach(([k,v])=>k==='class'?e.className=v:e.setAttribute(k,v));c.forEach(x=>e.append(x));return e;}
@@ -100,14 +124,12 @@
       const out = el('a',{href:'/api/logout',class:'px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-sm'},[document.createTextNode('Logout')]);
       box.replaceChildren(avatar,name,out);
     } catch {
-      const login = document.createElement('a');
-      login.href='/api/login'; login.className='px-3 py-1 rounded bg-indigo-500/80 hover:bg-indigo-500 text-white text-sm';
-      login.textContent='Sign in with Discord';
+      const login = el('a',{href:'/api/login',class:'px-3 py-1 rounded bg-indigo-500/80 hover:bg-indigo-500 text-white text-sm'},[document.createTextNode('Sign in with Discord')]);
       box.replaceChildren(login);
     }
   })();
 
-  // Dashboard logic
+  // dashboard logic
   const sel = document.getElementById('guildSelect');
   const reloadBtn = document.getElementById('reloadGuilds');
   const status = document.getElementById('status');
@@ -115,6 +137,38 @@
   const els = Object.fromEntries(fields.map(id=>[id, document.getElementById(id)]));
   const saveBtn = document.getElementById('saveBtn');
   const saveMsg = document.getElementById('saveMsg');
+  const logBox = document.getElementById('log');
+  let pollTimer = null;
+
+  function fmt(ts){
+    const d = new Date(ts); return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  }
+
+  function renderLog(list){
+    logBox.innerHTML = '';
+    list.forEach(item=>{
+      const row = document.createElement('div'); row.className='logline';
+      const when = document.createElement('div'); when.className='opacity-70 text-xs'; when.textContent = fmt(item.ts);
+      const what = document.createElement('div');
+      what.innerHTML = `
+        <div class="logcmd"><span class="text-indigo-300">/${item.name || 'unknown'}</span>
+        <span class="opacity-70">by</span> <span class="text-sky-300">@${item.user_name || item.user}</span>
+        <span class="opacity-70">in</span> <span class="text-emerald-300">#${item.channel_name || item.channel}</span></div>
+      `;
+      row.append(when, what);
+      logBox.append(row);
+    });
+  }
+
+  async function pollLog(){
+    const gid = sel.value; if(!gid) return;
+    try{
+      const r = await fetch(`/api/command-log-get?guild_id=${gid}`, { credentials:'include' });
+      if (!r.ok) return;
+      const list = await r.json();
+      renderLog(list);
+    } catch {}
+  }
 
   async function loadGuilds(){
     sel.innerHTML = '<option value="">— choose a server —</option>';
@@ -128,30 +182,28 @@
   }
 
   async function loadConfig(gid){
-    if(!gid){ fields.forEach(k=>els[k].value=''); return; }
-    status.textContent='Loading...';
+    fields.forEach(k=>els[k].value='');
+    if(!gid){ status.textContent='(pick a server)'; clearInterval(pollTimer); pollTimer=null; logBox.innerHTML=''; return; }
+    status.textContent='Loading…';
     const r = await fetch(`/api/config-get?guild_id=${gid}`, { credentials:'include' });
     if(!r.ok){ status.textContent='(no access)'; return; }
     const cfg = await r.json();
     fields.forEach(k=>els[k].value = cfg[k] || '');
     status.textContent='Loaded.';
+    // start log polling
+    clearInterval(pollTimer); pollTimer = setInterval(pollLog, 2000); pollLog();
   }
 
   async function saveConfig(){
     const gid = sel.value; if(!gid) return;
-    saveBtn.disabled = true; saveMsg.textContent='Saving...';
-    const body = {};
-    fields.forEach(k=>body[k]=els[k].value.trim());
+    saveBtn.disabled = true; saveMsg.textContent='Saving…';
+    const body = {}; fields.forEach(k=>body[k]=els[k].value.trim());
     const r = await fetch(`/api/config-set?guild_id=${gid}`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      credentials:'include',
-      body: JSON.stringify(body)
+      method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify(body)
     });
     saveBtn.disabled = false;
     if(!r.ok){ saveMsg.textContent='Failed (check access)'; return; }
-    saveMsg.textContent='Saved ✅';
-    setTimeout(()=>saveMsg.textContent='', 2000);
+    saveMsg.textContent='Saved ✅'; setTimeout(()=>saveMsg.textContent='', 2000);
   }
 
   reloadBtn.onclick = loadGuilds;
