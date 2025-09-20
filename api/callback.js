@@ -12,7 +12,7 @@ function setCookie(res, name, value, opts = {}) {
   res.setHeader("Set-Cookie", parts.join("; "));
 }
 
-function signPayload(payload, secret) {
+function sign(payload, secret) {
   return createHmac("sha256", secret).update(payload).digest("base64url");
 }
 
@@ -20,14 +20,9 @@ module.exports = async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const code = url.searchParams.get("code");
-    const error = url.searchParams.get("error");
-    if (error || !code) {
-      res.statusCode = 302;
-      res.setHeader("Location", "/?login=error");
-      return res.end();
-    }
+    if (!code) { res.writeHead(302, { Location: "/?login=error" }); return res.end(); }
 
-    // Exchange code for token
+    // 1) exchange code for token
     const body = new URLSearchParams({
       client_id: process.env.DISCORD_CLIENT_ID,
       client_secret: process.env.DISCORD_CLIENT_SECRET,
@@ -35,58 +30,45 @@ module.exports = async (req, res) => {
       code,
       redirect_uri: process.env.OAUTH_REDIRECT_URI
     });
-
     const tokenRes = await fetch(TOKEN_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body
     });
+    if (!tokenRes.ok) { res.writeHead(302, { Location: "/?login=token_failed" }); return res.end(); }
+    const token = await tokenRes.json(); // {access_token, refresh_token, expires_in, ...}
 
-    if (!tokenRes.ok) {
-      res.statusCode = 302;
-      res.setHeader("Location", "/?login=token_failed");
-      return res.end();
-    }
+    // 2) get user profile
+    const meRes = await fetch(USER_URL, { headers: { Authorization: `Bearer ${token.access_token}` }});
+    if (!meRes.ok) { res.writeHead(302, { Location: "/?login=user_failed" }); return res.end(); }
+    const me = await meRes.json();
 
-    const token = await tokenRes.json();
-
-    // Fetch user identity
-    const userRes = await fetch(USER_URL, {
-      headers: { Authorization: `Bearer ${token.access_token}` }
-    });
-    if (!userRes.ok) {
-      res.statusCode = 302;
-      res.setHeader("Location", "/?login=user_failed");
-      return res.end();
-    }
-    const user = await userRes.json();
-
-    // Create signed session cookie with minimal data
+    // 3) session cookie (profile only)
     const sessionData = {
-      id: user.id,
-      username: user.username,
-      global_name: user.global_name || null,
-      avatar: user.avatar || null
+      id: me.id,
+      username: me.username,
+      global_name: me.global_name || null,
+      avatar: me.avatar || null
     };
-    const payload = Buffer.from(JSON.stringify(sessionData)).toString("base64url");
-    const sig = signPayload(payload, process.env.SESSION_SECRET);
-    const cookieValue = `${payload}.${sig}`;
-
-    setCookie(res, "sr_session", cookieValue, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "Lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30 // 30 days
+    const sessPayload = Buffer.from(JSON.stringify(sessionData)).toString("base64url");
+    const sessSig = sign(sessPayload, process.env.SESSION_SECRET);
+    setCookie(res, "sr_session", `${sessPayload}.${sessSig}`, {
+      httpOnly: true, secure: true, sameSite: "Lax", path: "/", maxAge: 60*60*24*30
     });
 
-    // Back to homepage
-    res.statusCode = 302;
-    res.setHeader("Location", "/?logged=1");
+    // 4) auth cookie (token & expiry) — also signed
+    const expiresAt = Math.floor(Date.now()/1000) + (token.expires_in || 3600);
+    const authData = { access_token: token.access_token, refresh_token: token.refresh_token || null, exp: expiresAt };
+    const authPayload = Buffer.from(JSON.stringify(authData)).toString("base64url");
+    const authSig = sign(authPayload, process.env.SESSION_SECRET);
+    setCookie(res, "sr_auth", `${authPayload}.${authSig}`, {
+      httpOnly: true, secure: true, sameSite: "Lax", path: "/", maxAge: 60*60*24*30
+    });
+
+    res.writeHead(302, { Location: "/?logged=1" });
     res.end();
   } catch (e) {
-    res.statusCode = 302;
-    res.setHeader("Location", "/?login=exception");
+    res.writeHead(302, { Location: "/?login=exception" });
     res.end();
   }
 };
