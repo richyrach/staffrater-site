@@ -122,6 +122,49 @@
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; transition: none !important; }
     }
+/* TEST DELETE */
+    /* ===== Mobile polish (drop-in) ===== */
+html, body { overflow-x: hidden; }
+
+/* Images/videos scale down nicely */
+img, video { max-width: 100%; height: auto; }
+
+/* Phone layout: stack grids, tighten gaps */
+@media (max-width: 640px) {
+  /* Force any 2+ column grids to a single column on phones */
+  .grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
+
+  /* Make flex rows wrap into columns */
+  .flex { flex-wrap: wrap; }
+  .space-x-4 > * + * { margin-left: 0 !important; }
+  .space-y-4 > * + * { margin-top: 1rem !important; }
+
+  /* Safer default paddings */
+  .container, .mx-auto, .max-w-screen-xl, .max-w-7xl {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Hero text scales for small screens — adjust selectors if yours differ */
+  .hero-title { font-size: 1.75rem; line-height: 1.2; }   /* ~28px */
+  .hero-sub   { font-size: 1rem;   opacity: .9; }
+
+  /* CTA buttons stack and become full width */
+  .cta-group { display: flex; flex-direction: column; gap: .75rem; align-items: stretch; }
+  .cta-group .btn { width: 100%; justify-content: center; }
+
+  /* Cards breathe a bit on phones */
+  .card, .demo-card, .feature-card { margin: 0; border-radius: 16px; }
+
+  /* Tone down heavy background blur on mobile GPUs */
+  .mesh { opacity: .45; }
+}
+
+/* Really small phones */
+@media (max-width: 480px) {
+  .hero-title { font-size: 1.5rem; } /* ~24px */
+}
+/* TEST DELETE */
   </style>
 </head>
 
@@ -522,4 +565,5 @@
   </script>
 </body>
 </html>
+
 
