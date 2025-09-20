@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Staff Rater — Server Settings</title>
+  <link rel="icon" href="/staff-rater-icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { color-scheme: dark; }
+    body { background:#070b14; color:#e5e7eb; overflow-x:hidden; }
+    .card { background:#0c1322; border:1px solid rgba(255,255,255,.08); border-radius:18px; box-shadow: 0 15px 45px rgba(0,0,0,.4); }
+    .btn { background:linear-gradient(135deg,#6366f1,#22d3ee); color:white; border-radius:10px; padding:.6rem .9rem; }
+    .btn.secondary { background:transparent; border:1px solid rgba(255,255,255,.12); }
+    .input, select { background:#0b1120; border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:.65rem .8rem; width:100%; outline:none; }
+    .input:focus, select:focus { border-color:#6366f1; box-shadow:0 0 0 3px #6366f133; }
+    .menu a { display:block; padding:.6rem .8rem; border-radius:10px; color:#d1d5db; }
+    .menu a.active, .menu a:hover { background:#111827; color:white; }
+    .chip { background:#111827; border:1px solid rgba(255,255,255,.08); border-radius:999px; padding:.25rem .65rem; font-size:.75rem; }
+    .logline { display:grid; grid-template-columns: 110px auto; gap:.75rem; align-items:center; padding:.5rem .6rem; border-bottom:1px dashed rgba(255,255,255,.06);}
+    .logline:hover { background:rgba(255,255,255,.03); }
+    @media (max-width: 768px) { .layout { grid-template-columns: 1fr !important; } }
+  </style>
+</head>
+<body>
+  <header class="sticky top-0 z-40 backdrop-blur bg-black/30 border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/dashboard/" class="flex items-center gap-2">
+        <img src="/staff-rater-icon.png" class="w-7 h-7 rounded" alt="">
+        <span class="font-semibold">Staff Rater — Server</span>
+      </a>
+      <div id="auth-box" class="flex items-center gap-3"></div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8 space-y-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img id="gicon" src="/staff-rater-icon.png" class="w-10 h-10 rounded" alt="">
+        <h1 id="gname" class="text-2xl font-semibold">Loading…</h1>
+      </div>
+      <a class="btn secondary" href="/dashboard/">← All servers</a>
+    </div>
+
+    <div id="inviteBox" class="hidden card p-4">
+      <div class="font-semibold mb-1">Bot is not in this server</div>
+      <div class="opacity-80 text-sm mb-3">Invite Staff Rater first, then return here.</div>
+      <a id="inviteLink" class="btn inline-block" href="#">Add to Server</a>
+    </div>
+
+    <div class="grid layout" style="grid-template-columns: 260px 1fr; gap: 20px;">
+      <!-- Side menu -->
+      <aside class="card p-3">
+        <nav class="menu text-sm" id="menu">
+          <a href="#overview" class="active">Overview</a>
+          <a href="#rating">Rating</a>
+          <a href="#tickets">Tickets</a>
+          <a href="#applications">Applications</a>
+          <a href="#logs">Live Logs</a>
+        </nav>
+      </aside>
+
+      <!-- Content -->
+      <section class="space-y-6">
+        <!-- Overview -->
+        <div id="overview" class="card p-4">
+          <div class="flex items-center justify-between">
+            <h2 class="font-semibold">Overview</h2>
+            <span id="status" class="chip">Loading…</span>
+          </div>
+          <p class="opacity-80 mt-2 text-sm">Configure your server with named pickers — no IDs needed.</p>
+        </div>
+
+        <!-- Rating -->
+        <div id="rating" class="card p-4">
+          <h2 class="font-semibold">Rating Settings</h2>
+          <div class="grid md:grid-cols-2 gap-4 mt-3">
+            <div>
+              <label class="text-sm opacity-80">Rating Channel</label>
+              <select id="rating_channel"></select>
+            </div>
+            <div>
+              <label class="text-sm opacity-80">Result Channel</label>
+              <select id="result_channel"></select>
+            </div>
+          </div>
+          <div class="mt-4 flex gap-3 items-center">
+            <button id="saveRating" class="btn">Save Rating</button>
+            <span id="msgRating" class="text-sm"></span>
+          </div>
+        </div>
+
+        <!-- Tickets -->
+        <div id="tickets" class="card p-4">
+          <h2 class="font-semibold">Ticket Settings</h2>
+          <div class="grid md:grid-cols-2 gap-4 mt-3">
+            <div>
+              <label class="text-sm opacity-80">Ticket Category</label>
+              <select id="ticket_category"></select>
+            </div>
+            <div>
+              <label class="text-sm opacity-80">Ticket Staff Role</label>
+              <select id="ticket_staff_role"></select>
+            </div>
+            <div>
+              <label class="text-sm opacity-80">Ticket Log Channel (optional)</label>
+              <select id="ticket_log_channel"><option value="">— none —</option></select>
+            </div>
+          </div>
+          <div class="mt-4 flex gap-3 items-center">
+            <button id="saveTickets" class="btn">Save Tickets</button>
+            <span id="msgTickets" class="text-sm"></span>
+          </div>
+        </div>
+
+        <!-- Applications (scaffold UI – saves to same config for now) -->
+        <div id="applications" class="card p-4">
+          <h2 class="font-semibold">Applications</h2>
+          <p class="opacity-80 text-sm">
+            Create and manage application templates here (builder coming next). For now, use bot commands to add questions; dashboard saving is wired and will sync to bot.
+          </p>
+          <div class="mt-3">
+            <a class="btn secondary" href="https://discord.gg/BR7zmffNFC" target="_blank">Need help?</a>
+          </div>
+        </div>
+
+        <!-- Logs -->
+        <div id="logs" class="card p-0 overflow-hidden">
+          <div class="px-4 py-3 flex items-center justify-between">
+            <div class="font-semibold">Live Command Log <span class="chip">last 200</span></div>
+            <div class="text-sm opacity-75" id="logStatus">Polling…</div>
+          </div>
+          <div id="logBox" class="max-h-[420px] overflow-auto"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+  const INVITE_URL = "https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands";
+  const qs = new URLSearchParams(location.search);
+  const GID = qs.get('gid');
+
+  // header auth
+  (async function(){
+    const box = document.getElementById('auth-box');
+    const mk = (t,a={},c=[])=>{const e=document.createElement(t);Object.entries(a).forEach(([k,v])=>k==='class'?e.className=v:e.setAttribute(k,v));c.forEach(x=>e.append(x));return e;}
+    try {
+      const r = await fetch('/api/me', { credentials:'include' });
+      if (!r.ok) throw 0;
+      const me = await r.json();
+      box.replaceChildren(
+        mk('img',{src:me.avatar,alt:me.username,class:'w-8 h-8 rounded-full ring-2 ring-white/10'}),
+        mk('span',{class:'text-sm opacity-90 hidden sm:inline'},[document.createTextNode(me.global_name||me.username)]),
+        mk('a',{href:'/api/logout',class:'px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-sm'},[document.createTextNode('Logout')])
+      );
+    } catch {
+      const login = document.createElement('a');
+      login.href='/api/login'; login.className='px-3 py-1 rounded bg-indigo-500/80 hover:bg-indigo-500 text-white text-sm';
+      login.textContent='Sign in with Discord';
+      box.replaceChildren(login);
+    }
+  })();
+
+  // side menu active highlight
+  const menu = document.getElementById('menu');
+  menu.addEventListener('click', (e)=>{
+    if(e.target.tagName==='A'){
+      [...menu.querySelectorAll('a')].forEach(a=>a.classList.remove('active'));
+      e.target.classList.add('active');
+    }
+  });
+
+  const statusEl = document.getElementById('status');
+  const gname = document.getElementById('gname');
+  const gicon = document.getElementById('gicon');
+  const inviteBox = document.getElementById('inviteBox');
+  const inviteLink = document.getElementById('inviteLink');
+
+  const sel = {
+    rating_channel: document.getElementById('rating_channel'),
+    result_channel: document.getElementById('result_channel'),
+    ticket_category: document.getElementById('ticket_category'),
+    ticket_staff_role: document.getElementById('ticket_staff_role'),
+    ticket_log_channel: document.getElementById('ticket_log_channel')
+  };
+
+  const msg = {
+    rating: document.getElementById('msgRating'),
+    tickets: document.getElementById('msgTickets')
+  };
+
+  function opt(text, value) {
+    const o=document.createElement('option'); o.textContent=text; o.value=value; return o;
+  }
+
+  async function getGuilds(){
+    const r = await fetch('/api/guilds', { credentials:'include' });
+    if(!r.ok) return [];
+    return r.json();
+  }
+
+  async function loadStructure(){
+    statusEl.textContent = 'Loading…';
+    // Get your guild list for name/icon
+    const guilds = await getGuilds();
+    const meta = guilds.find(g=>g.id===GID);
+    if(meta){ gname.textContent = meta.name; gicon.src = meta.icon || '/staff-rater-icon.png'; }
+
+    // Pull channels/roles via bot (server-side)
+    const r = await fetch(`/api/guild-structure?guild_id=${encodeURIComponent(GID)}`, { credentials:'include' });
+    if (r.status === 403 || r.status === 404) {
+      inviteBox.classList.remove('hidden');
+      inviteLink.href = INVITE_URL;
+      statusEl.textContent = 'Bot missing';
+      return { channels: [], categories: [], roles: [] };
+    }
+    if(!r.ok){
+      statusEl.textContent = 'Error';
+      return { channels: [], categories: [], roles: [] };
+    }
+    const data = await r.json();
+    statusEl.textContent = 'Loaded';
+    return data;
+  }
+
+  function fillSelectors(struct, cfg){
+    const textChannels = struct.channels || [];
+    const categories   = struct.categories || [];
+    const roles        = struct.roles || [];
+
+    // clear
+    Object.values(sel).forEach(s=>s.innerHTML='');
+
+    // Rating / Result (text channels)
+    sel.rating_channel.append(opt('— choose —',''));
+    sel.result_channel.append(opt('— choose —',''));
+    textChannels.forEach(c=>{
+      sel.rating_channel.append(opt('#'+c.name, c.id));
+      sel.result_channel.append(opt('#'+c.name, c.id));
+    });
+
+    // Ticket category (categories)
+    sel.ticket_category.append(opt('— choose —',''));
+    categories.forEach(c=> sel.ticket_category.append(opt('📁 '+c.name, c.id)));
+
+    // Staff role
+    sel.ticket_staff_role.append(opt('— choose —',''));
+    roles.forEach(r=> sel.ticket_staff_role.append(opt('@'+r.name, r.id)));
+
+    // Log channel (optional)
+    sel.ticket_log_channel.append(opt('— none —',''));
+    textChannels.forEach(c=> sel.ticket_log_channel.append(opt('#'+c.name, c.id)));
+
+    // apply existing
+    if(cfg.rating_channel) sel.rating_channel.value = cfg.rating_channel;
+    if(cfg.result_channel) sel.result_channel.value = cfg.result_channel;
+    if(cfg.ticket_category) sel.ticket_category.value = cfg.ticket_category;
+    if(cfg.ticket_staff_role) sel.ticket_staff_role.value = cfg.ticket_staff_role;
+    if(cfg.ticket_log_channel) sel.ticket_log_channel.value = cfg.ticket_log_channel || '';
+  }
+
+  async function loadConfig(){
+    const r = await fetch(`/api/config-get?guild_id=${encodeURIComponent(GID)}`, { credentials:'include' });
+    if(!r.ok) return {};
+    return r.json();
+  }
+
+  async function save(part){
+    const body = {};
+    if (part==='rating' || part==='all'){
+      body.rating_channel = sel.rating_channel.value;
+      body.result_channel = sel.result_channel.value;
+    }
+    if (part==='tickets' || part==='all'){
+      body.ticket_category = sel.ticket_category.value;
+      body.ticket_staff_role = sel.ticket_staff_role.value;
+      body.ticket_log_channel = sel.ticket_log_channel.value || '';
+    }
+    const r = await fetch(`/api/config-set?guild_id=${encodeURIComponent(GID)}`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify(body)
+    });
+    return r.ok;
+  }
+
+  // Logs
+  const logBox = document.getElementById('logBox');
+  const logStatus = document.getElementById('logStatus');
+  function fmt(ts){ const d=new Date(ts); return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+  function renderLog(list){
+    logBox.innerHTML='';
+    list.forEach(item=>{
+      const row = document.createElement('div'); row.className='logline';
+      row.innerHTML = `<div class="opacity-70 text-xs">${fmt(item.ts)}</div>
+      <div class="text-sm"><span class="text-indigo-300">/${item.name||'unknown'}</span>
+      <span class="opacity-70">by</span> <span class="text-sky-300">@${item.user_name||item.user}</span>
+      <span class="opacity-70">in</span> <span class="text-emerald-300">#${item.channel_name||item.channel}</span></div>`;
+      logBox.append(row);
+    });
+  }
+  async function pollLog(){
+    try{
+      const r = await fetch(`/api/command-log-get?guild_id=${encodeURIComponent(GID)}`, { credentials:'include' });
+      if(!r.ok) { logStatus.textContent='No access'; return; }
+      const list = await r.json();
+      renderLog(list);
+      logStatus.textContent='Live';
+    } catch { logStatus.textContent='…'; }
+  }
+
+  // wire buttons
+  document.getElementById('saveRating').onclick = async ()=> {
+    const ok = await save('rating');
+    document.getElementById('msgRating').textContent = ok? 'Saved ✅' : 'Failed';
+    setTimeout(()=> document.getElementById('msgRating').textContent='', 2000);
+  };
+  document.getElementById('saveTickets').onclick = async ()=> {
+    const ok = await save('tickets');
+    document.getElementById('msgTickets').textContent = ok? 'Saved ✅' : 'Failed';
+    setTimeout(()=> document.getElementById('msgTickets').textContent='', 2000);
+  };
+
+  // init
+  if(!GID){ location.href='/dashboard/'; }
+  (async ()=>{
+    // load structure + cfg
+    const [structure, cfg] = await Promise.all([loadStructure(), loadConfig()]);
+    fillSelectors(structure, cfg);
+    // start logs
+    setInterval(pollLog, 2000); pollLog();
+  })();
+  </script>
+</body>
+</html>
