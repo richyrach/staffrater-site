@@ -1,6 +1,4 @@
 "use strict";
-
-// /api/callback.js
 const { parseState, issueSessionToken } = require("../lib/auth");
 
 module.exports = async (req, res) => {
@@ -44,8 +42,7 @@ module.exports = async (req, res) => {
       body: form,
     });
     if (!tr.ok) {
-      const txt = await tr.text();
-      console.error("Token exchange failed:", txt);
+      console.error("Token exchange failed:", await tr.text());
       res.statusCode = 500;
       return res.end("oauth failed");
     }
@@ -58,14 +55,12 @@ module.exports = async (req, res) => {
       fetch("https://discord.com/api/users/@me/guilds", { headers: { Authorization: `Bearer ${accessToken}` } }),
     ]);
     if (!meR.ok || !gsR.ok) {
-      console.error("Discord API calls failed");
       res.statusCode = 502;
       return res.end("discord api failed");
     }
     const me = await meR.json();
     const guilds = await gsR.json();
 
-    // Build a signed session token (no cookie)
     const session = {
       user: {
         id: me.id,
@@ -77,12 +72,13 @@ module.exports = async (req, res) => {
     };
     const token = issueSessionToken(session);
 
-    // Redirect back to returnTo and deliver token in fragment (not logged by servers)
-    const sep = returnTo.includes("#") ? "&" : "#";
-    const dest = `${returnTo}${sep}token=${encodeURIComponent(token)}`;
+    // Build final URL (add token in QUERY so it survives any redirects)
+    const dest = new URL(returnTo, SITE); // keeps host
+    dest.searchParams.set("token", token);
 
     res.setHeader("Cache-Control", "no-store");
-    res.writeHead(302, { Location: dest });
+    // Send only path+query+hash so we don't bounce hosts
+    res.writeHead(302, { Location: dest.pathname + dest.search + dest.hash });
     res.end();
   } catch (e) {
     console.error("Callback crash:", e);
