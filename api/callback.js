@@ -1,6 +1,22 @@
 // /api/callback.js
 import crypto from "crypto";
 
+// At top of /api/callback.js
+export default async function handler(req, res) {
+  const SITE = process.env.SITE_BASE_URL || "https://www.staffrater.xyz";
+  const canonicalHost = new URL(SITE).host;
+
+  // Ensure callback also runs on the same host that set the cookie
+  if (req.headers.host !== canonicalHost) {
+    const query = req.url.split("?")[1] || "";
+    res.writeHead(302, { Location: `https://${canonicalHost}/api/callback${query ? "?" + query : ""}` });
+    return res.end();
+  }
+
+  // ...your existing callback code continues here...
+}
+
+
 const kvUrl =
   process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || "";
 const kvToken =
@@ -106,3 +122,4 @@ export default async function handler(req, res) {
     res.status(500).send("Callback error");
   }
 }
+
