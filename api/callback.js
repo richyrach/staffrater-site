@@ -1,6 +1,5 @@
 "use strict";
 
-// /api/callback.js
 const crypto = require("crypto");
 
 function b64url(strUtf8) {
@@ -20,10 +19,12 @@ function sign(payload) {
 module.exports = async (req, res) => {
   try {
     const SITE = process.env.SITE_BASE_URL || "https://www.staffrater.xyz";
-    const urlObj = new URL(SITE);
-    const canonicalHost = urlObj.host;
+    const u = new URL(SITE);
+    const canonicalHost = u.host;
+    const baseDomain = u.hostname.replace(/^www\./, "");
+    const domainAttr = `Domain=.${baseDomain}`;
 
-    // Force callback on canonical host (so it sees the same cookie)
+    // Enforce same host used by /api/login
     if (req.headers.host !== canonicalHost) {
       const q = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
       res.writeHead(302, { Location: `https://${canonicalHost}/api/callback${q}` });
@@ -32,28 +33,28 @@ module.exports = async (req, res) => {
 
     const redirectUri = `${SITE.replace(/\/$/, "")}/api/callback`;
 
-    // Read code + state
     const full = new URL(req.url, SITE);
     const code = full.searchParams.get("code");
     const state = full.searchParams.get("state");
 
-    // Validate state from cookie
     const rawCookie = req.headers.cookie || "";
-    const m = rawCookie.match(/(?:^|;\s*)sr_state=([^;]+)/);
-    const savedState = m ? decodeURIComponent(m[1]) : null;
+    const mState = rawCookie.match(/(?:^|;\s*)sr_state=([^;]+)/);
+    const mRet = rawCookie.match(/(?:^|;\s*)sr_ret=([^;]+)/);
+    const savedState = mState ? decodeURIComponent(mState[1]) : null;
+    let returnTo = mRet ? decodeURIComponent(mRet[1]) : "/";
+
     if (!code || !state || state !== savedState) {
       res.statusCode = 400;
-      res.end("bad state");
-      return;
+      return res.end("bad state");
     }
+    if (!returnTo || !returnTo.startsWith("/")) returnTo = "/";
 
     if (!process.env.DISCORD_CLIENT_ID || !process.env.DISCORD_CLIENT_SECRET) {
       res.statusCode = 500;
-      res.end("server not configured");
-      return;
+      return res.end("server not configured");
     }
 
-    // Exchange code for token (use strict form encoding)
+    // Exchange code for token
     const form = new URLSearchParams({
       client_id: process.env.DISCORD_CLIENT_ID,
       client_secret: process.env.DISCORD_CLIENT_SECRET,
@@ -70,8 +71,7 @@ module.exports = async (req, res) => {
       const txt = await tr.text();
       console.error("Token exchange failed:", txt);
       res.statusCode = 500;
-      res.end("oauth failed");
-      return;
+      return res.end("oauth failed");
     }
     const tj = await tr.json();
     const accessToken = tj.access_token;
@@ -88,16 +88,12 @@ module.exports = async (req, res) => {
     if (!meR.ok || !gsR.ok) {
       console.error("Discord API calls failed");
       res.statusCode = 502;
-      res.end("discord api failed");
-      return;
+      return res.end("discord api failed");
     }
     const me = await meR.json();
     const guilds = await gsR.json();
 
-    // Build signed session cookie (works on both apex and www)
-    const baseDomain = urlObj.hostname.replace(/^www\./, "");
-    const domainAttr = `Domain=.${baseDomain}`;
-
+    // Build and set session cookie (1 week)
     const session = {
       user: {
         id: me.id,
@@ -112,11 +108,12 @@ module.exports = async (req, res) => {
 
     res.setHeader("Set-Cookie", [
       `sr_state=; ${domainAttr}; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax`,
+      `sr_ret=; ${domainAttr}; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax`,
       `sr_session=${encodeURIComponent(token)}; ${domainAttr}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`
     ]);
 
-    // Your dashboard lives at /dashboard/index.html
-    res.writeHead(302, { Location: "/dashboard/index.html" });
+    // Redirect to the page you came from (or "/" by default)
+    res.writeHead(302, { Location: returnTo });
     res.end();
   } catch (e) {
     console.error("Callback crash:", e);
