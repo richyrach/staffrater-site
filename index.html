@@ -1,273 +1,371 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- Meta / SEO -->
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Staff Rater — Elevate your Discord staff with fair feedback</title>
-  <meta name="description" content="Staff Rater is a sleek Discord bot for staff ratings, tickets, applications, leaderboards, profiles, polls, and a live command log — with a beautiful dashboard." />
-  <link rel="icon" href="/staff-rater-icon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Staff Rater — Fair, beautiful Discord staff ratings (tickets, apps, leaderboards)</title>
+  <meta name="description" content="Staff Rater is a sleek Discord bot for staff ratings, tickets, applications, leaderboards, and profiles. Beautiful UI, fast setup, and honest moderation workflows." />
+  <link rel="icon" href="/staff-rater-icon.png" />
+
   <!-- Open Graph -->
   <meta property="og:title" content="Staff Rater — Elevate your Discord staff" />
   <meta property="og:description" content="A sleek Discord bot for staff ratings, tickets, applications, leaderboards, and profiles." />
   <meta property="og:image" content="https://www.staffrater.xyz/staff-rater-icon.png" />
   <meta property="og:type" content="website" />
-  <!-- Tailwind -->
+  <meta property="og:url" content="https://www.staffrater.xyz/" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Staff Rater — Elevate your Discord staff">
+  <meta name="twitter:description" content="A sleek Discord bot for staff ratings, tickets, applications, leaderboards, and profiles.">
+  <meta name="twitter:image" content="https://www.staffrater.xyz/staff-rater-icon.png">
+
+  <!-- Tailwind via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#070b14',
+            panel: '#0c1322',
+            line: 'rgba(255,255,255,0.08)',
+            brand1: '#22d3ee', // cyan
+            brand2: '#a78bfa', // purple
+          },
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+            mono: ['JetBrains Mono', 'ui-monospace']
+          },
+          boxShadow: {
+            glass: '0 0 0 1px rgba(255,255,255,0.06), 0 8px 30px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.03)',
+            glow: '0 0 0 1px rgba(255,255,255,0.08), 0 15px 45px rgba(0,0,0,0.65)'
+          },
+          keyframes: {
+            floaty: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-6px)' } },
+            hue: { '0%': { filter: 'hue-rotate(0deg)' }, '100%': { filter: 'hue-rotate(360deg)' } },
+            reveal: { '0%': { opacity: 0, transform: 'translateY(24px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
+            shimmer: { '100%': { transform: 'translateX(100%)' } },
+            drift: { '0%': { transform: 'translateX(0)' }, '100%': { transform: 'translateX(-50%)' } }
+          },
+          animation: {
+            floaty: 'floaty 6s ease-in-out infinite',
+            hue: 'hue 16s linear infinite',
+            reveal: 'reveal .7s ease forwards',
+            shimmer: 'shimmer 1.4s linear infinite',
+            drift: 'drift 28s linear infinite'
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
     :root { color-scheme: dark; }
-    body { background:#070b14; color:#e5e7eb; overflow-x:hidden; }
-    /* animated gradient background (mobile-safe sizes) */
-    .bgmesh { position:fixed; inset:0; pointer-events:none; z-index:-1;
-      background:
-        radial-gradient(60vw 60vw at -10% -10%, #22d3ee22, transparent 70%),
-        radial-gradient(60vw 60vw at 110% 110%, #a78bfa22, transparent 70%),
-        linear-gradient(180deg, #060a13 0%, #0a1120 100%);
-      animation: hue 28s linear infinite;
+    html, body { background: #070b14; }
+
+    /* Background mesh + stars */
+    .mesh { position: fixed; inset: 0; pointer-events:none; z-index: -1; }
+    .mesh:before, .mesh:after {
+      content: ""; position:absolute; width: 1200px; height: 1200px; filter: blur(90px); opacity:.25; border-radius: 50%;
     }
-    @keyframes hue { 0%{filter:hue-rotate(0)} 100%{filter:hue-rotate(360deg)} }
+    .mesh:before { left: -300px; top: -300px; background: radial-gradient(600px 600px at 50% 50%, #22d3ee33, transparent 70%); }
+    .mesh:after { right: -200px; bottom: -300px; background: radial-gradient(600px 600px at 50% 50%, #a78bfa33, transparent 70%); }
+    .stars { position: fixed; inset: 0; pointer-events:none; z-index: -2; background: radial-gradient(circle at 20% 30%, rgba(255,255,255,.08) 0 1px, transparent 2px), radial-gradient(circle at 70% 80%, rgba(255,255,255,.06) 0 1px, transparent 2px); background-size: 1200px 1200px, 1400px 1400px; animation: drift 90s linear infinite; }
 
-    /* glass cards & UI */
-    .card { background:#0c1322cc; backdrop-filter: blur(10px);
-      border:1px solid rgba(255,255,255,.08); border-radius:18px; box-shadow: 0 15px 45px rgba(0,0,0,.4);
-      transition:.35s ease; }
-    .card:hover { transform: translateY(-2px); box-shadow: 0 25px 65px rgba(0,0,0,.55); }
-    .btn { background:linear-gradient(135deg,#6366f1,#22d3ee); color:white; border-radius:12px; padding:.85rem 1rem;
-      box-shadow:0 10px 20px rgba(99,102,241,.25); }
-    .btn.secondary { background:transparent; border:1px solid rgba(255,255,255,.12); }
-    .chip { background:#111827; border:1px solid rgba(255,255,255,.08); border-radius:999px; padding:.25rem .65rem; font-size:.75rem; }
-    .featureIcon { width:40px; height:40px; display:grid; place-items:center; background:#0b1120; border:1px solid rgba(255,255,255,.08); border-radius:12px; }
+    /* Gradient border helper (no yellow underline issues) */
+    .gborder { position: relative; border-radius: 20px; }
+    .gborder:before {
+      content:''; position:absolute; inset:0; border-radius: inherit; padding: 1px;
+      background: linear-gradient(120deg, rgba(34,211,238,.6), rgba(167,139,250,.6));
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude;
+      pointer-events:none;
+    }
 
-    /* subtle float for hero badge */
-    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-    .floaty { animation: float 6s ease-in-out infinite; }
+    /* Tilt groups */
+    .tilt { transform-style: preserve-3d; transform: perspective(1000px); }
+    .tilt .tilt-up { transform: translateZ(0); transition: transform .35s ease; }
+    .tilt:hover .tilt-up { transform: translateZ(18px); }
 
-    /* reveal on scroll (safe on mobile) */
-    .reveal { opacity:0; transform:translateY(18px); }
-    .revealed { opacity:1; transform:none; transition:opacity .6s ease, transform .6s ease; }
+    /* Reveal on scroll */
+    .reveal { opacity: 0; transform: translateY(24px); }
+    .revealed { opacity: 1; transform: none; transition: opacity .6s ease, transform .6s ease; }
 
-    /* shrink some effects on small screens */
-    @media (max-width: 480px) {
-      .card { border-radius:16px; }
-      .btn { padding:.75rem .9rem; border-radius:10px; }
+    /* Buttons */
+    .btn { position: relative; overflow: hidden; }
+    .btn .shine { position:absolute; top:0; left:-100%; width:60%; height:100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent); transform: skewX(-20deg); }
+    .btn:hover .shine { left:140%; transition: left 1s ease; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
     }
   </style>
 </head>
-<body>
-  <script>
-async function loadStats() {
-  try {
-    const r = await fetch('/api/public-stats');
-    const j = await r.json();
-    const g = document.getElementById('stat-guilds');
-    const u = document.getElementById('stat-users');
-    const up = document.getElementById('stat-uptime');
-    if (g) g.textContent = (j.guilds ?? 0).toLocaleString();
-    if (u) u.textContent = (j.users ?? 0).toLocaleString();
-    if (up) {
-      const hrs = Math.floor((j.uptime||0) / 3600);
-      up.textContent = `${hrs}h`;
-    }
-  } catch {}
-}
-loadStats();
-</script>
+<body class="font-sans text-white/90 tracking-tight antialiased selection:bg-brand1/30">
 
-  <div class="bgmesh"></div>
+  <!-- Decorative BG -->
+  <div class="stars"></div>
+  <div class="mesh"></div>
 
-  <!-- Global header with auth -->
-  <header class="sticky top-0 z-40 backdrop-blur bg-black/30 border-b border-white/10">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-2">
-        <img src="/staff-rater-icon.png" class="w-7 h-7 rounded" alt="">
-        <span class="font-semibold">Staff Rater</span>
+  <!-- Header -->
+  <header class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <img src="/staff-rater-icon.png" alt="Staff Rater" class="w-9 h-9 rounded-xl shadow-glow"/>
+        <span class="text-white font-semibold text-lg">Staff Rater</span>
       </a>
-      <nav class="hidden md:flex items-center gap-6 text-sm">
-        <a href="#features" class="opacity-80 hover:opacity-100">Features</a>
-        <a href="#how" class="opacity-80 hover:opacity-100">How it works</a>
-        <a href="/dashboard/" class="opacity-80 hover:opacity-100">Dashboard</a>
+
+      <nav class="hidden md:flex items-center gap-6 text-white/70">
+        <a href="#features" class="hover:text-white transition">Features</a>
+        <a href="#showcase" class="hover:text-white transition">Showcase</a>
+        <a href="https://discord.gg/BR7zmffNFC" class="hover:text-white transition">Support</a>
       </nav>
-      <div id="auth-box" class="flex items-center gap-3"></div>
+
+      <div id="auth-area" class="flex items-center gap-3">
+        <!-- Populated by JS: login button OR avatar + dashboard/logout -->
+        <a href="https://www.staffrater.xyz/api/login"
+           class="btn inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 shadow-glow ring-1 ring-white/10">
+          <span class="shine"></span>
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 00-4.885-1.52.074.074 0 00-.079.037 13.97 13.97 0 00-.622 1.276c-1.892-.284-3.78-.284-5.643 0-.17-.407-.41-.884-.63-1.276a.077.077 0 00-.079-.037 19.736 19.736 0 00-4.884 1.52.07.07 0 00-.032.027C1.67 9.052.81 13.58 1.114 18.06a.08.08 0 00.03.055 19.94 19.94 0 006.077 3.092.079.079 0 00.084-.027c.468-.64.884-1.311 1.239-2.015a.078.078 0 00-.042-.108 13.2 13.2 0 01-1.885-.9.078.078 0 01-.008-.13c.127-.094.255-.192.376-.292a.074.074 0 01.078-.01c3.957 1.82 8.236 1.82 12.146 0a.074.074 0 01.079.009c.121.1.248.199.377.293a.078.078 0 01-.007.13 12.659 12.659 0 01-1.885.898.078.078 0 00-.043.109 12.12 12.12 0 001.24 2.014.078.078 0 00.084.028 19.941 19.941 0 006.078-3.093.079.079 0 00.029-.055c.511-7.063-0.86-11.555-3.548-13.66a.06.06 0 00-.033-.027z"/></svg>
+          <span>Sign in with Discord</span>
+        </a>
+      </div>
     </div>
   </header>
 
-  <!-- HERO -->
-  <section class="relative overflow-hidden">
-    <div class="max-w-7xl mx-auto px-4 py-12 sm:py-16 md:py:20 grid md:grid-cols-2 gap-10 items-center">
-      <!-- Left column -->
-      <div class="reveal">
-        <div class="chip inline-flex items-center gap-2 mb-4 floaty">
-          <span class="w-2 h-2 rounded-full bg-emerald-400"></span> New: Live Command Logs
+  <!-- Hero -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 md:pt-10">
+    <div class="grid lg:grid-cols-2 gap-10 items-center">
+      <div class="space-y-6">
+        <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80">
+          <span class="w-1.5 h-1.5 rounded-full bg-brand1 animate-pulse"></span> Trusted moderation flow
         </div>
-        <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight">
-          Rate. Ticket. Apply. <span class="text-indigo-300">Lead</span> with clarity.
+
+        <h1 class="text-4xl sm:text-5xl font-bold leading-[1.1]">
+          Rate your staff <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand1 to-brand2">fairly</span> — with tickets, apps & leaderboards.
         </h1>
-        <p class="mt-4 opacity-90 text-lg">
-          Staff Rater is a modern Discord bot for fair staff feedback, clean ticketing, application flows, leaderboards, polls, and more — with a beautiful dashboard.
+
+        <p class="text-white/70 text-base sm:text-lg max-w-xl">
+          Staff Rater makes feedback honest and simple. Collect ratings, review applications, manage tickets,
+          and celebrate top staff — all from one slick Discord bot.
         </p>
-        <div class="mt-6 flex flex-wrap gap-3">
-          <a href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands" class="btn w-full sm:w-auto text-center">Add to Server</a>
-          <a href="/dashboard/" class="btn secondary w-full sm:w-auto text-center">Open Dashboard</a>
-          <a href="https://discord.gg/BR7zmffNFC" class="btn secondary w-full sm:w-auto text-center">Support</a>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <a href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands"
+             class="btn inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-brand1 to-brand2 text-black font-semibold shadow-glow">
+            <span class="shine"></span>
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.75 2a.75.75 0 00-1.5 0v6.25H3a.75.75 0 000 1.5h6.25V16a.75.75 0 001.5 0V9.75H17a.75.75 0 000-1.5h-6.25V2z"/></svg>
+            Add to Discord
+          </a>
+
+          <a href="https://www.staffrater.xyz/api/login"
+             class="btn inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10 shadow-glow">
+            <span class="shine"></span>
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10z"/><path d="M4 4h6v2H6v12h4v2H4z"/></svg>
+            Sign in with Discord
+          </a>
         </div>
-        <!-- stats row (wraps nicely on mobile) -->
-        <div class="mt-6 grid grid-cols-3 gap-3 sm:gap-4 max-w-xl">
-          <div class="card p-3 text-center">
-            <div class="text-xl sm:text-2xl font-bold">4.9★</div>
-            <div class="opacity-75 text-xs">Avg Staff Rating</div>
-          </div>
-          <div class="card p-3 text-center">
-            <div class="text-xl sm:text-2xl font-bold">1,240</div>
-            <div class="opacity-75 text-xs">Tickets Resolved</div>
-          </div>
-          <div class="card p-3 text-center">
-            <div class="text-xl sm:text-2xl font-bold">320</div>
-            <div class="opacity-75 text-xs">Apps Submitted</div>
+
+        <div class="text-sm text-white/50 flex items-center gap-2">
+          <span>Made with ❤️ by richy_Rach</span>
+          <span class="text-white/20">•</span>
+          <a class="underline/20 hover:underline" href="https://discord.gg/BR7zmffNFC">Join support</a>
+        </div>
+      </div>
+
+      <!-- Hero card -->
+      <div class="tilt">
+        <div class="gborder relative p-[1px] rounded-2xl">
+          <div class="rounded-2xl bg-panel/80 backdrop-blur-xl shadow-glass">
+            <div class="p-5 sm:p-6 lg:p-8">
+              <div class="flex items-center gap-3">
+                <img src="/staff-rater-icon.png" alt="" class="w-10 h-10 rounded-xl ring-1 ring-white/10">
+                <div>
+                  <div class="text-white font-semibold">Staff Rater</div>
+                  <div class="text-white/60 text-sm">Sleek Discord moderation toolkit</div>
+                </div>
+              </div>
+
+              <div class="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div class="tilt-up rounded-xl bg-white/5 ring-1 ring-white/10 p-4">
+                  <div class="text-white font-semibold">Ratings</div>
+                  <div class="text-white/60 text-sm">Fair feedback</div>
+                </div>
+                <div class="tilt-up rounded-xl bg-white/5 ring-1 ring-white/10 p-4">
+                  <div class="text-white font-semibold">Tickets</div>
+                  <div class="text-white/60 text-sm">Frictionless support</div>
+                </div>
+                <div class="tilt-up rounded-xl bg-white/5 ring-1 ring-white/10 p-4">
+                  <div class="text-white font-semibold">Applications</div>
+                  <div class="text-white/60 text-sm">Custom forms</div>
+                </div>
+                <div class="tilt-up rounded-xl bg-white/5 ring-1 ring-white/10 p-4">
+                  <div class="text-white font-semibold">Profiles</div>
+                  <div class="text-white/60 text-sm">Public stats</div>
+                </div>
+                <div class="tilt-up rounded-xl bg-white/5 ring-1 ring-white/10 p-4">
+                  <div class="text-white font-semibold">Leaderboards</div>
+                  <div class="text-white/60 text-sm">Top staff</div>
+                </div>
+                <div class="tilt-up rounded-xl bg-white/5 ring-1 ring-white/10 p-4">
+                  <div class="text-white font-semibold">Polls</div>
+                  <div class="text-white/60 text-sm">Quick decisions</div>
+                </div>
+              </div>
+
+              <div class="mt-6">
+                <div class="relative overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/10 p-4">
+                  <div class="absolute inset-0 -skew-x-12 translate-x-[-60%] bg-gradient-to-r from-white/0 via-white/15 to-white/0 animate-shimmer"></div>
+                  <div class="text-white/80 text-sm">“Finally, a ratings bot that doesn’t look like 2017.”</div>
+                  <div class="text-white/40 text-xs mt-1">— server owner</div>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Right column (feature highlight box) -->
-      <div class="card p-4 sm:p-5 md:p-6 reveal">
-        <div class="flex items-center gap-3">
-          <div class="featureIcon">⭐</div><div class="font-semibold">Staff Profiles & Ratings</div>
-        </div>
-        <div class="mt-2 opacity-80 text-sm">Clean public profiles, private feedback, fair leaderboards.</div>
+    </div>
+  </section>
 
-        <div class="mt-4 flex items-center gap-3">
-          <div class="featureIcon">🎫</div><div class="font-semibold">Tickets</div>
+  <!-- Features -->
+  <section id="features" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <!-- Card -->
+      <article class="reveal gborder p-[1px] rounded-2xl">
+        <div class="rounded-2xl bg-panel/80 backdrop-blur-xl shadow-glass p-6 h-full">
+          <div class="text-lg font-semibold">Simple setup</div>
+          <p class="text-white/65 mt-2">Register staff, post a rating UI, and you’re live. No clutter.</p>
         </div>
-        <div class="mt-2 opacity-80 text-sm">One-click ticket creation, claim, close, and logs.</div>
+      </article>
 
-        <div class="mt-4 flex items-center gap-3">
-          <div class="featureIcon">📝</div><div class="font-semibold">Applications</div>
+      <article class="reveal gborder p-[1px] rounded-2xl">
+        <div class="rounded-2xl bg-panel/80 backdrop-blur-xl shadow-glass p-6 h-full">
+          <div class="text-lg font-semibold">Honest feedback</div>
+          <p class="text-white/65 mt-2">Anonymous ratings with optional comments, shared to result channels.</p>
         </div>
-        <div class="mt-2 opacity-80 text-sm">Custom questions, DM or in-server flow, accept/reject with notes.</div>
+      </article>
 
-        <div class="mt-4 flex items-center gap-3">
-          <div class="featureIcon">📊</div><div class="font-semibold">Polls</div>
+      <article class="reveal gborder p-[1px] rounded-2xl">
+        <div class="rounded-2xl bg-panel/80 backdrop-blur-xl shadow-glass p-6 h-full">
+          <div class="text-lg font-semibold">Tickets that flow</div>
+          <p class="text-white/65 mt-2">Open, claim, close — with logs and role-gated access.</p>
         </div>
-        <div class="mt-2 opacity-80 text-sm">Fast multi-option polls with realtime results.</div>
+      </article>
 
-        <div class="mt-4 flex items-center gap-3">
-          <div class="featureIcon">📜</div><div class="font-semibold">Live Command Logs</div>
+      <article class="reveal gborder p-[1px] rounded-2xl">
+        <div class="rounded-2xl bg-panel/80 backdrop-blur-xl shadow-glass p-6 h-full">
+          <div class="text-lg font-semibold">Applications</div>
+          <p class="text-white/65 mt-2">Build forms, receive responses, accept/reject, auto-role on accept.</p>
         </div>
-        <div class="mt-2 opacity-80 text-sm">Watch command usage flow in, filtered per-server.</div>
+      </article>
+
+      <article class="reveal gborder p-[1px] rounded-2xl">
+        <div class="rounded-2xl bg-panel/80 backdrop-blur-xl shadow-glass p-6 h-full">
+          <div class="text-lg font-semibold">Leaderboards</div>
+          <p class="text-white/65 mt-2">Celebrate your best staff with live leaderboards.</p>
+        </div>
+      </article>
+
+      <article class="reveal gborder p-[1px] rounded-2xl">
+        <div class="rounded-2xl bg-panel/80 backdrop-blur-xl shadow-glass p-6 h-full">
+          <div class="text-lg font-semibold">Profiles & polls</div>
+          <p class="text-white/65 mt-2">Showcase profiles with recent feedback. Run fast polls for decisions.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Showcase / CTA -->
+  <section id="showcase" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
+    <div class="gborder p-[1px] rounded-3xl">
+      <div class="rounded-3xl bg-panel/80 backdrop-blur-xl shadow-glow p-6 sm:p-8">
+        <div class="grid lg:grid-cols-2 gap-8 items-center">
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-bold">Install in seconds. Moderate with style.</h2>
+            <p class="text-white/70 mt-3">Staff Rater is designed to look amazing and stay fast, with every action just a click away.</p>
+            <div class="flex flex-col sm:flex-row gap-3 mt-6">
+              <a href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands"
+                 class="btn inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-brand1 to-brand2 text-black font-semibold shadow-glow">
+                <span class="shine"></span>
+                Add to Discord
+              </a>
+              <a href="https://www.staffrater.xyz/api/login"
+                 class="btn inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10 shadow-glow">
+                <span class="shine"></span>
+                Sign in with Discord
+              </a>
+            </div>
+          </div>
+          <div class="tilt">
+            <div class="tilt-up rounded-2xl bg-white/5 ring-1 ring-white/10 p-4 sm:p-6">
+              <div class="text-white/80 text-sm">Preview</div>
+              <div class="mt-3 h-56 sm:h-64 lg:h-72 rounded-xl bg-white/5 ring-1 ring-white/10 flex items-center justify-center">
+                <span class="text-white/40">Beautiful embeds & UI elements</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- FEATURES GRID -->
-  <section id="features" class="max-w-7xl mx-auto px-4 py-10 sm:py-12 md:py-16">
-    <h2 class="text-2xl md:text-3xl font-bold reveal">Everything you need</h2>
-    <div class="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-      <div class="card p-5 reveal">
-        <div class="flex items-center gap-3"><div class="featureIcon">🔒</div><div class="font-semibold">Safe & Transparent</div></div>
-        <p class="opacity-80 mt-3 text-sm">Role-based controls, private DMs to staff, optional public result channels.</p>
+  <!-- Footer -->
+  <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24 mb-10 text-white/50">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <img src="/staff-rater-icon.png" class="w-7 h-7 rounded-lg ring-1 ring-white/10" alt="">
+        <span>© <span id="year"></span> Staff Rater</span>
       </div>
-      <div class="card p-5 reveal">
-        <div class="flex items-center gap-3"><div class="featureIcon">⚡</div><div class="font-semibold">Zero Setup Pain</div></div>
-        <p class="opacity-80 mt-3 text-sm">Add the bot, open dashboard, pick channels by name. You’re done.</p>
-      </div>
-      <div class="card p-5 reveal">
-        <div class="flex items-center gap-3"><div class="featureIcon">🏅</div><div class="font-semibold">Leaderboards</div></div>
-        <p class="opacity-80 mt-3 text-sm">Fair ranking of staff by average rating. Great for motivation.</p>
-      </div>
-      <div class="card p-5 reveal">
-        <div class="flex items-center gap-3"><div class="featureIcon">📦</div><div class="font-semibold">Exports</div></div>
-        <p class="opacity-80 mt-3 text-sm">Export ratings to CSV for audits or analytics.</p>
-      </div>
-      <div class="card p-5 reveal">
-        <div class="flex items-center gap-3"><div class="featureIcon">🛠️</div><div class="font-semibold">Owner Tools</div></div>
-        <p class="opacity-80 mt-3 text-sm">Extra utilities for server owners to supervise and communicate quickly.</p>
-      </div>
-      <div class="card p-5 reveal">
-        <div class="flex items-center gap-3"><div class="featureIcon">📱</div><div class="font-semibold">Mobile Friendly</div></div>
-        <p class="opacity-80 mt-3 text-sm">Every page is designed to look great on phones and desktops.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- HOW IT WORKS -->
-  <section id="how" class="max-w-7xl mx-auto px-4 py-10 sm:py-12 md:py-16">
-    <h2 class="text-2xl md:text-3xl font-bold reveal">How it works</h2>
-    <ol class="mt-6 grid md:grid-cols-3 gap-4 sm:gap-5">
-      <li class="card p-5 reveal">
-        <div class="chip mb-3">Step 1</div>
-        <div class="font-semibold">Invite the bot</div>
-        <p class="opacity-80 mt-2 text-sm">Bot needs Administrator so the dashboard can auto-detect channels & roles safely.</p>
-      </li>
-      <li class="card p-5 reveal">
-        <div class="chip mb-3">Step 2</div>
-        <div class="font-semibold">Open the dashboard</div>
-        <p class="opacity-80 mt-2 text-sm">Pick your server card. Configure Rating, Tickets, Applications, and more.</p>
-      </li>
-      <li class="card p-5 reveal">
-        <div class="chip mb-3">Step 3</div>
-        <div class="font-semibold">Enjoy clean moderation</div>
-        <p class="opacity-80 mt-2 text-sm">Staff get scored fairly. Users get clear support. You get peace.</p>
-      </li>
-    </ol>
-  </section>
-
-  <!-- CTA -->
-  <section class="max-w-7xl mx-auto px-4 pb-12 sm:pb-16 md:pb-20">
-    <div class="card p-5 sm:p-6 md:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 reveal">
-      <div>
-        <div class="text-xl sm:text-2xl font-semibold">Ready to level up your team?</div>
-        <div class="opacity-80 text-sm sm:text-base mt-1">Invite Staff Rater and set things up in minutes.</div>
-      </div>
-      <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-        <a class="btn w-full sm:w-auto text-center" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands">Add to Server</a>
-        <a class="btn secondary w-full sm:w-auto text-center" href="/dashboard/">Open Dashboard</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer class="border-t border-white/10">
-    <div class="max-w-7xl mx-auto px-4 py-8 sm:py-10 flex flex-col md:flex-row items-center justify-between gap-4">
-      <div class="opacity-80 text-sm">© <span id="yr"></span> Staff Rater. Built with ❤️ by richy_Rach.</div>
-      <div class="flex gap-3">
-        <a class="btn secondary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands">Add to Server</a>
-        <a class="btn secondary" href="https://discord.gg/BR7zmffNFC">Support</a>
-        <a class="btn" href="/dashboard/">Dashboard</a>
+      <div class="flex items-center gap-4">
+        <a href="https://discord.gg/BR7zmffNFC" class="hover:text-white">Support</a>
+        <a href="https://www.staffrater.xyz/api/login" class="hover:text-white">Dashboard</a>
       </div>
     </div>
   </footer>
 
-  <!-- Auth box + scroll reveal -->
+  <!-- Scripts -->
   <script>
-  document.getElementById('yr').textContent = new Date().getFullYear();
+    // Set current year
+    document.getElementById('year').textContent = new Date().getFullYear();
 
-  (async function authBox(){
-    const box = document.getElementById('auth-box');
-    const mk = (t,a={},c=[])=>{const e=document.createElement(t);Object.entries(a).forEach(([k,v])=>k==='class'?e.className=v:e.setAttribute(k,v));c.forEach(x=>e.append(x));return e;}
-    try {
-      const r = await fetch('/api/me', { credentials:'include' });
-      if (!r.ok) throw 0;
-      const me = await r.json();
-      box.replaceChildren(
-        mk('img',{src:me.avatar,alt:me.username,class:'w-8 h-8 rounded-full ring-2 ring-white/10'}),
-        mk('span',{class:'text-sm opacity-90 hidden sm:inline'},[document.createTextNode(me.global_name||me.username)]),
-        mk('a',{href:'/dashboard/',class:'px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-sm'},[document.createTextNode('Dashboard')]),
-        mk('a',{href:'/api/logout',class:'px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-sm'},[document.createTextNode('Logout')])
-      );
-    } catch {
-      const login = document.createElement('a');
-      login.href='/api/login';
-      login.className='px-3 py-1 rounded bg-indigo-500/80 hover:bg-indigo-500 text-white text-sm';
-      login.textContent='Sign in with Discord';
-      box.replaceChildren(login);
+    // Reveal on scroll
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('revealed'); });
+    }, { threshold: .15 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // Auth area: swap login button with avatar if logged in
+    async function hydrateAuth() {
+      try {
+        const r = await fetch('/api/me', { credentials: 'include' });
+        const data = await r.json().catch(() => ({}));
+        const el = document.getElementById('auth-area');
+        if (!el) return;
+
+        if (r.ok && data.ok && data.session && data.session.user) {
+          const u = data.session.user;
+          const avatar = u.avatar
+            ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64`
+            : 'https://cdn.discordapp.com/embed/avatars/0.png';
+          el.innerHTML = `
+            <a href="/dashboard/index.html" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Go to Dashboard</a>
+            <div class="flex items-center gap-3">
+              <img src="${avatar}" alt="" class="w-8 h-8 rounded-full ring-1 ring-white/10"/>
+              <span class="text-white/80 text-sm max-w-[120px] truncate">${u.username}</span>
+              <a href="/api/logout?redirect=/" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Log out</a>
+            </div>`;
+        } else {
+          // leave default "Sign in" button
+        }
+      } catch (e) {
+        // network error → leave default "Sign in"
+      }
     }
-  })();
-
-  // simple scroll reveal
-  const els = Array.from(document.querySelectorAll('.reveal'));
-  const obs = new IntersectionObserver((entries)=>{
-    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('revealed'); obs.unobserve(e.target); }});
-  }, { threshold: 0.12 });
-  els.forEach(el=>obs.observe(el));
+    hydrateAuth();
   </script>
 </body>
 </html>
-
