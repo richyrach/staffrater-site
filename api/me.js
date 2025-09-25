@@ -1,13 +1,10 @@
 "use strict";
-
-// /api/me.js
 const { getSessionFromReq } = require("../lib/auth");
 
 module.exports = async (req, res) => {
   try {
     res.setHeader("Content-Type", "application/json");
     res.setHeader("Cache-Control", "no-store");
-
     const session = getSessionFromReq(req);
     if (!session) {
       res.statusCode = 401;
