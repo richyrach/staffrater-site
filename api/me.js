@@ -1,6 +1,5 @@
 "use strict";
 
-// /api/me.js
 const crypto = require("crypto");
 
 function decode(token) {
@@ -22,12 +21,14 @@ function decode(token) {
 
 module.exports = async (req, res) => {
   try {
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Cache-Control", "no-store");
+
     const rawCookie = req.headers.cookie || "";
     const m = rawCookie.match(/(?:^|;\s*)sr_session=([^;]+)/);
     const token = m ? decodeURIComponent(m[1]) : null;
     const session = token ? decode(token) : null;
 
-    res.setHeader("Content-Type", "application/json");
     if (!session) {
       res.statusCode = 401;
       return res.end(JSON.stringify({ ok: false }));
