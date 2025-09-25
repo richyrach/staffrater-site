@@ -1,189 +1,157 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Staff Rater — Dashboard</title>
+  <link rel="icon" href="/staff-rater-icon.png">
+
+  <!-- Canonical host lock -->
   <script>
-(function () {
-  // 1) Capture token from URL (#token= or ?token=), store in sessionStorage, then clean URL
-  (function captureToken() {
-    try {
-      var hash = location.hash || "";
-      var qs = location.search || "";
-      var token = null;
-
-      // Look in hash first: #...token=....
-      if (/#/.test(hash)) {
-        var m = hash.match(/(?:^|[&#])token=([^&#]+)/);
-        if (m) token = decodeURIComponent(m[1]);
-      }
-      // Then in query: ?token=...
-      if (!token && /\?/.test(qs)) {
-        var m2 = qs.match(/(?:\?|&)token=([^&#]+)/);
-        if (m2) token = decodeURIComponent(m2[1]);
-      }
-      if (token) {
-        sessionStorage.setItem('sr_token', token);
-        // Clean the URL (remove token) without reload
-        var clean = location.origin + location.pathname + location.search.replace(/([?&])token=[^&#]+(&|$)/, function(_,a,b){return a === '?' && b ? '?' : ''}) + (location.hash.replace(/(#|&)token=[^&#]+/,'') || '');
-        history.replaceState(null, '', clean);
-      }
-    } catch (e) {}
-  })();
-
-  // 2) Patch fetch to automatically add Authorization for same-origin /api/* calls
-  (function patchFetch() {
-    var orig = window.fetch;
-    window.fetch = function(input, init) {
-      try {
-        var url = (typeof input === 'string') ? input : input.url;
-        if (url && url.indexOf('http') !== 0 && url.startsWith('/api/')) {
-          init = init || {};
-          init.headers = init.headers || {};
-          var token = sessionStorage.getItem('sr_token');
-          if (token) {
-            // preserve existing headers
-            var h = new Headers(init.headers);
-            h.set('Authorization', 'Bearer ' + token);
-            init.headers = h;
-          }
-          // no cookies needed
-          if (!('credentials' in init)) init.credentials = 'omit';
-          if (!('cache' in init)) init.cache = 'no-store';
-        }
-      } catch (e) {}
-      return orig(input, init);
-    };
-  })();
-
-  // 3) Hydrate header auth area if present
-  (async function hydrateAuth() {
-    var el = document.getElementById('auth-area');
-    if (!el) return;
-    try {
-      var r = await fetch('/api/me');
-      var data = await r.json().catch(() => ({}));
-      if (r.ok && data.ok && data.session && data.session.user) {
-        var u = data.session.user;
-        var avatar = u.avatar
-          ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64`
-          : 'https://cdn.discordapp.com/embed/avatars/0.png';
-        el.innerHTML = `
-          <a href="/dashboard/index.html" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Go to Dashboard</a>
-          <div class="flex items-center gap-3">
-            <img src="${avatar}" alt="" class="w-8 h-8 rounded-full ring-1 ring-white/10"/>
-            <span class="text-white/80 text-sm max-w-[120px] truncate">${u.username}</span>
-            <a href="/api/logout?redirect=/" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Log out</a>
-          </div>`;
-      } else {
-        // If you want the "Sign in" button here, leave your existing HTML.
-        // You can also ensure login returns to home:
-        // <a href="/api/login?return=/">Sign in with Discord</a>
-      }
-    } catch (e) {
-      // leave as-is
+  (function(){
+    var wanted="www.staffrater.xyz";
+    if(location.host!==wanted){
+      location.replace("https://"+wanted+location.pathname+location.search+location.hash);
     }
   })();
-})();
-</script>
+  </script>
 
-
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Staff Rater — Choose a Server</title>
-  <link rel="icon" href="/staff-rater-icon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root { color-scheme: dark; }
-    body { background:#070b14; color:#e5e7eb; overflow-x:hidden; }
-    .card { background:#0c1322; border:1px solid rgba(255,255,255,.08); border-radius:18px; box-shadow: 0 15px 45px rgba(0,0,0,.4); transition:.35s ease; }
-    .card:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 25px 65px rgba(0,0,0,.55); }
-    .btn { background:linear-gradient(135deg,#6366f1,#22d3ee); color:white; border-radius:12px; padding:.6rem .9rem; }
-    .chip { background:#111827; border:1px solid rgba(255,255,255,.08); border-radius:999px; padding:.25rem .65rem; font-size:.75rem; }
+    html, body { background: #070b14; }
+    .tile { transition: transform .25s ease, box-shadow .25s ease; }
+    .tile:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,.35); }
   </style>
 </head>
-<body>
-  <header class="sticky top-0 z-40 backdrop-blur bg-black/30 border-b border-white/10">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-2">
-        <img src="/staff-rater-icon.png" class="w-7 h-7 rounded" alt="">
-        <span class="font-semibold">Staff Rater</span>
+<body class="text-white font-sans antialiased">
+  <header class="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-[#070b14]/50 bg-[#070b14]/80 border-b border-white/5">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <img src="/staff-rater-icon.png" class="w-8 h-8 rounded-xl ring-1 ring-white/10" alt="">
+        <span class="text-white/90 font-semibold">Staff Rater</span>
       </a>
-      <div id="auth-box" class="flex items-center gap-3"></div>
+      <div id="auth-area" class="flex items-center gap-3">
+        <a href="/api/login?return=/dashboard/index.html" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Sign in with Discord</a>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 py-8 space-y-6">
-    <div class="flex items-center justify-between">
-      <h1 class="text-3xl font-semibold">Pick a Server</h1>
-      <button id="refresh" class="chip">Refresh</button>
+  <main class="max-w-6xl mx-auto px-4 py-10">
+    <h1 class="text-2xl font-semibold">Pick a server</h1>
+
+    <!-- Signed-out notice -->
+    <div id="signed-out" class="mt-6 rounded-2xl bg-white/5 ring-1 ring-white/10 p-5 hidden">
+      <p class="text-white/80">Please sign in to see your servers.</p>
+      <a href="/api/login?return=/dashboard/index.html" class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600">Sign in with Discord</a>
     </div>
 
-    <div id="notice" class="hidden card p-4"></div>
-    <div id="grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    <!-- Server tiles -->
+    <div id="grid" class="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
   </main>
 
   <script>
-  const INVITE_URL = "https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands";
+  (function(){
+    // 1) Capture token from HASH/QUERY, save, clean
+    (function captureToken() {
+      try {
+        var t=null;
+        if (location.hash) {
+          var m = location.hash.match(/(?:^|[&#])token=([^&#]+)/);
+          if (m) t = decodeURIComponent(m[1]);
+        }
+        if (!t && location.search) {
+          var m2 = location.search.match(/(?:\?|&)token=([^&#]+)/);
+          if (m2) t = decodeURIComponent(m2[1]);
+        }
+        if (t) {
+          sessionStorage.setItem('sr_token', t);
+          var clean = location.origin + location.pathname + location.search.replace(/([?&])token=[^&#]+(&|$)/, function(_,a,b){return a==='?'&&b?'?':''}) + (location.hash.replace(/(#|&)token=[^&#]+/,'')||'');
+          history.replaceState(null,'', clean);
+        }
+      } catch(e){}
+    })();
 
-  (async function authUI(){
-    const box = document.getElementById('auth-box');
-    const mk = (t,a={},c=[])=>{const e=document.createElement(t);Object.entries(a).forEach(([k,v])=>k==='class'?e.className=v:e.setAttribute(k,v));c.forEach(x=>e.append(x));return e;}
-    try {
-      const r = await fetch('/api/me', { credentials:'include' });
-      if (!r.ok) throw 0;
-      const me = await r.json();
-      box.replaceChildren(
-        mk('img',{src:me.avatar,alt:me.username,class:'w-8 h-8 rounded-full ring-2 ring-white/10'}),
-        mk('span',{class:'text-sm opacity-90 hidden sm:inline'},[document.createTextNode(me.global_name||me.username)]),
-        mk('a',{href:'/api/logout',class:'px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-sm'},[document.createTextNode('Logout')])
-      );
-    } catch {
-      const login = document.createElement('a');
-      login.href='/api/login'; login.className='px-3 py-1 rounded bg-indigo-500/80 hover:bg-indigo-500 text-white text-sm';
-      login.textContent='Sign in with Discord';
-      box.replaceChildren(login);
-    }
-  })();
+    // 2) Patch fetch for /api/*
+    (function patchFetch(){
+      var orig = window.fetch;
+      window.fetch = function(input, init){
+        try{
+          var url = (typeof input==='string')?input:input.url;
+          if (url && url.indexOf('http')!==0 && url.startsWith('/api/')){
+            init = init || {};
+            var h = new Headers(init.headers || {});
+            var tok = sessionStorage.getItem('sr_token');
+            if (tok) h.set('Authorization','Bearer '+tok);
+            init.headers = h;
+            if (!('credentials' in init)) init.credentials='omit';
+            if (!('cache' in init)) init.cache='no-store';
+            return orig(url, init);
+          }
+        }catch(e){}
+        return orig(input, init);
+      };
+    })();
 
-  async function loadGuilds(){
-    const grid = document.getElementById('grid');
-    const notice = document.getElementById('notice');
-    grid.innerHTML = '';
-    notice.classList.add('hidden');
+    // 3) Hydrate header and server grid
+    (async function hydrate(){
+      const auth=document.getElementById('auth-area');
+      const grid=document.getElementById('grid');
+      const signedOut=document.getElementById('signed-out');
 
-    const r = await fetch('/api/guilds', { credentials:'include' });
-    if(!r.ok){
-      notice.classList.remove('hidden');
-      notice.innerHTML = `<div class="font-semibold mb-1">Please sign in</div><div class="opacity-80 text-sm">You must sign in with Discord.</div>`;
-      return;
-    }
-    const guilds = await r.json();
-    const manageable = guilds.filter(g=>g.canManage);
+      let me=null;
+      try {
+        const r=await fetch('/api/me');
+        me = r.ok ? await r.json() : null;
+      } catch(e){}
 
-    if(manageable.length === 0){
-      notice.classList.remove('hidden');
-      notice.innerHTML = `
-        <div class="font-semibold mb-2">No servers found that you can manage</div>
-        <div class="opacity-80 text-sm mb-3">Invite the bot to a server you own or manage, then refresh.</div>
-        <a class="btn inline-block" href="${INVITE_URL}">Add to Server</a>`;
-      return;
-    }
+      if (!me || !me.ok) {
+        signedOut.classList.remove('hidden');
+        return;
+      }
 
-    manageable.forEach(g=>{
-      const card = document.createElement('a');
-      card.href = `/dashboard/guild.html?gid=${encodeURIComponent(g.id)}`;
-      card.className = 'card p-4 flex items-center gap-4 hover:no-underline';
-      card.innerHTML = `
-        <img src="${g.icon || '/staff-rater-icon.png'}" class="w-12 h-12 rounded" alt="">
-        <div>
-          <div class="font-semibold">${g.name}</div>
-          <div class="opacity-75 text-xs">${g.canManage ? 'Manage access ✓' : 'View only'}</div>
+      // Header
+      const u = me.session.user;
+      const avatar = u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64` : 'https://cdn.discordapp.com/embed/avatars/0.png';
+      auth.innerHTML = `
+        <a href="/" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Home</a>
+        <div class="flex items-center gap-3">
+          <img src="${avatar}" class="w-8 h-8 rounded-full ring-1 ring-white/10" alt="">
+          <span class="text-white/80 text-sm max-w-[140px] truncate">${u.username}</span>
+          <a href="/api/logout?redirect=/dashboard/index.html" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Log out</a>
         </div>`;
-      grid.append(card);
-    });
-  }
 
-  document.getElementById('refresh').onclick = loadGuilds;
-  loadGuilds();
+      // Servers
+      let guilds = me.session.guilds || [];
+      // show only guilds where user has MANAGE_GUILD or ADMINISTRATOR or is owner (for config)
+      const ADMIN = 0x00000008;
+      const MANAGE_GUILD = 0x00000020;
+      guilds = guilds.filter(g => g.owner || ((g.permissions & (ADMIN|MANAGE_GUILD)) !== 0));
+
+      if (!guilds.length) {
+        grid.innerHTML = `
+          <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 p-5">
+            <p class="text-white/80">No manageable servers found.</p>
+            <a href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands" class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600">Invite the bot</a>
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = guilds.map(g=>{
+        const icon = g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128` : 'https://cdn.discordapp.com/embed/avatars/1.png';
+        return `
+          <a class="tile block rounded-2xl bg-white/5 ring-1 ring-white/10 p-5" href="/dashboard/guild.html?guild_id=${encodeURIComponent(g.id)}">
+            <div class="flex items-center gap-4">
+              <img src="${icon}" class="w-12 h-12 rounded-xl ring-1 ring-white/10" alt="">
+              <div>
+                <div class="font-semibold">${g.name}</div>
+                <div class="text-white/60 text-sm">${g.owner ? 'Owner' : 'Staff'}</div>
+              </div>
+            </div>
+          </a>`;
+      }).join('');
+    })();
+  })();
   </script>
 </body>
 </html>
