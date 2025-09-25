@@ -8,12 +8,12 @@
 
   <!-- Canonical host lock -->
   <script>
-  (function(){
-    var wanted="www.staffrater.xyz";
-    if(location.host!==wanted){
-      location.replace("https://"+wanted+location.pathname+location.search+location.hash);
-    }
-  })();
+    (function(){
+      var wanted="www.staffrater.xyz";
+      if(location.host!==wanted){
+        location.replace("https://"+wanted+location.pathname+location.search+location.hash);
+      }
+    })();
   </script>
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -22,6 +22,10 @@
     .panel { background-color: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius: 16px; }
     .menu a { display:block; padding:.65rem .9rem; border-radius:.6rem; color: rgba(255,255,255,.75); }
     .menu a:hover, .menu a.active { background: rgba(255,255,255,.08); color:#fff; }
+    .btn { display:inline-flex; align-items:center; gap:.5rem; padding:.6rem .9rem; border-radius:.8rem; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1); }
+    .btn:hover { background:rgba(255,255,255,.12); }
+    .sel { width:100%; background:#0c1322; border:1px solid rgba(255,255,255,.1); border-radius:.6rem; padding:.6rem .7rem; color:#fff; }
+    .note { font-size:.85rem; color:rgba(255,255,255,.65); }
   </style>
 </head>
 <body class="text-white font-sans antialiased">
@@ -32,7 +36,7 @@
         <span class="text-white/90 font-semibold">Staff Rater — Guild</span>
       </a>
       <div id="auth-area" class="flex items-center gap-3">
-        <a href="/api/login?return=/dashboard/index.html" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Sign in</a>
+        <a href="/api/login?return=/dashboard/index.html" class="btn">Sign in</a>
       </div>
     </div>
   </header>
@@ -50,38 +54,79 @@
 
     <section class="space-y-6">
       <div class="panel p-5">
-        <div class="flex items-center justify-between">
-          <h1 class="text-xl font-semibold" id="guildTitle">Server</h1>
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <img id="gicon" src="https://cdn.discordapp.com/embed/avatars/1.png" class="w-10 h-10 rounded-lg ring-1 ring-white/10" alt="">
+            <h1 class="text-xl font-semibold" id="gtitle">Server</h1>
+          </div>
           <a id="backBtn" href="/dashboard/index.html" class="text-white/70 hover:text-white">← All servers</a>
         </div>
-        <p class="text-white/70 mt-2">Configure your Staff Rater bot settings for this server.</p>
+        <p class="text-white/70 mt-2">Configure your Staff Rater settings for this server.</p>
       </div>
 
+      <!-- Overview -->
       <div id="overview" class="panel p-5">
         <h2 class="font-semibold">Overview</h2>
         <div id="info" class="text-white/70 mt-2 text-sm">Loading…</div>
       </div>
 
+      <!-- Ratings -->
       <div id="ratings" class="panel p-5">
         <h2 class="font-semibold">Ratings</h2>
-        <div class="text-white/70 mt-2 text-sm">Setup rating and result channels here. (UI wired to your existing /api/config-get and /api/config-set endpoints.)</div>
+        <p class="note mt-1">Choose channels by name (no IDs needed).</p>
+        <div class="grid md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label class="block text-sm text-white/70 mb-1">Rating Channel</label>
+            <select id="ratingChannel" class="sel"></select>
+          </div>
+          <div>
+            <label class="block text-sm text-white/70 mb-1">Result Channel</label>
+            <select id="resultChannel" class="sel"></select>
+          </div>
+        </div>
+        <div class="mt-4">
+          <button id="saveRatings" class="btn">Save Ratings Settings</button>
+          <span id="saveRatingsMsg" class="ml-3 text-sm"></span>
+        </div>
       </div>
 
+      <!-- Tickets -->
       <div id="tickets" class="panel p-5">
         <h2 class="font-semibold">Tickets</h2>
-        <div class="text-white/70 mt-2 text-sm">Configure ticket category/staff role/log channel. (Use names on your side; API continues to use IDs.)</div>
+        <p class="note mt-1">Pick your ticket category, staff role, and optional log channel.</p>
+        <div class="grid md:grid-cols-3 gap-4 mt-4">
+          <div>
+            <label class="block text-sm text-white/70 mb-1">Ticket Category</label>
+            <select id="ticketCategory" class="sel"></select>
+          </div>
+          <div>
+            <label class="block text-sm text-white/70 mb-1">Ticket Staff Role</label>
+            <select id="ticketStaffRole" class="sel"></select>
+          </div>
+          <div>
+            <label class="block text-sm text-white/70 mb-1">Ticket Log Channel (optional)</label>
+            <select id="ticketLogChannel" class="sel"></select>
+          </div>
+        </div>
+        <div class="mt-4">
+          <button id="saveTickets" class="btn">Save Ticket Settings</button>
+          <span id="saveTicketsMsg" class="ml-3 text-sm"></span>
+        </div>
       </div>
 
+      <!-- Applications -->
       <div id="applications" class="panel p-5">
         <h2 class="font-semibold">Applications</h2>
-        <div class="text-white/70 mt-2 text-sm">Create templates, add questions, review submissions.</div>
+        <p class="note mt-1">Create templates and add questions using your bot’s slash commands. This page will later show pending applications.</p>
       </div>
 
+      <!-- Polls -->
       <div id="polls" class="panel p-5">
         <h2 class="font-semibold">Polls</h2>
-        <div class="text-white/70 mt-2 text-sm">Manage recent polls here.</div>
+        <p class="note mt-1">Create and review polls via slash commands. Recent polls will appear here in a future update.</p>
       </div>
 
+      <!-- Live Command Log -->
       <div id="commandlog" class="panel p-5">
         <h2 class="font-semibold">Live Command Log</h2>
         <div id="log" class="text-white/70 mt-2 text-sm">Waiting for events…</div>
@@ -90,108 +135,172 @@
   </main>
 
   <script>
-  (function(){
-    // 1) Capture token
-    (function captureToken() {
-      try {
-        var t=null;
-        if (location.hash) {
-          var m = location.hash.match(/(?:^|[&#])token=([^&#]+)/);
-          if (m) t = decodeURIComponent(m[1]);
-        }
-        if (!t && location.search) {
-          var m2 = location.search.match(/(?:\?|&)token=([^&#]+)/);
-          if (m2) t = decodeURIComponent(m2[1]);
-        }
-        if (t) {
-          sessionStorage.setItem('sr_token', t);
-          var clean = location.origin + location.pathname + location.search.replace(/([?&])token=[^&#]+(&|$)/, function(_,a,b){return a==='?'&&b?'?':''}) + (location.hash.replace(/(#|&)token=[^&#]+/,'')||'');
-          history.replaceState(null,'', clean);
-        }
-      } catch(e){}
-    })();
-
-    // 2) Patch fetch
-    (function patchFetch(){
-      var orig = window.fetch;
-      window.fetch = function(input, init){
+    (function(){
+      // Capture token
+      (function captureToken(){
         try{
-          var url = (typeof input==='string')?input:input.url;
-          if (url && url.indexOf('http')!==0 && url.startsWith('/api/')){
-            init = init || {};
-            var h = new Headers(init.headers || {});
-            var tok = sessionStorage.getItem('sr_token');
-            if (tok) h.set('Authorization','Bearer '+tok);
-            init.headers = h;
-            if (!('credentials' in init)) init.credentials='omit';
-            if (!('cache' in init)) init.cache='no-store';
-            return orig(url, init);
+          var t=null;
+          if(location.hash){ var m=location.hash.match(/(?:^|[&#])token=([^&#]+)/); if(m) t=decodeURIComponent(m[1]); }
+          if(!t && location.search){ var m2=location.search.match(/(?:\?|&)token=([^&#]+)/); if(m2) t=decodeURIComponent(m2[1]); }
+          if(t){
+            sessionStorage.setItem('sr_token', t);
+            var clean = location.origin+location.pathname+location.search.replace(/([?&])token=[^&#]+(&|$)/,(_,a,b)=>a==='?'&&b?'?':'')+(location.hash.replace(/(#|&)token=[^&#]+/,'')||'');
+            history.replaceState(null,'',clean);
           }
         }catch(e){}
-        return orig(input, init);
-      };
-    })();
+      })();
 
-    // 3) Load session, guild info, basic wiring
-    (async function hydrate(){
-      const auth=document.getElementById('auth-area');
-      const info=document.getElementById('info');
-      const log=document.getElementById('log');
+      // Patch fetch
+      (function patchFetch(){
+        var orig=window.fetch;
+        window.fetch=function(input, init){
+          try{
+            var url=typeof input==='string'?input:input.url;
+            if(url && url.indexOf('http')!==0 && url.startsWith('/api/')){
+              init=init||{};
+              var h=new Headers(init.headers||{});
+              var tok=sessionStorage.getItem('sr_token');
+              if(tok) h.set('Authorization','Bearer '+tok);
+              init.headers=h; init.credentials='omit'; init.cache='no-store';
+              return orig(url, init);
+            }
+          }catch(e){}
+          return orig(input, init);
+        };
+      })();
+
+      // Helpers
+      function byId(id){ return document.getElementById(id); }
       const params=new URLSearchParams(location.search);
       const guildId=params.get('guild_id')||'';
-      document.getElementById('guildTitle').textContent = guildId ? `Server — ${guildId}` : 'Server';
+      const info=byId('info');
+      const logEl=byId('log');
 
-      let me=null;
-      try {
-        const r=await fetch('/api/me');
-        me = r.ok ? await r.json() : null;
-      } catch(e){}
-
-      if (!me || !me.ok) {
-        auth.innerHTML = `<a href="/api/login?return=/dashboard/guild.html${guildId?`?guild_id=${encodeURIComponent(guildId)}`:''}" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Sign in</a>`;
-        info.textContent = 'Please sign in.';
-        return;
-      }
-
-      const u=me.session.user;
-      const avatar = u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64` : 'https://cdn.discordapp.com/embed/avatars/0.png';
-      auth.innerHTML = `
-        <a href="/dashboard/index.html" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">All servers</a>
-        <div class="flex items-center gap-3">
-          <img src="${avatar}" class="w-8 h-8 rounded-full ring-1 ring-white/10" alt="">
-          <span class="text-white/80 text-sm max-w-[140px] truncate">${u.username}</span>
-          <a href="/api/logout?redirect=/dashboard/index.html" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Log out</a>
-        </div>`;
-
-      // Show a simple overview (you can replace with your /api/guild-structure)
-      try {
-        const r2 = await fetch('/api/guild-structure?guild_id='+encodeURIComponent(guildId));
-        if (r2.ok) {
-          const data = await r2.json();
-          info.textContent = `Loaded guild structure: ${data ? 'ok' : 'empty'}`;
-        } else {
-          info.textContent = 'Could not load guild structure.';
-        }
-      } catch (e) {
-        info.textContent = 'Error loading guild structure.';
-      }
-
-      // Live command log (basic poll)
-      async function pollLog(){
+      // Load session + header
+      (async function hydrateHeader(){
+        const auth=byId('auth-area');
         try{
-          const r=await fetch('/api/command-log-get?guild_id='+encodeURIComponent(guildId));
+          const r=await fetch('/api/me'); const d=r.ok?await r.json():null;
+          if(!d||!d.ok||!d.session||!d.session.user){
+            auth.innerHTML = `<a href="/api/login?return=/dashboard/guild.html${guildId?`?guild_id=${encodeURIComponent(guildId)}`:''}" class="btn">Sign in</a>`;
+            info.textContent='Please sign in.';
+            return;
+          }
+          const u=d.session.user;
+          const avatar = u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64` : 'https://cdn.discordapp.com/embed/avatars/0.png';
+          auth.innerHTML = `
+            <a href="/dashboard/index.html" class="hidden sm:inline-flex btn">All servers</a>
+            <div class="flex items-center gap-3">
+              <img src="${avatar}" class="w-8 h-8 rounded-full ring-1 ring-white/10" alt="">
+              <span class="text-white/80 text-sm max-w-[140px] truncate">${u.username}</span>
+              <a href="/api/logout?redirect=/dashboard/index.html" class="btn">Log out</a>
+            </div>`;
+          // Set guild name/icon in header if present in session
+          const g = (d.session.guilds||[]).find(x=>x.id===guildId);
+          if (g){
+            byId('gtitle').textContent = g.name;
+            byId('gicon').src = g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128` : 'https://cdn.discordapp.com/embed/avatars/1.png';
+          } else {
+            byId('gtitle').textContent = guildId ? `Server — ${guildId}` : 'Server';
+          }
+        }catch(e){
+          info.textContent='Could not load session.';
+        }
+      })();
+
+      // Load guild structure + config; populate selects by NAME
+      (async function loadGuild(){
+        if(!guildId){ info.textContent='Missing guild_id.'; return; }
+
+        // structure: channels (id,name,type), roles (id,name), categories (optional)
+        let channels=[], roles=[], categories=[];
+        try{
+          const r=await fetch('/api/guild-structure?guild_id='+encodeURIComponent(guildId));
+          if(!r.ok){ info.textContent='Could not load guild structure.'; return; }
+          const g=await r.json();
+          channels = Array.isArray(g.channels)?g.channels:[];
+          roles     = Array.isArray(g.roles)?g.roles:[];
+          categories= Array.isArray(g.categories)?g.categories: (channels.filter(c=>c.type===4) || []);
+          info.textContent='Guild loaded.';
+        }catch(e){
+          info.textContent='Error loading guild structure.';
+          return;
+        }
+
+        // Populate selects
+        function fillSelect(sel, items, labelKey='name', valueKey='id'){
+          sel.innerHTML = items.map(it=>`<option value="${it[valueKey]}">${it[labelKey]}</option>`).join('');
+        }
+        const textChannels = channels.filter(c=>c.type===0 || c.type==='GUILD_TEXT' || typeof c.type==='undefined'); // be lenient
+        fillSelect(byId('ratingChannel'), textChannels);
+        fillSelect(byId('resultChannel'), textChannels);
+        fillSelect(byId('ticketLogChannel'), textChannels);
+        fillSelect(byId('ticketCategory'), categories);
+        fillSelect(byId('ticketStaffRole'), roles);
+
+        // Load current config to preselect
+        try{
+          const r=await fetch('/api/config-get?guild_id='+encodeURIComponent(guildId));
           if(r.ok){
-            const j=await r.json();
-            log.textContent = (j && j.items && j.items.length)
-              ? j.items.slice(-10).map(x => `[${new Date(x.ts||Date.now()).toLocaleTimeString()}] ${x.user||'someone'} used ${x.cmd||'a command'}`).join('\n')
-              : 'No recent commands.';
+            const cfg=await r.json();
+            if(cfg && typeof cfg==='object'){
+              if(cfg.rating_channel) byId('ratingChannel').value = String(cfg.rating_channel);
+              if(cfg.result_channel) byId('resultChannel').value = String(cfg.result_channel);
+              if(cfg.ticket_category) byId('ticketCategory').value = String(cfg.ticket_category);
+              if(cfg.ticket_staff_role) byId('ticketStaffRole').value = String(cfg.ticket_staff_role);
+              if(cfg.ticket_log_channel) byId('ticketLogChannel').value = String(cfg.ticket_log_channel);
+            }
           }
         }catch(e){}
-        setTimeout(pollLog, 4000);
-      }
-      if (guildId) pollLog();
+
+        // Save handlers
+        byId('saveRatings').addEventListener('click', async ()=>{
+          const msg=byId('saveRatingsMsg'); msg.textContent='Saving...';
+          try{
+            const body={
+              guild_id: guildId,
+              rating_channel_id: byId('ratingChannel').value,
+              result_channel_id: byId('resultChannel').value
+            };
+            const r=await fetch('/api/config-set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+            msg.textContent = r.ok ? 'Saved!' : 'Failed';
+          }catch(e){ msg.textContent='Failed'; }
+          setTimeout(()=>msg.textContent='',1500);
+        });
+
+        byId('saveTickets').addEventListener('click', async ()=>{
+          const msg=byId('saveTicketsMsg'); msg.textContent='Saving...';
+          try{
+            const body={
+              guild_id: guildId,
+              ticket_category_id: byId('ticketCategory').value,
+              ticket_staff_role_id: byId('ticketStaffRole').value,
+              ticket_log_channel_id: byId('ticketLogChannel').value || null
+            };
+            const r=await fetch('/api/config-set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+            msg.textContent = r.ok ? 'Saved!' : 'Failed';
+          }catch(e){ msg.textContent='Failed'; }
+          setTimeout(()=>msg.textContent='',1500);
+        });
+
+        // Live command log
+        async function pollLog(){
+          try{
+            const r=await fetch('/api/command-log-get?guild_id='+encodeURIComponent(guildId));
+            if(r.ok){
+              const j=await r.json();
+              logEl.textContent = (j && j.items && j.items.length)
+                ? j.items.slice(-12).map(x => `[${new Date(x.ts||Date.now()).toLocaleTimeString()}] ${x.user||'someone'} used ${x.cmd||'a command'}`).join('\n')
+                : 'No recent commands.';
+            } else {
+              logEl.textContent = 'Unable to read command log.';
+            }
+          }catch(e){ /* ignore */ }
+          setTimeout(pollLog, 4000);
+        }
+        pollLog();
+      })();
     })();
-  })();
   </script>
 </body>
 </html>
