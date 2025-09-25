@@ -1,16 +1,25 @@
+"use strict";
+
 // /api/logout.js
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   try {
+    const host = req.headers.host || "www.staffrater.xyz";
+    const baseDomain = host.replace(/^www\./, "");
+    const domainAttr = `Domain=.${baseDomain}`;
+
     res.setHeader(
       "Set-Cookie",
-      "sr_session=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax"
+      `sr_session=; ${domainAttr}; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax`
     );
-    const to = new URL(req.url, `https://${req.headers.host}`).searchParams.get("redirect") || "/";
-    const safe = to.startsWith("/") ? to : "/";
-    res.writeHead(302, { Location: safe });
+
+    const full = new URL(req.url, `https://${host}`);
+    const redirect = full.searchParams.get("redirect") || "/";
+    const to = redirect.startsWith("/") ? redirect : "/";
+    res.writeHead(302, { Location: to });
     res.end();
   } catch (e) {
     console.error("Logout crash:", e);
-    res.status(500).send("logout_failed");
+    res.statusCode = 500;
+    res.end("logout_failed");
   }
-}
+};
