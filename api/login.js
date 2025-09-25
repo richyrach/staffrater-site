@@ -1,7 +1,11 @@
+"use strict";
+
 // /api/login.js
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   const SITE = process.env.SITE_BASE_URL || "https://www.staffrater.xyz";
   const canonicalHost = new URL(SITE).host;
+
+  // Always run on the canonical host so the state cookie matches
   if (req.headers.host !== canonicalHost) {
     res.writeHead(302, { Location: `https://${canonicalHost}/api/login` });
     return res.end();
@@ -9,7 +13,7 @@ export default async function handler(req, res) {
 
   const redirectUri = `${SITE.replace(/\/$/, "")}/api/callback`;
 
-  // CSRF state cookie
+  // CSRF state cookie (10 minutes)
   const state = Math.random().toString(36).slice(2) + Date.now().toString(36);
   res.setHeader(
     "Set-Cookie",
@@ -29,4 +33,4 @@ export default async function handler(req, res) {
     Location: `https://discord.com/oauth2/authorize?${p.toString()}`,
   });
   res.end();
-}
+};
