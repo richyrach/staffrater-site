@@ -1,4 +1,6 @@
 "use strict";
+// /api/callback.js — stateless OAuth, redirect with #token= (hash) to avoid long URL errors
+
 const { parseState, issueSessionToken } = require("../lib/auth");
 
 module.exports = async (req, res) => {
@@ -7,6 +9,7 @@ module.exports = async (req, res) => {
     const u = new URL(SITE);
     const canonicalHost = u.host;
 
+    // Keep host consistent
     if (req.headers.host !== canonicalHost) {
       const q = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
       res.writeHead(302, { Location: `https://${canonicalHost}/api/callback${q}` });
@@ -21,7 +24,7 @@ module.exports = async (req, res) => {
       res.statusCode = 400;
       return res.end("bad state");
     }
-    const returnTo = state.ret || "/";
+    const returnTo = state.ret && state.ret.startsWith("/") ? state.ret : "/";
 
     if (!process.env.DISCORD_CLIENT_ID || !process.env.DISCORD_CLIENT_SECRET) {
       res.statusCode = 500;
@@ -36,6 +39,7 @@ module.exports = async (req, res) => {
       code,
       redirect_uri: redirectUri,
     });
+
     const tr = await fetch("https://discord.com/api/oauth2/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -49,10 +53,14 @@ module.exports = async (req, res) => {
     const tj = await tr.json();
     const accessToken = tj.access_token;
 
-    // user + guilds
+    // Fetch user + guilds
     const [meR, gsR] = await Promise.all([
-      fetch("https://discord.com/api/users/@me", { headers: { Authorization: `Bearer ${accessToken}` } }),
-      fetch("https://discord.com/api/users/@me/guilds", { headers: { Authorization: `Bearer ${accessToken}` } }),
+      fetch("https://discord.com/api/users/@me", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }),
+      fetch("https://discord.com/api/users/@me/guilds", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }),
     ]);
     if (!meR.ok || !gsR.ok) {
       res.statusCode = 502;
@@ -68,17 +76,17 @@ module.exports = async (req, res) => {
         avatar: me.avatar,
       },
       guilds,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
-    const token = issueSessionToken(session);
+    const token = require("../lib/auth").issueSessionToken(session);
 
-    // Build final URL (add token in QUERY so it survives any redirects)
-    const dest = new URL(returnTo, SITE); // keeps host
-    dest.searchParams.set("token", token);
+    // Build final redirect using HASH (so server never sees the token)
+    const destPath = returnTo; // same host, only path
+    const sep = destPath.includes("#") ? "&" : "#";
+    const locationHeader = `${destPath}${sep}token=${encodeURIComponent(token)}`;
 
     res.setHeader("Cache-Control", "no-store");
-    // Send only path+query+hash so we don't bounce hosts
-    res.writeHead(302, { Location: dest.pathname + dest.search + dest.hash });
+    res.writeHead(302, { Location: locationHeader });
     res.end();
   } catch (e) {
     console.error("Callback crash:", e);
