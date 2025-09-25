@@ -1,6 +1,15 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <script>
+(function () {
+  var wanted = "www.staffrater.xyz";                   // your canonical host
+  if (location.host !== wanted) {
+    location.replace("https://" + wanted + location.pathname + location.search + location.hash);
+  }
+})();
+</script>
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Staff Rater — Choose a Server</title>
