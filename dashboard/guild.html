@@ -3,10 +3,85 @@
 <head>
   <script>
 (function () {
-  var wanted = "www.staffrater.xyz";                   // your canonical host
-  if (location.host !== wanted) {
-    location.replace("https://" + wanted + location.pathname + location.search + location.hash);
-  }
+  // 1) Capture token from URL (#token= or ?token=), store in sessionStorage, then clean URL
+  (function captureToken() {
+    try {
+      var hash = location.hash || "";
+      var qs = location.search || "";
+      var token = null;
+
+      // Look in hash first: #...token=....
+      if (/#/.test(hash)) {
+        var m = hash.match(/(?:^|[&#])token=([^&#]+)/);
+        if (m) token = decodeURIComponent(m[1]);
+      }
+      // Then in query: ?token=...
+      if (!token && /\?/.test(qs)) {
+        var m2 = qs.match(/(?:\?|&)token=([^&#]+)/);
+        if (m2) token = decodeURIComponent(m2[1]);
+      }
+      if (token) {
+        sessionStorage.setItem('sr_token', token);
+        // Clean the URL (remove token) without reload
+        var clean = location.origin + location.pathname + location.search.replace(/([?&])token=[^&#]+(&|$)/, function(_,a,b){return a === '?' && b ? '?' : ''}) + (location.hash.replace(/(#|&)token=[^&#]+/,'') || '');
+        history.replaceState(null, '', clean);
+      }
+    } catch (e) {}
+  })();
+
+  // 2) Patch fetch to automatically add Authorization for same-origin /api/* calls
+  (function patchFetch() {
+    var orig = window.fetch;
+    window.fetch = function(input, init) {
+      try {
+        var url = (typeof input === 'string') ? input : input.url;
+        if (url && url.indexOf('http') !== 0 && url.startsWith('/api/')) {
+          init = init || {};
+          init.headers = init.headers || {};
+          var token = sessionStorage.getItem('sr_token');
+          if (token) {
+            // preserve existing headers
+            var h = new Headers(init.headers);
+            h.set('Authorization', 'Bearer ' + token);
+            init.headers = h;
+          }
+          // no cookies needed
+          if (!('credentials' in init)) init.credentials = 'omit';
+          if (!('cache' in init)) init.cache = 'no-store';
+        }
+      } catch (e) {}
+      return orig(input, init);
+    };
+  })();
+
+  // 3) Hydrate header auth area if present
+  (async function hydrateAuth() {
+    var el = document.getElementById('auth-area');
+    if (!el) return;
+    try {
+      var r = await fetch('/api/me');
+      var data = await r.json().catch(() => ({}));
+      if (r.ok && data.ok && data.session && data.session.user) {
+        var u = data.session.user;
+        var avatar = u.avatar
+          ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64`
+          : 'https://cdn.discordapp.com/embed/avatars/0.png';
+        el.innerHTML = `
+          <a href="/dashboard/index.html" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Go to Dashboard</a>
+          <div class="flex items-center gap-3">
+            <img src="${avatar}" alt="" class="w-8 h-8 rounded-full ring-1 ring-white/10"/>
+            <span class="text-white/80 text-sm max-w-[120px] truncate">${u.username}</span>
+            <a href="/api/logout?redirect=/" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Log out</a>
+          </div>`;
+      } else {
+        // If you want the "Sign in" button here, leave your existing HTML.
+        // You can also ensure login returns to home:
+        // <a href="/api/login?return=/">Sign in with Discord</a>
+      }
+    } catch (e) {
+      // leave as-is
+    }
+  })();
 })();
 </script>
 
