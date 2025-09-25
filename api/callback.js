@@ -1,37 +1,30 @@
 // /api/callback.js
 import crypto from "crypto";
 
-// At top of /api/callback.js
-export default async function handler(req, res) {
-  const SITE = process.env.SITE_BASE_URL || "https://www.staffrater.xyz";
-  const canonicalHost = new URL(SITE).host;
-
-  // Ensure callback also runs on the same host that set the cookie
-  if (req.headers.host !== canonicalHost) {
-    const query = req.url.split("?")[1] || "";
-    res.writeHead(302, { Location: `https://${canonicalHost}/api/callback${query ? "?" + query : ""}` });
-    return res.end();
-  }
-
-  // ...your existing callback code continues here...
-}
-
-
-const kvUrl =
-  process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || "";
-const kvToken =
-  process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || "";
-
 function b64url(str) {
-  return Buffer.from(str).toString("base64").replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+  return Buffer.from(str, "utf8")
+    .toString("base64")
+    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
-function sign(data, secret) {
-  return crypto.createHmac("sha256", secret).update(data).digest("base64").replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+function sign(payload) {
+  const secret = process.env.SESSION_SECRET || "dev-secret";
+  return crypto
+    .createHmac("sha256", secret)
+    .update(payload)
+    .digest("base64")
+    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 
 export default async function handler(req, res) {
   try {
-    const SITE = process.env.SITE_BASE_URL || `https://${req.headers.host}`;
+    const SITE = process.env.SITE_BASE_URL || "https://www.staffrater.xyz";
+    const canonicalHost = new URL(SITE).host;
+    if (req.headers.host !== canonicalHost) {
+      const q = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
+      res.writeHead(302, { Location: `https://${canonicalHost}/api/callback${q}` });
+      return res.end();
+    }
+
     const redirectUri = `${SITE.replace(/\/$/, "")}/api/callback`;
 
     const url = new URL(req.url, SITE);
@@ -41,34 +34,37 @@ export default async function handler(req, res) {
     const m = cookie.match(/(?:^|;\s*)sr_state=([^;]+)/);
     const savedState = m ? decodeURIComponent(m[1]) : null;
     if (!code || !state || state !== savedState) {
-      res.status(400).send("Bad state.");
-      return;
+      return res.status(400).send("bad state");
     }
 
-    // Exchange code for token
-    const body = new URLSearchParams({
+    if (!process.env.DISCORD_CLIENT_ID || !process.env.DISCORD_CLIENT_SECRET) {
+      console.error("Missing DISCORD envs");
+      return res.status(500).send("server not configured");
+    }
+
+    // Exchange code for tokens
+    const form = new URLSearchParams({
       client_id: process.env.DISCORD_CLIENT_ID,
       client_secret: process.env.DISCORD_CLIENT_SECRET,
       grant_type: "authorization_code",
       code,
       redirect_uri: redirectUri,
     });
-    const tokenResp = await fetch("https://discord.com/api/oauth2/token", {
+    const tr = await fetch("https://discord.com/api/oauth2/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body,
+      body: form,
     });
-    if (!tokenResp.ok) {
-      const t = await tokenResp.text();
-      console.error("token exchange failed:", t);
-      res.status(500).send("OAuth failed");
-      return;
+    if (!tr.ok) {
+      const txt = await tr.text();
+      console.error("Token exchange failed:", txt);
+      return res.status(500).send("oauth failed");
     }
-    const tokenJson = await tokenResp.json();
-    const accessToken = tokenJson.access_token;
+    const tj = await tr.json();
+    const accessToken = tj.access_token;
 
-    // Get user + guilds
-    const [meResp, guildsResp] = await Promise.all([
+    // Fetch user + guilds
+    const [meR, gsR] = await Promise.all([
       fetch("https://discord.com/api/users/@me", {
         headers: { Authorization: `Bearer ${accessToken}` },
       }),
@@ -76,13 +72,11 @@ export default async function handler(req, res) {
         headers: { Authorization: `Bearer ${accessToken}` },
       }),
     ]);
-    const me = await meResp.json();
-    const guilds = await guildsResp.json();
+    const me = await meR.json();
+    const guilds = await gsR.json();
 
-    // Create session payload
-    const sid = crypto.randomBytes(16).toString("hex");
+    // Build cookie session (signed)
     const session = {
-      sid,
       user: {
         id: me.id,
         username: `${me.username}${me.discriminator === "0" ? "" : "#" + me.discriminator}`,
@@ -91,35 +85,18 @@ export default async function handler(req, res) {
       guilds,
       createdAt: Date.now(),
     };
+    const payload = JSON.stringify(session);
+    const token = b64url(payload) + "." + sign(payload);
 
-    // Prefer KV (7 days TTL); else cookie-only
-    if (kvUrl && kvToken) {
-      const key = `sr:sessions:${sid}`;
-      // Upstash REST: /set/<key>/<value> with TTL
-      const payload = JSON.stringify(session);
-      const setUrl = `${kvUrl.replace(/\/$/,"")}/set/${encodeURIComponent(key)}/${encodeURIComponent(payload)}?EX=604800`;
-      const r = await fetch(setUrl, { method: "POST", headers: { Authorization: `Bearer ${kvToken}` }});
-      if (!r.ok) console.error("KV set failed", await r.text());
-      res.setHeader(
-        "Set-Cookie",
-        `sr_session=${encodeURIComponent(sid)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`
-      );
-    } else {
-      // Signed cookie session
-      const secret = process.env.SESSION_SECRET || "dev-secret";
-      const json = JSON.stringify(session);
-      const token = b64url(json) + "." + sign(json, secret);
-      res.setHeader(
-        "Set-Cookie",
-        `sr_session=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`
-      );
-    }
+    res.setHeader("Set-Cookie", [
+      "sr_state=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
+      `sr_session=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`
+    ]);
 
     res.writeHead(302, { Location: "/dashboard.html" });
     res.end();
   } catch (e) {
-    console.error(e);
-    res.status(500).send("Callback error");
+    console.error("Callback crash:", e);
+    res.status(500).send("callback error");
   }
 }
-
