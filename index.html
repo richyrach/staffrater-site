@@ -53,6 +53,25 @@
   </style>
 </head>
 <body>
+  <script>
+async function loadStats() {
+  try {
+    const r = await fetch('/api/public-stats');
+    const j = await r.json();
+    const g = document.getElementById('stat-guilds');
+    const u = document.getElementById('stat-users');
+    const up = document.getElementById('stat-uptime');
+    if (g) g.textContent = (j.guilds ?? 0).toLocaleString();
+    if (u) u.textContent = (j.users ?? 0).toLocaleString();
+    if (up) {
+      const hrs = Math.floor((j.uptime||0) / 3600);
+      up.textContent = `${hrs}h`;
+    }
+  } catch {}
+}
+loadStats();
+</script>
+
   <div class="bgmesh"></div>
 
   <!-- Global header with auth -->
@@ -251,3 +270,4 @@
   </script>
 </body>
 </html>
+
