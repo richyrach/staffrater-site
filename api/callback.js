@@ -1,8 +1,10 @@
-// /api/callback.js
-import crypto from "crypto";
+"use strict";
 
-function b64url(str) {
-  return Buffer.from(str, "utf8")
+// /api/callback.js
+const crypto = require("crypto");
+
+function b64url(strUtf8) {
+  return Buffer.from(strUtf8, "utf8")
     .toString("base64")
     .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
@@ -15,10 +17,12 @@ function sign(payload) {
     .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   try {
     const SITE = process.env.SITE_BASE_URL || "https://www.staffrater.xyz";
     const canonicalHost = new URL(SITE).host;
+
+    // Ensure callback runs on the same host that set the cookie
     if (req.headers.host !== canonicalHost) {
       const q = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
       res.writeHead(302, { Location: `https://${canonicalHost}/api/callback${q}` });
@@ -30,19 +34,23 @@ export default async function handler(req, res) {
     const url = new URL(req.url, SITE);
     const code = url.searchParams.get("code");
     const state = url.searchParams.get("state");
-    const cookie = req.headers.cookie || "";
-    const m = cookie.match(/(?:^|;\s*)sr_state=([^;]+)/);
+
+    const rawCookie = req.headers.cookie || "";
+    const m = rawCookie.match(/(?:^|;\s*)sr_state=([^;]+)/);
     const savedState = m ? decodeURIComponent(m[1]) : null;
+
     if (!code || !state || state !== savedState) {
-      return res.status(400).send("bad state");
+      res.statusCode = 400;
+      res.end("bad state");
+      return;
     }
-
     if (!process.env.DISCORD_CLIENT_ID || !process.env.DISCORD_CLIENT_SECRET) {
-      console.error("Missing DISCORD envs");
-      return res.status(500).send("server not configured");
+      res.statusCode = 500;
+      res.end("server not configured");
+      return;
     }
 
-    // Exchange code for tokens
+    // Exchange code for token
     const form = new URLSearchParams({
       client_id: process.env.DISCORD_CLIENT_ID,
       client_secret: process.env.DISCORD_CLIENT_SECRET,
@@ -58,12 +66,14 @@ export default async function handler(req, res) {
     if (!tr.ok) {
       const txt = await tr.text();
       console.error("Token exchange failed:", txt);
-      return res.status(500).send("oauth failed");
+      res.statusCode = 500;
+      res.end("oauth failed");
+      return;
     }
     const tj = await tr.json();
     const accessToken = tj.access_token;
 
-    // Fetch user + guilds
+    // Fetch identity + guilds
     const [meR, gsR] = await Promise.all([
       fetch("https://discord.com/api/users/@me", {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -72,10 +82,16 @@ export default async function handler(req, res) {
         headers: { Authorization: `Bearer ${accessToken}` },
       }),
     ]);
+    if (!meR.ok || !gsR.ok) {
+      console.error("Discord API calls failed");
+      res.statusCode = 502;
+      res.end("discord api failed");
+      return;
+    }
     const me = await meR.json();
     const guilds = await gsR.json();
 
-    // Build cookie session (signed)
+    // Build signed cookie session (1 week)
     const session = {
       user: {
         id: me.id,
@@ -93,10 +109,12 @@ export default async function handler(req, res) {
       `sr_session=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`
     ]);
 
-    res.writeHead(302, { Location: "/dashboard.html" });
+    // You have /dashboard/index.html (not /dashboard.html), so go there
+    res.writeHead(302, { Location: "/dashboard/index.html" });
     res.end();
   } catch (e) {
     console.error("Callback crash:", e);
-    res.status(500).send("callback error");
+    res.statusCode = 500;
+    res.end("callback error");
   }
-}
+};
