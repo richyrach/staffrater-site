@@ -20,7 +20,10 @@ function sign(payload) {
 module.exports = async (req, res) => {
   try {
     const SITE = process.env.SITE_BASE_URL || "https://www.staffrater.xyz";
-    const canonicalHost = new URL(SITE).host;
+    const urlObj = new URL(SITE);
+    const canonicalHost = urlObj.host;
+    const baseDomain = urlObj.hostname.replace(/^www\./, "");
+    const domainAttr = `Domain=.${baseDomain}`;
 
     // Ensure callback runs on the same host that set the cookie
     if (req.headers.host !== canonicalHost) {
@@ -31,9 +34,9 @@ module.exports = async (req, res) => {
 
     const redirectUri = `${SITE.replace(/\/$/, "")}/api/callback`;
 
-    const url = new URL(req.url, SITE);
-    const code = url.searchParams.get("code");
-    const state = url.searchParams.get("state");
+    const full = new URL(req.url, SITE);
+    const code = full.searchParams.get("code");
+    const state = full.searchParams.get("state");
 
     const rawCookie = req.headers.cookie || "";
     const m = rawCookie.match(/(?:^|;\s*)sr_state=([^;]+)/);
@@ -105,11 +108,13 @@ module.exports = async (req, res) => {
     const token = b64url(payload) + "." + sign(payload);
 
     res.setHeader("Set-Cookie", [
-      "sr_state=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax",
-      `sr_session=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`
+      // clear state (make sure domain matches)
+      `sr_state=; ${domainAttr}; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax`,
+      // set session cookie for apex+www
+      `sr_session=${encodeURIComponent(token)}; ${domainAttr}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`
     ]);
 
-    // You have /dashboard/index.html (not /dashboard.html), so go there
+    // Go to your existing dashboard (folder version)
     res.writeHead(302, { Location: "/dashboard/index.html" });
     res.end();
   } catch (e) {
