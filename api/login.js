@@ -6,36 +6,36 @@ module.exports = async (req, res) => {
   const urlObj = new URL(SITE);
   const canonicalHost = urlObj.host;
 
-  // Always run on the canonical host so cookie scope matches
+  // 1) Always use the canonical host so the state cookie and callback match
   if (req.headers.host !== canonicalHost) {
     res.writeHead(302, { Location: `https://${canonicalHost}/api/login` });
     return res.end();
   }
 
-  // Cookie domain for apex+www (e.g., .staffrater.xyz)
+  // 2) Cookie domain so it works on apex + www
   const baseDomain = urlObj.hostname.replace(/^www\./, "");
   const domainAttr = `Domain=.${baseDomain}`;
 
+  // 3) Exact redirect URI (must match Discord Developer Portal)
   const redirectUri = `${SITE.replace(/\/$/, "")}/api/callback`;
 
-  // CSRF state cookie (10 minutes)
+  // 4) CSRF state cookie
   const state = Math.random().toString(36).slice(2) + Date.now().toString(36);
   res.setHeader(
     "Set-Cookie",
     `sr_state=${encodeURIComponent(state)}; ${domainAttr}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`
   );
 
-  const p = new URLSearchParams({
-    response_type: "code",
-    client_id: process.env.DISCORD_CLIENT_ID,
-    scope: "identify guilds",
-    redirect_uri: redirectUri,
-    state,
-    prompt: "consent",
-  });
+  // 5) Build the Discord authorize URL with strict encoding
+  const authorizeURL =
+    "https://discord.com/oauth2/authorize" +
+    `?client_id=${encodeURIComponent(process.env.DISCORD_CLIENT_ID)}` +
+    `&response_type=code` +
+    `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+    `&scope=${encodeURIComponent("identify guilds")}` + // encodes as %20, not +
+    `&state=${encodeURIComponent(state)}` +
+    `&prompt=consent`;
 
-  res.writeHead(302, {
-    Location: `https://discord.com/oauth2/authorize?${p.toString()}`,
-  });
+  res.writeHead(302, { Location: authorizeURL });
   res.end();
 };
