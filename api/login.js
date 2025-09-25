@@ -1,6 +1,4 @@
 "use strict";
-
-// /api/login.js
 const { issueState } = require("../lib/auth");
 
 module.exports = async (req, res) => {
@@ -8,19 +6,18 @@ module.exports = async (req, res) => {
   const u = new URL(SITE);
   const canonicalHost = u.host;
 
-  // Force canonical host to avoid mismatch issues
+  // Force canonical host (prevents domain mismatch)
   if (req.headers.host !== canonicalHost) {
     const q = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
     res.writeHead(302, { Location: `https://${canonicalHost}/api/login${q}` });
     return res.end();
   }
 
-  // Return target: explicit ?return=... else "/" (home)
+  // Choose where to return (explicit ?return=... or default "/")
   const current = new URL(req.url, SITE);
   let returnTo = current.searchParams.get("return") || "/";
   if (!returnTo.startsWith("/")) returnTo = "/";
 
-  // Pack returnTo inside a signed state (no cookie)
   const state = issueState(returnTo);
   const redirectUri = `${SITE.replace(/\/$/, "")}/api/callback`;
 
