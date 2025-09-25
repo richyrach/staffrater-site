@@ -22,10 +22,8 @@ module.exports = async (req, res) => {
     const SITE = process.env.SITE_BASE_URL || "https://www.staffrater.xyz";
     const urlObj = new URL(SITE);
     const canonicalHost = urlObj.host;
-    const baseDomain = urlObj.hostname.replace(/^www\./, "");
-    const domainAttr = `Domain=.${baseDomain}`;
 
-    // Ensure callback runs on the same host that set the cookie
+    // Force callback on canonical host (so it sees the same cookie)
     if (req.headers.host !== canonicalHost) {
       const q = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
       res.writeHead(302, { Location: `https://${canonicalHost}/api/callback${q}` });
@@ -34,26 +32,28 @@ module.exports = async (req, res) => {
 
     const redirectUri = `${SITE.replace(/\/$/, "")}/api/callback`;
 
+    // Read code + state
     const full = new URL(req.url, SITE);
     const code = full.searchParams.get("code");
     const state = full.searchParams.get("state");
 
+    // Validate state from cookie
     const rawCookie = req.headers.cookie || "";
     const m = rawCookie.match(/(?:^|;\s*)sr_state=([^;]+)/);
     const savedState = m ? decodeURIComponent(m[1]) : null;
-
     if (!code || !state || state !== savedState) {
       res.statusCode = 400;
       res.end("bad state");
       return;
     }
+
     if (!process.env.DISCORD_CLIENT_ID || !process.env.DISCORD_CLIENT_SECRET) {
       res.statusCode = 500;
       res.end("server not configured");
       return;
     }
 
-    // Exchange code for token
+    // Exchange code for token (use strict form encoding)
     const form = new URLSearchParams({
       client_id: process.env.DISCORD_CLIENT_ID,
       client_secret: process.env.DISCORD_CLIENT_SECRET,
@@ -94,7 +94,10 @@ module.exports = async (req, res) => {
     const me = await meR.json();
     const guilds = await gsR.json();
 
-    // Build signed cookie session (1 week)
+    // Build signed session cookie (works on both apex and www)
+    const baseDomain = urlObj.hostname.replace(/^www\./, "");
+    const domainAttr = `Domain=.${baseDomain}`;
+
     const session = {
       user: {
         id: me.id,
@@ -108,13 +111,11 @@ module.exports = async (req, res) => {
     const token = b64url(payload) + "." + sign(payload);
 
     res.setHeader("Set-Cookie", [
-      // clear state (make sure domain matches)
       `sr_state=; ${domainAttr}; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax`,
-      // set session cookie for apex+www
       `sr_session=${encodeURIComponent(token)}; ${domainAttr}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800`
     ]);
 
-    // Go to your existing dashboard (folder version)
+    // Your dashboard lives at /dashboard/index.html
     res.writeHead(302, { Location: "/dashboard/index.html" });
     res.end();
   } catch (e) {
