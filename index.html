@@ -1,111 +1,27 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-
-  <script>
-(function () {
-  // 1) Capture token from URL (#token= or ?token=), store in sessionStorage, then clean URL
-  (function captureToken() {
-    try {
-      var hash = location.hash || "";
-      var qs = location.search || "";
-      var token = null;
-
-      // Look in hash first: #...token=....
-      if (/#/.test(hash)) {
-        var m = hash.match(/(?:^|[&#])token=([^&#]+)/);
-        if (m) token = decodeURIComponent(m[1]);
-      }
-      // Then in query: ?token=...
-      if (!token && /\?/.test(qs)) {
-        var m2 = qs.match(/(?:\?|&)token=([^&#]+)/);
-        if (m2) token = decodeURIComponent(m2[1]);
-      }
-      if (token) {
-        sessionStorage.setItem('sr_token', token);
-        // Clean the URL (remove token) without reload
-        var clean = location.origin + location.pathname + location.search.replace(/([?&])token=[^&#]+(&|$)/, function(_,a,b){return a === '?' && b ? '?' : ''}) + (location.hash.replace(/(#|&)token=[^&#]+/,'') || '');
-        history.replaceState(null, '', clean);
-      }
-    } catch (e) {}
-  })();
-
-  // 2) Patch fetch to automatically add Authorization for same-origin /api/* calls
-  (function patchFetch() {
-    var orig = window.fetch;
-    window.fetch = function(input, init) {
-      try {
-        var url = (typeof input === 'string') ? input : input.url;
-        if (url && url.indexOf('http') !== 0 && url.startsWith('/api/')) {
-          init = init || {};
-          init.headers = init.headers || {};
-          var token = sessionStorage.getItem('sr_token');
-          if (token) {
-            // preserve existing headers
-            var h = new Headers(init.headers);
-            h.set('Authorization', 'Bearer ' + token);
-            init.headers = h;
-          }
-          // no cookies needed
-          if (!('credentials' in init)) init.credentials = 'omit';
-          if (!('cache' in init)) init.cache = 'no-store';
-        }
-      } catch (e) {}
-      return orig(input, init);
-    };
-  })();
-
-  // 3) Hydrate header auth area if present
-  (async function hydrateAuth() {
-    var el = document.getElementById('auth-area');
-    if (!el) return;
-    try {
-      var r = await fetch('/api/me');
-      var data = await r.json().catch(() => ({}));
-      if (r.ok && data.ok && data.session && data.session.user) {
-        var u = data.session.user;
-        var avatar = u.avatar
-          ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64`
-          : 'https://cdn.discordapp.com/embed/avatars/0.png';
-        el.innerHTML = `
-          <a href="/dashboard/index.html" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Go to Dashboard</a>
-          <div class="flex items-center gap-3">
-            <img src="${avatar}" alt="" class="w-8 h-8 rounded-full ring-1 ring-white/10"/>
-            <span class="text-white/80 text-sm max-w-[120px] truncate">${u.username}</span>
-            <a href="/api/logout?redirect=/" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Log out</a>
-          </div>`;
-      } else {
-        // If you want the "Sign in" button here, leave your existing HTML.
-        // You can also ensure login returns to home:
-        // <a href="/api/login?return=/">Sign in with Discord</a>
-      }
-    } catch (e) {
-      // leave as-is
-    }
-  })();
-})();
-</script>
-
-
-  <!-- Meta / SEO -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Staff Rater — Fair, beautiful Discord staff ratings (tickets, apps, leaderboards)</title>
+  <title>Staff Rater — Elevate your Discord staff</title>
   <meta name="description" content="Staff Rater is a sleek Discord bot for staff ratings, tickets, applications, leaderboards, and profiles. Beautiful UI, fast setup, and honest moderation workflows." />
-  <link rel="icon" href="/staff-rater-icon.png" />
+  <link rel="icon" href="staff-rater-icon.png">
+
+  <!-- Canonical host lock -->
+  <script>
+  (function(){
+    var wanted="www.staffrater.xyz";
+    if(location.host!==wanted){
+      location.replace("https://"+wanted+location.pathname+location.search+location.hash);
+    }
+  })();
+  </script>
 
   <!-- Open Graph -->
   <meta property="og:title" content="Staff Rater — Elevate your Discord staff" />
   <meta property="og:description" content="A sleek Discord bot for staff ratings, tickets, applications, leaderboards, and profiles." />
-  <meta property="og:image" content="https://www.staffrater.xyz/staff-rater-icon.png" />
+  <meta property="og:image" content="staff-rater-icon.png" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://www.staffrater.xyz/" />
-
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Staff Rater — Elevate your Discord staff">
-  <meta name="twitter:description" content="A sleek Discord bot for staff ratings, tickets, applications, leaderboards, and profiles.">
-  <meta name="twitter:image" content="https://www.staffrater.xyz/staff-rater-icon.png">
 
   <!-- Tailwind via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -116,344 +32,212 @@
           colors: {
             bg: '#070b14',
             panel: '#0c1322',
-            line: 'rgba(255,255,255,0.08)',
-            brand1: '#22d3ee', // cyan
-            brand2: '#a78bfa', // purple
+            line: 'rgba(255,255,255,0.08)'
           },
           fontFamily: {
             sans: ['Inter', 'ui-sans-serif', 'system-ui'],
             mono: ['JetBrains Mono', 'ui-monospace']
           },
           boxShadow: {
-            glass: '0 0 0 1px rgba(255,255,255,0.06), 0 8px 30px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.03)',
-            glow: '0 0 0 1px rgba(255,255,255,0.08), 0 15px 45px rgba(0,0,0,0.65)'
+            glow: '0 0 0 1px rgba(255,255,255,0.08), 0 15px 35px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.04)'
           },
           keyframes: {
             floaty: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-6px)' } },
-            hue: { '0%': { filter: 'hue-rotate(0deg)' }, '100%': { filter: 'hue-rotate(360deg)' } },
-            reveal: { '0%': { opacity: 0, transform: 'translateY(24px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
             shimmer: { '100%': { transform: 'translateX(100%)' } },
-            drift: { '0%': { transform: 'translateX(0)' }, '100%': { transform: 'translateX(-50%)' } }
           },
           animation: {
             floaty: 'floaty 6s ease-in-out infinite',
-            hue: 'hue 16s linear infinite',
-            reveal: 'reveal .7s ease forwards',
-            shimmer: 'shimmer 1.4s linear infinite',
-            drift: 'drift 28s linear infinite'
+            shimmer: 'shimmer 1.25s linear infinite',
           }
         }
       }
     }
   </script>
-
   <style>
     :root { color-scheme: dark; }
     html, body { background: #070b14; }
-
-    /* Background mesh + stars */
     .mesh { position: fixed; inset: 0; pointer-events:none; z-index: -1; }
-    .mesh:before, .mesh:after {
-      content: ""; position:absolute; width: 1200px; height: 1200px; filter: blur(90px); opacity:.25; border-radius: 50%;
-    }
+    .mesh:before, .mesh:after { content: ""; position:absolute; width: 1200px; height: 1200px; filter: blur(90px); opacity:.25; border-radius: 50%; }
     .mesh:before { left: -300px; top: -300px; background: radial-gradient(600px 600px at 50% 50%, #22d3ee33, transparent 70%); }
     .mesh:after { right: -200px; bottom: -300px; background: radial-gradient(600px 600px at 50% 50%, #a78bfa33, transparent 70%); }
-    .stars { position: fixed; inset: 0; pointer-events:none; z-index: -2; background: radial-gradient(circle at 20% 30%, rgba(255,255,255,.08) 0 1px, transparent 2px), radial-gradient(circle at 70% 80%, rgba(255,255,255,.06) 0 1px, transparent 2px); background-size: 1200px 1200px, 1400px 1400px; animation: drift 90s linear infinite; }
-
-    /* Gradient border helper (no yellow underline issues) */
-    .gborder { position: relative; border-radius: 20px; }
-    .gborder:before {
-      content:''; position:absolute; inset:0; border-radius: inherit; padding: 1px;
-      background: linear-gradient(120deg, rgba(34,211,238,.6), rgba(167,139,250,.6));
-      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-      -webkit-mask-composite: xor; mask-composite: exclude;
-      pointer-events:none;
-    }
-
-    /* Tilt groups */
-    .tilt { transform-style: preserve-3d; transform: perspective(1000px); }
-    .tilt .tilt-up { transform: translateZ(0); transition: transform .35s ease; }
-    .tilt:hover .tilt-up { transform: translateZ(18px); }
-
-    /* Reveal on scroll */
-    .reveal { opacity: 0; transform: translateY(24px); }
-    .revealed { opacity: 1; transform: none; transition: opacity .6s ease, transform .6s ease; }
-
-    /* Buttons */
-    .btn { position: relative; overflow: hidden; }
-    .btn .shine { position:absolute; top:0; left:-100%; width:60%; height:100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent); transform: skewX(-20deg); }
-    .btn:hover .shine { left:140%; transition: left 1s ease; }
-
-    @media (prefers-reduced-motion: reduce) {
-      * { animation: none !important; transition: none !important; }
-    }
+    .gborder { position: relative; }
+    .gborder:before { content:''; position:absolute; inset:0; border-radius: 18px; padding: 1px; background: linear-gradient(120deg, rgba(34,211,238,.5), rgba(99,102,241,.5)); -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; border-radius:18px; }
   </style>
 </head>
-<body class="font-sans text-white/90 tracking-tight antialiased selection:bg-brand1/30">
-
-  <!-- Decorative BG -->
-  <div class="stars"></div>
+<body class="text-white font-sans antialiased">
   <div class="mesh"></div>
 
-  <!-- Header -->
-  <header class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <div class="flex items-center justify-between">
+  <!-- Nav -->
+  <header class="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-bg/50 bg-bg/80 border-b border-white/5">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="/" class="flex items-center gap-3">
-        <img src="/staff-rater-icon.png" alt="Staff Rater" class="w-9 h-9 rounded-xl shadow-glow"/>
-        <span class="text-white font-semibold text-lg">Staff Rater</span>
+        <img src="/staff-rater-icon.png" class="w-9 h-9 rounded-xl ring-1 ring-white/10" alt="Staff Rater">
+        <span class="text-white/90 font-semibold tracking-wide">Staff Rater</span>
       </a>
-
       <nav class="hidden md:flex items-center gap-6 text-white/70">
-        <a href="#features" class="hover:text-white transition">Features</a>
-        <a href="#showcase" class="hover:text-white transition">Showcase</a>
-        <a href="https://discord.gg/BR7zmffNFC" class="hover:text-white transition">Support</a>
+        <a href="#features" class="hover:text-white">Features</a>
+        <a href="#how" class="hover:text-white">How it works</a>
+        <a href="https://discord.gg/BR7zmffNFC" class="hover:text-white" target="_blank" rel="noopener">Support</a>
       </nav>
-
       <div id="auth-area" class="flex items-center gap-3">
-        <!-- Populated by JS: login button OR avatar + dashboard/logout -->
-        <a href="https://www.staffrater.xyz/api/login"
-           class="btn inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 shadow-glow ring-1 ring-white/10">
-          <span class="shine"></span>
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 00-4.885-1.52.074.074 0 00-.079.037 13.97 13.97 0 00-.622 1.276c-1.892-.284-3.78-.284-5.643 0-.17-.407-.41-.884-.63-1.276a.077.077 0 00-.079-.037 19.736 19.736 0 00-4.884 1.52.07.07 0 00-.032.027C1.67 9.052.81 13.58 1.114 18.06a.08.08 0 00.03.055 19.94 19.94 0 006.077 3.092.079.079 0 00.084-.027c.468-.64.884-1.311 1.239-2.015a.078.078 0 00-.042-.108 13.2 13.2 0 01-1.885-.9.078.078 0 01-.008-.13c.127-.094.255-.192.376-.292a.074.074 0 01.078-.01c3.957 1.82 8.236 1.82 12.146 0a.074.074 0 01.079.009c.121.1.248.199.377.293a.078.078 0 01-.007.13 12.659 12.659 0 01-1.885.898.078.078 0 00-.043.109 12.12 12.12 0 001.24 2.014.078.078 0 00.084.028 19.941 19.941 0 006.078-3.093.079.079 0 00.029-.055c.511-7.063-0.86-11.555-3.548-13.66a.06.06 0 00-.033-.027z"/></svg>
+        <a href="/api/login?return=/" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47.36a72.06,72.06,0,0,0-3.52,7.18A97.68,97.68,0,0,0,52,7.18,72.37,72.37,0,0,0,48.46,0,105.89,105.89,0,0,0,22.21,8.09C4,33.65-2.43,58.6.78,83.27A106.31,106.31,0,0,0,32.39,96.36,77.7,77.7,0,0,0,39.6,85.9a68.42,68.42,0,0,1-10.85-5.23c.91-.66,1.8-1.35,2.65-2.06A71.14,71.14,0,0,0,63.57,84.4a71.31,71.31,0,0,0,32.15-5.79c.85.71,1.74,1.39,2.65,2.06A68.68,68.68,0,0,1,87.52,85.9a77.33,77.33,0,0,0,7.21,10.46,106.12,106.12,0,0,0,31.61-13.09C129.57,58.71,123.13,33.76,107.7,8.07Z"/></svg>
           <span>Sign in with Discord</span>
+        </a>
+        <a href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 shadow-glow">
+          Invite Bot
         </a>
       </div>
     </div>
   </header>
 
   <!-- Hero -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 md:pt-10">
-    <div class="grid lg:grid-cols-2 gap-10 items-center">
-      <div class="space-y-6">
-        <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80">
-          <span class="w-1.5 h-1.5 rounded-full bg-brand1 animate-pulse"></span> Trusted moderation flow
+  <section class="max-w-6xl mx-auto px-4 pt-14 pb-10">
+    <div class="grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight">Fair, fast, and beautiful <span class="text-cyan-300">staff ratings</span> for your Discord</h1>
+        <p class="text-white/70 mt-4 text-lg">Tickets, applications, leaderboards, and profiles — all in one sleek bot. Set up in minutes, moderate with confidence.</p>
+        <div class="flex flex-wrap gap-3 mt-6">
+          <a href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands" class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-indigo-500 hover:bg-indigo-600 font-medium shadow-glow">Invite to Server</a>
+          <a href="/dashboard/index.html" class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Open Dashboard</a>
         </div>
-
-        <h1 class="text-4xl sm:text-5xl font-bold leading-[1.1]">
-          Rate your staff <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand1 to-brand2">fairly</span> — with tickets, apps & leaderboards.
-        </h1>
-
-        <p class="text-white/70 text-base sm:text-lg max-w-xl">
-          Staff Rater makes feedback honest and simple. Collect ratings, review applications, manage tickets,
-          and celebrate top staff — all from one slick Discord bot.
-        </p>
-
-        <div class="flex flex-col sm:flex-row gap-3">
-          <a href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands"
-             class="btn inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-brand1 to-brand2 text-black font-semibold shadow-glow">
-            <span class="shine"></span>
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10.75 2a.75.75 0 00-1.5 0v6.25H3a.75.75 0 000 1.5h6.25V16a.75.75 0 001.5 0V9.75H17a.75.75 0 000-1.5h-6.25V2z"/></svg>
-            Add to Discord
-          </a>
-
-          <a href="https://www.staffrater.xyz/api/login"
-             class="btn inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10 shadow-glow">
-            <span class="shine"></span>
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10z"/><path d="M4 4h6v2H6v12h4v2H4z"/></svg>
-            Sign in with Discord
-          </a>
-        </div>
-
-        <div class="text-sm text-white/50 flex items-center gap-2">
-          <span>Made with ❤️ by richy_Rach</span>
-          <span class="text-white/20">•</span>
-          <a class="underline/20 hover:underline" href="https://discord.gg/BR7zmffNFC">Join support</a>
+        <div class="mt-6 text-sm text-white/50">made with ❤️ by richy_Rach</div>
+      </div>
+      <div class="gborder rounded-2xl p-[1px]">
+        <div class="rounded-2xl bg-panel/80 p-5 shadow-glow">
+          <img src="/staff-rater-icon.png" class="w-20 h-20 rounded-xl ring-1 ring-white/10 animate-floaty" alt="">
+          <div class="mt-4 text-white/80">Slash commands you’ll love:</div>
+          <ul class="mt-2 space-y-2 text-white/70 text-sm">
+            <li>⭐ <code class="font-mono">/rate</code> — rate your staff fairly</li>
+            <li>🎫 <code class="font-mono">/postticketbutton</code> — support tickets, auto-channels</li>
+            <li>📋 <code class="font-mono">/postappui</code> — run applications with questions</li>
+            <li>🏆 <code class="font-mono">/leaderboard</code> — highlight your top staff</li>
+            <li>📊 <code class="font-mono">/createpoll</code> — polls with buttons</li>
+          </ul>
         </div>
       </div>
-
-      <!-- Hero card -->
-      <div class="tilt">
-        <div class="gborder relative p-[1px] rounded-2xl">
-          <div class="rounded-2xl bg-panel/80 backdrop-blur-xl shadow-glass">
-            <div class="p-5 sm:p-6 lg:p-8">
-              <div class="flex items-center gap-3">
-                <img src="/staff-rater-icon.png" alt="" class="w-10 h-10 rounded-xl ring-1 ring-white/10">
-                <div>
-                  <div class="text-white font-semibold">Staff Rater</div>
-                  <div class="text-white/60 text-sm">Sleek Discord moderation toolkit</div>
-                </div>
-              </div>
-
-              <div class="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div class="tilt-up rounded-xl bg-white/5 ring-1 ring-white/10 p-4">
-                  <div class="text-white font-semibold">Ratings</div>
-                  <div class="text-white/60 text-sm">Fair feedback</div>
-                </div>
-                <div class="tilt-up rounded-xl bg-white/5 ring-1 ring-white/10 p-4">
-                  <div class="text-white font-semibold">Tickets</div>
-                  <div class="text-white/60 text-sm">Frictionless support</div>
-                </div>
-                <div class="tilt-up rounded-xl bg-white/5 ring-1 ring-white/10 p-4">
-                  <div class="text-white font-semibold">Applications</div>
-                  <div class="text-white/60 text-sm">Custom forms</div>
-                </div>
-                <div class="tilt-up rounded-xl bg-white/5 ring-1 ring-white/10 p-4">
-                  <div class="text-white font-semibold">Profiles</div>
-                  <div class="text-white/60 text-sm">Public stats</div>
-                </div>
-                <div class="tilt-up rounded-xl bg-white/5 ring-1 ring-white/10 p-4">
-                  <div class="text-white font-semibold">Leaderboards</div>
-                  <div class="text-white/60 text-sm">Top staff</div>
-                </div>
-                <div class="tilt-up rounded-xl bg-white/5 ring-1 ring-white/10 p-4">
-                  <div class="text-white font-semibold">Polls</div>
-                  <div class="text-white/60 text-sm">Quick decisions</div>
-                </div>
-              </div>
-
-              <div class="mt-6">
-                <div class="relative overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/10 p-4">
-                  <div class="absolute inset-0 -skew-x-12 translate-x-[-60%] bg-gradient-to-r from-white/0 via-white/15 to-white/0 animate-shimmer"></div>
-                  <div class="text-white/80 text-sm">“Finally, a ratings bot that doesn’t look like 2017.”</div>
-                  <div class="text-white/40 text-xs mt-1">— server owner</div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
   </section>
 
   <!-- Features -->
-  <section id="features" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-      <!-- Card -->
-      <article class="reveal gborder p-[1px] rounded-2xl">
-        <div class="rounded-2xl bg-panel/80 backdrop-blur-xl shadow-glass p-6 h-full">
-          <div class="text-lg font-semibold">Simple setup</div>
-          <p class="text-white/65 mt-2">Register staff, post a rating UI, and you’re live. No clutter.</p>
-        </div>
-      </article>
-
-      <article class="reveal gborder p-[1px] rounded-2xl">
-        <div class="rounded-2xl bg-panel/80 backdrop-blur-xl shadow-glass p-6 h-full">
-          <div class="text-lg font-semibold">Honest feedback</div>
-          <p class="text-white/65 mt-2">Anonymous ratings with optional comments, shared to result channels.</p>
-        </div>
-      </article>
-
-      <article class="reveal gborder p-[1px] rounded-2xl">
-        <div class="rounded-2xl bg-panel/80 backdrop-blur-xl shadow-glass p-6 h-full">
-          <div class="text-lg font-semibold">Tickets that flow</div>
-          <p class="text-white/65 mt-2">Open, claim, close — with logs and role-gated access.</p>
-        </div>
-      </article>
-
-      <article class="reveal gborder p-[1px] rounded-2xl">
-        <div class="rounded-2xl bg-panel/80 backdrop-blur-xl shadow-glass p-6 h-full">
-          <div class="text-lg font-semibold">Applications</div>
-          <p class="text-white/65 mt-2">Build forms, receive responses, accept/reject, auto-role on accept.</p>
-        </div>
-      </article>
-
-      <article class="reveal gborder p-[1px] rounded-2xl">
-        <div class="rounded-2xl bg-panel/80 backdrop-blur-xl shadow-glass p-6 h-full">
-          <div class="text-lg font-semibold">Leaderboards</div>
-          <p class="text-white/65 mt-2">Celebrate your best staff with live leaderboards.</p>
-        </div>
-      </article>
-
-      <article class="reveal gborder p-[1px] rounded-2xl">
-        <div class="rounded-2xl bg-panel/80 backdrop-blur-xl shadow-glass p-6 h-full">
-          <div class="text-lg font-semibold">Profiles & polls</div>
-          <p class="text-white/65 mt-2">Showcase profiles with recent feedback. Run fast polls for decisions.</p>
-        </div>
-      </article>
+  <section id="features" class="max-w-6xl mx-auto px-4 pb-16">
+    <h2 class="text-2xl font-semibold mb-6">Why servers pick Staff Rater</h2>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div class="rounded-2xl bg-panel/60 p-5 shadow-glow">
+        <div class="text-cyan-300 font-semibold">Honest reviews</div>
+        <p class="text-white/70 mt-2">Anonymous ratings with comment optional. Flag unfair reviews for moderation.</p>
+      </div>
+      <div class="rounded-2xl bg-panel/60 p-5 shadow-glow">
+        <div class="text-cyan-300 font-semibold">Tickets done right</div>
+        <p class="text-white/70 mt-2">One click to open, claim, and close — with logs.</p>
+      </div>
+      <div class="rounded-2xl bg-panel/60 p-5 shadow-glow">
+        <div class="text-cyan-300 font-semibold">Powerful applications</div>
+        <p class="text-white/70 mt-2">Custom forms, accept/reject flow, even start interview tickets.</p>
+      </div>
+      <div class="rounded-2xl bg-panel/60 p-5 shadow-glow">
+        <div class="text-cyan-300 font-semibold">Live dashboards</div>
+        <p class="text-white/70 mt-2">See your servers, configure channels, and more.</p>
+      </div>
+      <div class="rounded-2xl bg-panel/60 p-5 shadow-glow">
+        <div class="text-cyan-300 font-semibold">Secure OAuth</div>
+        <p class="text-white/70 mt-2">Sign in with Discord, no passwords, no fuss.</p>
+      </div>
+      <div class="rounded-2xl bg-panel/60 p-5 shadow-glow">
+        <div class="text-cyan-300 font-semibold">Fast & lightweight</div>
+        <p class="text-white/70 mt-2">Pure static frontend with serverless API — speedy everywhere.</p>
+      </div>
     </div>
   </section>
 
-  <!-- Showcase / CTA -->
-  <section id="showcase" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24">
-    <div class="gborder p-[1px] rounded-3xl">
-      <div class="rounded-3xl bg-panel/80 backdrop-blur-xl shadow-glow p-6 sm:p-8">
-        <div class="grid lg:grid-cols-2 gap-8 items-center">
-          <div>
-            <h2 class="text-2xl sm:text-3xl font-bold">Install in seconds. Moderate with style.</h2>
-            <p class="text-white/70 mt-3">Staff Rater is designed to look amazing and stay fast, with every action just a click away.</p>
-            <div class="flex flex-col sm:flex-row gap-3 mt-6">
-              <a href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands"
-                 class="btn inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-brand1 to-brand2 text-black font-semibold shadow-glow">
-                <span class="shine"></span>
-                Add to Discord
-              </a>
-              <a href="https://www.staffrater.xyz/api/login"
-                 class="btn inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10 shadow-glow">
-                <span class="shine"></span>
-                Sign in with Discord
-              </a>
-            </div>
-          </div>
-          <div class="tilt">
-            <div class="tilt-up rounded-2xl bg-white/5 ring-1 ring-white/10 p-4 sm:p-6">
-              <div class="text-white/80 text-sm">Preview</div>
-              <div class="mt-3 h-56 sm:h-64 lg:h-72 rounded-xl bg-white/5 ring-1 ring-white/10 flex items-center justify-center">
-                <span class="text-white/40">Beautiful embeds & UI elements</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <!-- How -->
+  <section id="how" class="max-w-6xl mx-auto px-4 pb-20">
+    <h2 class="text-2xl font-semibold mb-6">How it works</h2>
+    <ol class="space-y-4 text-white/70">
+      <li>1. Invite the bot to your server</li>
+      <li>2. Open the dashboard and pick your server</li>
+      <li>3. Configure rating + result channels, tickets, and applications</li>
+      <li>4. Post your rating UI and go!</li>
+    </ol>
   </section>
 
   <!-- Footer -->
-  <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 md:mt-24 mb-10 text-white/50">
-    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <img src="/staff-rater-icon.png" class="w-7 h-7 rounded-lg ring-1 ring-white/10" alt="">
-        <span>© <span id="year"></span> Staff Rater</span>
-      </div>
-      <div class="flex items-center gap-4">
-        <a href="https://discord.gg/BR7zmffNFC" class="hover:text-white">Support</a>
-        <a href="https://www.staffrater.xyz/api/login" class="hover:text-white">Dashboard</a>
+  <footer class="border-t border-white/5">
+    <div class="max-w-6xl mx-auto px-4 py-6 text-sm text-white/50 flex flex-col sm:flex-row gap-2 justify-between">
+      <div>© <span id="yr"></span> Staff Rater</div>
+      <div class="flex gap-4">
+        <a href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noopener" class="hover:text-white/70">Support</a>
+        <a href="/dashboard/index.html" class="hover:text-white/70">Dashboard</a>
       </div>
     </div>
   </footer>
 
-  <!-- Scripts -->
+  <!-- Auth & helpers -->
   <script>
-    // Set current year
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    // Reveal on scroll
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('revealed'); });
-    }, { threshold: .15 });
-    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
-
-    // Auth area: swap login button with avatar if logged in
-    async function hydrateAuth() {
+    document.getElementById('yr').textContent = new Date().getFullYear();
+  </script>
+  <script>
+  (function () {
+    // 1) Capture token from HASH or QUERY, store in sessionStorage, clean URL
+    (function captureToken() {
       try {
-        const r = await fetch('/api/me', { credentials: 'include' });
-        const data = await r.json().catch(() => ({}));
-        const el = document.getElementById('auth-area');
-        if (!el) return;
+        var t=null;
+        if (location.hash) {
+          var m = location.hash.match(/(?:^|[&#])token=([^&#]+)/);
+          if (m) t = decodeURIComponent(m[1]);
+        }
+        if (!t && location.search) {
+          var m2 = location.search.match(/(?:\?|&)token=([^&#]+)/);
+          if (m2) t = decodeURIComponent(m2[1]);
+        }
+        if (t) {
+          sessionStorage.setItem('sr_token', t);
+          var clean = location.origin + location.pathname + location.search.replace(/([?&])token=[^&#]+(&|$)/, function(_,a,b){return a==='?'&&b?'?':''}) + (location.hash.replace(/(#|&)token=[^&#]+/,'')||'');
+          history.replaceState(null,'', clean);
+        }
+      } catch(e){}
+    })();
 
-        if (r.ok && data.ok && data.session && data.session.user) {
-          const u = data.session.user;
-          const avatar = u.avatar
-            ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64`
-            : 'https://cdn.discordapp.com/embed/avatars/0.png';
+    // 2) Patch fetch for /api/*
+    (function patchFetch(){
+      var orig = window.fetch;
+      window.fetch = function(input, init){
+        try{
+          var url = (typeof input==='string')?input:input.url;
+          if (url && url.indexOf('http')!==0 && url.startsWith('/api/')){
+            init = init || {};
+            var h = new Headers(init.headers || {});
+            var tok = sessionStorage.getItem('sr_token');
+            if (tok) h.set('Authorization','Bearer '+tok);
+            init.headers = h;
+            if (!('credentials' in init)) init.credentials='omit';
+            if (!('cache' in init)) init.cache='no-store';
+            return orig(url, init);
+          }
+        }catch(e){}
+        return orig(input, init);
+      };
+    })();
+
+    // 3) Hydrate header auth area (if logged in)
+    (async function hydrate(){
+      var el=document.getElementById('auth-area'); if(!el) return;
+      try{
+        var r=await fetch('/api/me'); var d=await r.json().catch(()=>({}));
+        if(r.ok && d.ok && d.session && d.session.user){
+          var u=d.session.user;
+          var avatar = u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64` : 'https://cdn.discordapp.com/embed/avatars/0.png';
           el.innerHTML = `
-            <a href="/dashboard/index.html" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Go to Dashboard</a>
+            <a href="/dashboard/index.html" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Dashboard</a>
             <div class="flex items-center gap-3">
-              <img src="${avatar}" alt="" class="w-8 h-8 rounded-full ring-1 ring-white/10"/>
-              <span class="text-white/80 text-sm max-w-[120px] truncate">${u.username}</span>
+              <img src="${avatar}" class="w-8 h-8 rounded-full ring-1 ring-white/10" alt="">
+              <span class="text-white/80 text-sm max-w-[140px] truncate">${u.username}</span>
               <a href="/api/logout?redirect=/" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Log out</a>
             </div>`;
-        } else {
-          // leave default "Sign in" button
         }
-      } catch (e) {
-        // network error → leave default "Sign in"
-      }
-    }
-    hydrateAuth();
+      }catch(e){}
+    })();
+  })();
   </script>
 </body>
 </html>
-
-
