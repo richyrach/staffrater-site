@@ -1,4 +1,5 @@
 "use strict";
+// Quick check that Vercel can see your Upstash env and that REST path style works.
 
 module.exports = async (req, res) => {
   res.setHeader("Content-Type", "application/json");
@@ -22,13 +23,8 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const r = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ cmd: "PING", args: [] })
+    const r = await fetch(`${url}/ping`, {
+      headers: { "Authorization": `Bearer ${token}` }
     });
     const j = await r.json().catch(()=>null);
     res.statusCode = 200;
