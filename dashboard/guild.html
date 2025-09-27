@@ -6,7 +6,7 @@
   <title>Staff Rater — Guild Settings</title>
   <link rel="icon" href="/staff-rater-icon.png">
 
-  <!-- (Optional) force the canonical host -->
+  <!-- Force canonical host (optional but recommended) -->
   <script>
     (function(){
       var wanted="www.staffrater.xyz";
@@ -28,24 +28,36 @@
             line: 'rgba(255,255,255,0.08)'
           },
           fontFamily: {
-            sans: ['Inter', 'ui-sans-serif', 'system-ui'],
-            mono: ['JetBrains Mono', 'ui-monospace']
-          }
+            sans: ['Inter','ui-sans-serif','system-ui'],
+            mono: ['JetBrains Mono','ui-monospace']
+          },
+          keyframes: {
+            reveal: { '0%': { opacity: 0, transform: 'translateY(10px)'}, '100%': { opacity: 1, transform: 'none' } }
+          },
+          animation: { reveal: 'reveal .4s ease forwards' }
         }
       }
     }
   </script>
+
   <style>
-    :root { color-scheme: dark; } html, body { background: #070b14; }
-    .panel { background-color: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius: 16px; }
-    .menu a { display:block; padding:.65rem .9rem; border-radius:.6rem; color: rgba(255,255,255,.75); }
+    :root { color-scheme: dark; }
+    html, body { background: #070b14; }
+    .panel { background-color: rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius: 16px; }
+    .menu a { display:block; padding:.6rem .8rem; border-radius:.55rem; color: rgba(255,255,255,.75); transition: background .2s ease; }
     .menu a:hover, .menu a.active { background: rgba(255,255,255,.08); color:#fff; }
-    .btn { display:inline-flex; align-items:center; gap:.5rem; padding:.6rem .9rem; border-radius:.8rem; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1); }
+    .btn { display:inline-flex; align-items:center; gap:.5rem; padding:.6rem .9rem; border-radius:.8rem; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1); transition: background .2s ease, transform .05s ease; }
     .btn:hover { background:rgba(255,255,255,.12); }
-    .sel { width:100%; background:#0c1322; border:1px solid rgba(255,255,255,.1); border-radius:.6rem; padding:.6rem .7rem; color:#fff; }
+    .btn:active { transform: translateY(1px); }
+    .sel, .inp {
+      width:100%; background:#0c1322; border:1px solid rgba(255,255,255,.12);
+      border-radius:.6rem; padding:.6rem .7rem; color:#fff; outline: none;
+    }
     .note { font-size:.85rem; color:rgba(255,255,255,.70); }
     .err { color:#ff9b9b; }
     .ok { color:#90EE90; }
+    .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.12), rgba(255,255,255,0.06)); background-size:200% 100%; animation: sk 1.2s linear infinite; }
+    @keyframes sk { 100% { background-position: -200% 0; } }
   </style>
 </head>
 <body class="text-white font-sans antialiased">
@@ -64,7 +76,7 @@
   </header>
 
   <!-- Main -->
-  <main class="max-w-6xl mx-auto px-4 py-8 grid lg:grid-cols-[240px,1fr] gap-6">
+  <main class="max-w-6xl mx-auto px-4 py-6 grid lg:grid-cols-[240px,1fr] gap-6">
     <!-- Sidebar -->
     <aside class="panel p-3 menu h-max">
       <div class="text-white/70 text-sm mb-2">Sections</div>
@@ -79,7 +91,7 @@
     <!-- Content -->
     <section class="space-y-6">
       <!-- Header card -->
-      <div class="panel p-5">
+      <div class="panel p-5 animate-reveal">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="flex items-center gap-3">
             <img id="gicon" src="https://cdn.discordapp.com/embed/avatars/1.png" class="w-10 h-10 rounded-lg ring-1 ring-white/10" alt="">
@@ -93,13 +105,13 @@
       </div>
 
       <!-- Overview -->
-      <div id="overview" class="panel p-5">
+      <div id="overview" class="panel p-5 animate-reveal">
         <h2 class="font-semibold">Overview</h2>
         <div id="info" class="text-white/70 mt-2 text-sm">Loading…</div>
       </div>
 
       <!-- Ratings -->
-      <div id="ratings" class="panel p-5">
+      <div id="ratings" class="panel p-5 animate-reveal">
         <h2 class="font-semibold">Ratings</h2>
         <p class="note mt-1">Choose channels by name (no IDs needed).</p>
         <div class="grid md:grid-cols-2 gap-4 mt-4">
@@ -119,7 +131,7 @@
       </div>
 
       <!-- Tickets -->
-      <div id="tickets" class="panel p-5">
+      <div id="tickets" class="panel p-5 animate-reveal">
         <h2 class="font-semibold">Tickets</h2>
         <p class="note mt-1">Pick your ticket category, staff role, and optional log channel.</p>
         <div class="grid md:grid-cols-3 gap-4 mt-4">
@@ -143,19 +155,19 @@
       </div>
 
       <!-- Applications -->
-      <div id="applications" class="panel p-5">
+      <div id="applications" class="panel p-5 animate-reveal">
         <h2 class="font-semibold">Applications</h2>
         <p class="note mt-1">Create templates and add questions using your bot’s slash commands. This page will later show pending applications.</p>
       </div>
 
       <!-- Polls -->
-      <div id="polls" class="panel p-5">
+      <div id="polls" class="panel p-5 animate-reveal">
         <h2 class="font-semibold">Polls</h2>
         <p class="note mt-1">Create and review polls via slash commands. Recent polls will appear here in a future update.</p>
       </div>
 
       <!-- Live Command Log -->
-      <div id="commandlog" class="panel p-5">
+      <div id="commandlog" class="panel p-5 animate-reveal">
         <h2 class="font-semibold">Live Command Log</h2>
         <pre id="log" class="text-white/70 mt-2 text-sm whitespace-pre-wrap">Waiting for events…</pre>
       </div>
@@ -164,7 +176,7 @@
 
   <script>
     (function(){
-      // 1) Capture token sent back from /api/callback
+      // 1) Capture token sent back from /api/callback and clean the URL
       (function captureToken(){
         try{
           var t=null;
@@ -178,7 +190,7 @@
         }catch(e){}
       })();
 
-      // 2) Patch fetch so /api/* includes Authorization header automatically
+      // 2) Patch fetch: automatically attach Authorization for our /api/* calls
       (function patchFetch(){
         var orig=window.fetch;
         window.fetch=function(input, init){
@@ -197,25 +209,26 @@
         };
       })();
 
-      // 3) Helpers
-      function byId(id){ return document.getElementById(id); }
-      const params=new URLSearchParams(location.search);
-      const guildId=params.get('guild_id')||'';
-      const info=byId('info');
-      const logEl=byId('log');
+      // Helpers
+      const $ = id => document.getElementById(id);
+      const params = new URLSearchParams(location.search);
+      const guildId = params.get('guild_id') || '';
+      const info = $('info');
+      const logEl = $('log');
 
-      // 4) Load session & header
+      // 3) Header auth area
       (async function hydrateHeader(){
-        const auth=byId('auth-area');
+        const auth = $('auth-area');
         try{
-          const r=await fetch('/api/me');
-          const d=r.ok?await r.json():null;
-          if(!d||!d.ok||!d.session||!d.session.user){
-            auth.innerHTML = `<a href="/api/login?return=/dashboard/guild.html${guildId?`?guild_id=${encodeURIComponent(guildId)}`:''}" class="btn">Sign in</a>`;
-            byId('gsubtitle').textContent='Please sign in.';
+          const r = await fetch('/api/me');
+          const d = r.ok ? await r.json() : null;
+          if(!d || !d.ok || !d.session || !d.session.user){
+            const ret = encodeURIComponent('/dashboard/guild.html'+(guildId?`?guild_id=${guildId}`:''));
+            auth.innerHTML = `<a href="/api/login?return=${ret}" class="btn">Sign in</a>`;
+            $('gsubtitle').textContent='Please sign in.';
             return;
           }
-          const u=d.session.user;
+          const u = d.session.user;
           const avatar = u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64` : 'https://cdn.discordapp.com/embed/avatars/0.png';
           auth.innerHTML = `
             <a href="/dashboard/index.html" class="hidden sm:inline-flex btn">All servers</a>
@@ -225,22 +238,22 @@
               <a href="/api/logout?redirect=/dashboard/index.html" class="btn">Log out</a>
             </div>`;
 
-          // Set header icon/name if we know this guild from session
+          // If the session has guilds, try to display this one
           const g = (d.session.guilds||[]).find(x=>x.id===guildId);
           if (g){
-            byId('gtitle').textContent = g.name;
-            byId('gicon').src = g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128` : 'https://cdn.discordapp.com/embed/avatars/1.png';
-            byId('gsubtitle').textContent = 'Configure Staff Rater for this server.';
+            $('gtitle').textContent = g.name;
+            $('gicon').src = g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128` : 'https://cdn.discordapp.com/embed/avatars/1.png';
+            $('gsubtitle').textContent = 'Configure Staff Rater for this server.';
           } else {
-            byId('gtitle').textContent = guildId ? `Server — ${guildId}` : 'Server';
-            byId('gsubtitle').textContent = 'Configure Staff Rater for this server.';
+            $('gtitle').textContent = guildId ? `Server — ${guildId}` : 'Server';
+            $('gsubtitle').textContent = 'Configure Staff Rater for this server.';
           }
         }catch(e){
-          byId('gsubtitle').textContent='Could not load session.';
+          $('gsubtitle').textContent='Could not load session.';
         }
       })();
 
-      // 5) Load guild structure + config; populate selects by NAME
+      // 4) Load guild structure & config
       (async function loadGuild(){
         if(!guildId){ info.innerHTML='<span class="err">Missing guild_id.</span>'; return; }
 
@@ -259,70 +272,75 @@
           }
           channels = Array.isArray(g.channels)?g.channels:[];
           roles     = Array.isArray(g.roles)?g.roles:[];
-          categories= Array.isArray(g.categories)?g.categories: (channels.filter(c=>c.type===4) || []);
+          categories= Array.isArray(g.categories)?g.categories:(channels.filter(c=>c.type===4)||[]);
           info.innerHTML='<span class="ok">Guild loaded.</span>';
         }catch(e){
           info.innerHTML='<span class="err">Error loading guild structure.</span>';
           return;
         }
 
-        // Populate selects
+        // Populate selects by name
         function fillSelect(sel, items, labelKey='name', valueKey='id'){
           sel.innerHTML = items.map(it=>`<option value="${it[valueKey]}">${it[labelKey]}</option>`).join('');
         }
-        const textChannels = channels.filter(c=>c.type===0 || c.type==='GUILD_TEXT' || typeof c.type==='undefined'); // tolerant
-        fillSelect(byId('ratingChannel'), textChannels);
-        fillSelect(byId('resultChannel'), textChannels);
-        fillSelect(byId('ticketLogChannel'), textChannels);
-        fillSelect(byId('ticketCategory'), categories);
-        fillSelect(byId('ticketStaffRole'), roles);
+        const textChannels = channels.filter(c=>c.type===0 || c.type==='GUILD_TEXT' || typeof c.type==='undefined');
+        fillSelect($('ratingChannel'), textChannels);
+        fillSelect($('resultChannel'), textChannels);
+        fillSelect($('ticketLogChannel'), textChannels);
+        fillSelect($('ticketCategory'), categories);
+        fillSelect($('ticketStaffRole'), roles);
 
-        // Load current config to preselect
+        // Load current config to pre-select
         try{
           const r=await fetch('/api/config-get?guild_id='+encodeURIComponent(guildId));
           if(r.ok){
             const cfg=await r.json();
             if(cfg && typeof cfg==='object'){
-              if(cfg.rating_channel) byId('ratingChannel').value = String(cfg.rating_channel);
-              if(cfg.result_channel) byId('resultChannel').value = String(cfg.result_channel);
-              if(cfg.ticket_category) byId('ticketCategory').value = String(cfg.ticket_category);
-              if(cfg.ticket_staff_role) byId('ticketStaffRole').value = String(cfg.ticket_staff_role);
-              if(cfg.ticket_log_channel) byId('ticketLogChannel').value = String(cfg.ticket_log_channel);
+              if(cfg.rating_channel) $('ratingChannel').value = String(cfg.rating_channel);
+              if(cfg.result_channel) $('resultChannel').value = String(cfg.result_channel);
+              if(cfg.ticket_category) $('ticketCategory').value = String(cfg.ticket_category);
+              if(cfg.ticket_staff_role) $('ticketStaffRole').value = String(cfg.ticket_staff_role);
+              if(cfg.ticket_log_channel) $('ticketLogChannel').value = String(cfg.ticket_log_channel);
             }
+          } else {
+            // Show reason
+            $('info').innerHTML += ' • <span class="err">config-get failed:</span> '+ await r.text();
           }
         }catch(e){}
 
-        // Save handlers
-        byId('saveRatings').addEventListener('click', async ()=>{
-          const msg=byId('saveRatingsMsg'); msg.textContent='Saving...';
+        // Save handlers with detailed error output
+        $('saveRatings').addEventListener('click', async ()=>{
+          const msg=$('saveRatingsMsg'); msg.textContent='Saving...';
           try{
             const body={
               guild_id: guildId,
-              rating_channel_id: byId('ratingChannel').value,
-              result_channel_id: byId('resultChannel').value
+              rating_channel_id: $('ratingChannel').value,
+              result_channel_id: $('resultChannel').value
             };
             const r=await fetch('/api/config-set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-            msg.textContent = r.ok ? 'Saved!' : 'Failed';
-          }catch(e){ msg.textContent='Failed'; }
-          setTimeout(()=>msg.textContent='',1500);
+            if(r.ok){ msg.textContent='Saved!'; }
+            else { msg.textContent='Failed: '+ await r.text(); }
+          }catch(e){ msg.textContent='Failed: '+(e?.message||''); }
+          setTimeout(()=>msg.textContent='',3500);
         });
 
-        byId('saveTickets').addEventListener('click', async ()=>{
-          const msg=byId('saveTicketsMsg'); msg.textContent='Saving...';
+        $('saveTickets').addEventListener('click', async ()=>{
+          const msg=$('saveTicketsMsg'); msg.textContent='Saving...';
           try{
             const body={
               guild_id: guildId,
-              ticket_category_id: byId('ticketCategory').value,
-              ticket_staff_role_id: byId('ticketStaffRole').value,
-              ticket_log_channel_id: byId('ticketLogChannel').value || null
+              ticket_category_id: $('ticketCategory').value,
+              ticket_staff_role_id: $('ticketStaffRole').value,
+              ticket_log_channel_id: $('ticketLogChannel').value || null
             };
             const r=await fetch('/api/config-set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-            msg.textContent = r.ok ? 'Saved!' : 'Failed';
-          }catch(e){ msg.textContent='Failed'; }
-          setTimeout(()=>msg.textContent='',1500);
+            if(r.ok){ msg.textContent='Saved!'; }
+            else { msg.textContent='Failed: '+ await r.text(); }
+          }catch(e){ msg.textContent='Failed: '+(e?.message||''); }
+          setTimeout(()=>msg.textContent='',3500);
         });
 
-        // Live command log poll
+        // Live command log poll (last 20 entries)
         async function pollLog(){
           try{
             const r=await fetch('/api/command-log-get?guild_id='+encodeURIComponent(guildId));
@@ -335,7 +353,7 @@
                   }).join('\n')
                 : 'No recent commands.';
             } else {
-              logEl.textContent = 'Unable to read command log.';
+              logEl.textContent = 'Unable to read command log: '+ await r.text();
             }
           }catch(e){ /* ignore */ }
           setTimeout(pollLog, 4000);
