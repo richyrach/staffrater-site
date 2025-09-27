@@ -3,25 +3,24 @@
  * /api/guild-structure?guild_id=...
  *
  * Robust version:
- * - Reads user session (id from our small token).
+ * - Reads logged-in session (for user id).
  * - Uses BOT token to:
  *    a) verify the user is a member of the guild,
- *    b) compute their permissions from roles,
- *    c) if Admin or Manage Server -> return channels/roles/categories (by name).
- *
- * Returns (on success):
- * {
- *   ok: true,
- *   channels: [{id,name,type,position,parent_id?}, ...],
- *   roles:    [{id,name,position}, ...],
- *   categories:[{id,name,type:4,position}, ...]
- * }
+ *    b) compute their permissions from roles (@everyone + role bitfields),
+ *    c) allow only if Admin or Manage Server,
+ *    d) return channels/roles/categories by name.
  */
 
 const { getSessionFromReq } = require("../lib/auth");
 
 const PERM_ADMIN = 0x00000008;        // ADMINISTRATOR
 const PERM_MANAGE_GUILD = 0x00000020; // MANAGE_GUILD
+
+// ✅ Accept both env names so you don't have to rename anything in Vercel
+const BOT_TOKEN =
+  process.env.BOT_TOKEN ||
+  process.env.DISCORD_BOT_TOKEN ||   // your current name
+  process.env.BOT_SECRET;            // optional extra fallback
 
 function toBigInt(x) {
   try { return BigInt(String(x)); } catch { return 0n; }
@@ -41,20 +40,21 @@ module.exports = async (req, res) => {
       return res.end(JSON.stringify({ ok:false, error:"missing_guild_id" }));
     }
 
+    // Must be logged in
     const session = getSessionFromReq(req);
     if (!session || !session.user || !session.user.id) {
       res.statusCode = 401;
       return res.end(JSON.stringify({ ok:false, error:"no_session" }));
     }
 
-    const userId = session.user.id;
-    const BOT_TOKEN = process.env.BOT_TOKEN;
     if (!BOT_TOKEN) {
       res.statusCode = 500;
       return res.end(JSON.stringify({ ok:false, error:"missing_bot_token" }));
     }
 
-    // --- Fetch guild (for owner_id and sanity) ---
+    const userId = session.user.id;
+
+    // --- Fetch guild (owner_id etc) ---
     const gR = await fetch(`https://discord.com/api/guilds/${guildId}`, {
       headers: { Authorization: `Bot ${BOT_TOKEN}` }
     });
@@ -81,10 +81,14 @@ module.exports = async (req, res) => {
     for (const r of rolesRaw) roleMap.set(String(r.id), r);
 
     const roles = rolesRaw
-      .map(r => ({ id: r.id, name: r.name, position: typeof r.position === "number" ? r.position : 0 }))
+      .map(r => ({
+        id: r.id,
+        name: r.name,
+        position: typeof r.position === "number" ? r.position : 0
+      }))
       .sort((a,b) => b.position - a.position || a.name.localeCompare(b.name));
 
-    // --- Fetch member (verify membership & compute perms) ---
+    // --- Fetch member (verify membership & perms) ---
     const mR = await fetch(`https://discord.com/api/guilds/${guildId}/members/${userId}`, {
       headers: { Authorization: `Bot ${BOT_TOKEN}` }
     });
@@ -101,10 +105,10 @@ module.exports = async (req, res) => {
 
     const member = await mR.json(); // { user, roles:[roleId,...], ... }
 
-    // Owner shortcut:
+    // Owner shortcut => full access
     if (String(guild.owner_id) !== String(userId)) {
       // Compute permissions from @everyone + member roles
-      // The @everyone role in Discord has id == guild.id
+      // The @everyone role id == guild.id
       let permBits = toBigInt((roleMap.get(String(guildId))?.permissions) || "0");
 
       for (const rid of (member.roles || [])) {
@@ -114,7 +118,7 @@ module.exports = async (req, res) => {
         }
       }
 
-      const hasAdmin = (permBits & BigInt(PERM_ADMIN)) !== 0n;
+      const hasAdmin       = (permBits & BigInt(PERM_ADMIN)) !== 0n;
       const hasManageGuild = (permBits & BigInt(PERM_MANAGE_GUILD)) !== 0n;
 
       if (!hasAdmin && !hasManageGuild) {
@@ -122,9 +126,8 @@ module.exports = async (req, res) => {
         return res.end(JSON.stringify({ ok:false, error:"insufficient_permissions" }));
       }
     }
-    // else: user is owner => allowed
 
-    // --- Fetch channels for the guild ---
+    // --- Fetch channels ---
     const chR = await fetch(`https://discord.com/api/guilds/${guildId}/channels`, {
       headers: { Authorization: `Bot ${BOT_TOKEN}` }
     });
