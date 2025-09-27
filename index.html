@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="/staff-rater-icon.png" />
   <style>
     :root{
       --bg:#0b0f17; --surface:#0f1522; --card:#141b2c; --muted:#a3b1d1; --text:#e8eefc; --brand:#6ee7ff; --brand-2:#9b8cff; --accent:#64ffda; --warning:#ffcf5c; --danger:#ff6b6b;
@@ -17,30 +18,22 @@
     [data-theme="light"]{ --bg:#f6f9ff; --surface:#ffffff; --card:#ffffff; --text:#0b1020; --muted:#5c6b8c; --shadow:0 10px 30px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.5); }
     *{ box-sizing:border-box }
     html,body{ height:100% }
-    body{
-      margin:0; font-family:'Inter',system-ui,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif; color:var(--text); background:radial-gradient(1200px 700px at 10% -10%, rgba(155,140,255,.25), transparent 60%), radial-gradient(900px 500px at 110% 10%, rgba(110,231,255,.18), transparent 60%), var(--bg);
-      overflow-x:hidden; 
-    }
+    body{ margin:0; font-family:'Inter',system-ui,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif; color:var(--text); background:radial-gradient(1200px 700px at 10% -10%, rgba(155,140,255,.25), transparent 60%), radial-gradient(900px 500px at 110% 10%, rgba(110,231,255,.18), transparent 60%), var(--bg); overflow-x:hidden; }
     a{ color:inherit; text-decoration:none }
     .container{ width:min(1200px, 92vw); margin:0 auto }
-    .nav{
-      position:sticky; top:0; z-index:50; backdrop-filter:saturate(1.2) blur(12px); background:linear-gradient(180deg, rgba(10,14,24,.75) 0%, rgba(10,14,24,.45) 100%);
-      border-bottom:1px solid rgba(255,255,255,.06);
-    }
+    .nav{ position:sticky; top:0; z-index:50; backdrop-filter:saturate(1.2) blur(12px); background:linear-gradient(180deg, rgba(10,14,24,.75) 0%, rgba(10,14,24,.45) 100%); border-bottom:1px solid rgba(255,255,255,.06); }
     .nav-inner{ display:flex; align-items:center; justify-content:space-between; padding:16px 0 }
     .logo{ display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px; }
-    .logo-badge{ width:38px; height:38px; border-radius:12px; background:conic-gradient(from 210deg, var(--brand), var(--brand-2), var(--accent)); box-shadow:var(--shadow); position:relative; overflow:hidden }
-    .logo-badge::after{ content:""; position:absolute; inset:0; background:radial-gradient(300px 80px at -30% -40%, rgba(255,255,255,.35), transparent), linear-gradient(180deg, rgba(255,255,255,.08), transparent); mix-blend:overlay }
+    .logo-badge{ width:38px; height:38px; border-radius:12px; overflow:hidden; box-shadow:var(--shadow); background:#0b0f17 }
+    .logo-badge img{ width:100%; height:100%; object-fit:cover }
     .nav-actions{ display:flex; gap:10px; align-items:center }
     .btn{ --bgc:linear-gradient(135deg, rgba(110,231,255,.9), rgba(155,140,255,.9)); background:var(--bgc); color:#0d1020; padding:10px 16px; border-radius:12px; font-weight:700; border:0; cursor:pointer; box-shadow:0 10px 20px rgba(110,231,255,.18), 0 6px 14px rgba(155,140,255,.18); transition:transform .15s ease, filter .2s ease }
     .btn:hover{ transform:translateY(-1px) }
     .btn.outline{ background:transparent; color:var(--text); border:1px solid rgba(255,255,255,.12) }
     .theme-toggle{ background:transparent; border:1px solid rgba(255,255,255,.12); color:var(--muted); padding:10px 12px; border-radius:12px; cursor:pointer }
 
-    /* Starfield canvas */
     #stars{ position:fixed; inset:0; z-index:-1; filter:brightness(.9) saturate(1.2) }
 
-    /* Hero */
     .hero{ padding:72px 0 32px; position:relative }
     .hero-grid{ display:grid; grid-template-columns:1.2fr .8fr; gap:40px; align-items:center }
     @media(max-width:950px){ .hero-grid{ grid-template-columns:1fr; gap:28px } }
@@ -56,9 +49,9 @@
     @media(max-width:900px){ .stat-row{ grid-template-columns:repeat(2,1fr) } }
     .stat{ padding:18px; border-radius:14px; border:1px solid rgba(255,255,255,.08); background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02)); position:relative; overflow:hidden }
     .stat .label{ color:var(--muted); font-size:12px; letter-spacing:.4px; text-transform:uppercase }
-    .stat .value{ font-weight:900; font-size:28px; margin-top:6px }
+    .stat .value{ font-weight:900; font-size:28px; min-height:32px }
+    .stat .err{ color:var(--warning); font-size:12px; margin-top:6px }
 
-    /* Feature grid */
     .section{ padding:64px 0 }
     .section h2{ font-size:clamp(26px, 3vw, 36px); margin:0 0 16px 0 }
     .section p.lead{ color:var(--muted); margin:0 0 28px 0 }
@@ -70,7 +63,6 @@
     .feature h3{ margin:4px 0 0 0; font-size:18px }
     .feature p{ margin:0; color:var(--muted); font-size:14px }
 
-    /* Profile preview */
     .profile-preview{ display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:stretch }
     @media(max-width:900px){ .profile-preview{ grid-template-columns:1fr } }
     .badge{ font-size:12px; color:#0c1222; background:linear-gradient(135deg, var(--warning), #ffd26f); padding:6px 10px; border-radius:999px; display:inline-flex; gap:8px; align-items:center; font-weight:800 }
@@ -79,30 +71,22 @@
     .progress{ height:10px; background:rgba(255,255,255,.08); border-radius:999px; overflow:hidden }
     .progress > span{ display:block; height:100%; background:linear-gradient(90deg, var(--brand), var(--brand-2)); width:0 }
 
-    /* Carousel */
     .carousel{ display:flex; gap:16px; overflow:auto; scroll-snap-type:x mandatory; padding-bottom:6px }
     .carousel > div{ scroll-snap-align:start; min-width:280px }
 
-    /* FAQ */
     details{ background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); padding:16px 18px; border-radius:12px }
     summary{ cursor:pointer; font-weight:700 }
     details[open]{ background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03)) }
 
     footer{ border-top:1px solid rgba(255,255,255,.08); padding:28px 0; color:var(--muted) }
 
-    /* Reveal on scroll */
     .reveal{ opacity:0; transform: translateY(14px) scale(.98); transition: opacity .6s ease, transform .6s ease }
     .reveal.in{ opacity:1; transform: translateY(0) scale(1) }
 
-    /* Floating sparkles */
     .sparkle{ position:absolute; width:10px; height:10px; filter: blur(6px); background:radial-gradient(circle, rgba(255,255,255,.9) 0%, rgba(255,255,255,0) 70%); animation: float 8s ease-in-out infinite; opacity:.7 }
     @keyframes float{ 50%{ transform: translateY(-16px) } }
 
-    /* Reduced motion */
-    @media (prefers-reduced-motion: reduce){
-      .reveal{ transition:none }
-      .sparkle{ display:none }
-    }
+    @media (prefers-reduced-motion: reduce){ .reveal{ transition:none } .sparkle{ display:none } }
   </style>
 </head>
 <body>
@@ -112,13 +96,15 @@
   <nav class="nav">
     <div class="container nav-inner">
       <a class="logo" href="/">
-        <span class="logo-badge"></span>
+        <span class="logo-badge"><img src="/staff-rater-icon.png" alt="Staff Rater"></span>
         <span>Staff Rater</span>
       </a>
       <div class="nav-actions">
         <a class="btn outline" href="/dashboard">Dashboard</a>
         <a class="btn outline" href="/profile">Profile</a>
-        <a class="btn" href="/invite">Add to Discord</a>
+        <a class="btn outline" id="loginLink" href="/auth/discord">Login with Discord</a>
+        <a class="btn" id="inviteLink" href="/invite" rel="noopener">Add to Discord</a>
+        <a class="btn outline" id="supportLink" href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noopener">Support</a>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌓</button>
       </div>
     </div>
@@ -129,9 +115,7 @@
     <div class="hero-grid">
       <div>
         <div class="badge">🚀 New: Live Stats + Animated Profiles</div>
-        <h1 class="headline reveal" style="transition-delay:.05s">
-          Rate. Support. <span class="gradient">Grow.</span>
-        </h1>
+        <h1 class="headline reveal" style="transition-delay:.05s">Rate. Support. <span class="gradient">Grow.</span></h1>
         <p class="sub reveal" style="transition-delay:.1s">Run a professional community with ratings, tickets, applications, polls and a beautiful profile system — all connected to your Discord.</p>
         <div class="cta reveal" style="transition-delay:.15s">
           <a class="btn" href="/dashboard" id="getStarted">Get Started</a>
@@ -139,27 +123,27 @@
         </div>
 
         <div class="stat-row reveal" style="transition-delay:.2s">
-          <div class="stat glass"><div class="label">Guilds</div><div class="value" data-counter="guilds">0</div></div>
-          <div class="stat glass"><div class="label">Total Ratings</div><div class="value" data-counter="total_ratings">0</div></div>
-          <div class="stat glass"><div class="label">Avg Rating</div><div class="value" data-counter="avg_rating">0</div></div>
-          <div class="stat glass"><div class="label">Open Tickets</div><div class="value" data-counter="tickets_open">0</div></div>
-          <div class="stat glass"><div class="label">Cmds (24h)</div><div class="value" data-counter="cmds_24h">0</div></div>
+          <div class="stat glass"><div class="label">Guilds</div><div class="value" data-counter="guilds">—</div><div class="err" data-err="guilds"></div></div>
+          <div class="stat glass"><div class="label">Total Ratings</div><div class="value" data-counter="total_ratings">—</div><div class="err" data-err="total_ratings"></div></div>
+          <div class="stat glass"><div class="label">Avg Rating</div><div class="value" data-counter="avg_rating">—</div><div class="err" data-err="avg_rating"></div></div>
+          <div class="stat glass"><div class="label">Open Tickets</div><div class="value" data-counter="tickets_open">—</div><div class="err" data-err="tickets_open"></div></div>
+          <div class="stat glass"><div class="label">Cmds (24h)</div><div class="value" data-counter="cmds_24h">—</div><div class="err" data-err="cmds_24h"></div></div>
         </div>
       </div>
 
       <!-- Hero Visual / Profile Preview -->
       <div class="glass hero-card reveal" id="tilt">
         <div style="display:flex; align-items:center; gap:12px">
-          <img src="/assets/hero-avatar.png" alt="Profile" width="56" height="56" style="border-radius:14px; object-fit:cover; background:#1a2236" onerror="this.style.display='none'">
+          <img src="/staff-rater-icon.png" alt="Profile" width="56" height="56" style="border-radius:14px; object-fit:cover; background:#1a2236">
           <div>
             <div style="font-weight:800">@StaffStar</div>
             <div style="color:var(--muted); font-size:13px">Community Manager</div>
           </div>
         </div>
         <div class="kpi">
-          <div class="item glass"><div class="label">⭐ Avg</div><div class="value" id="pp-avg">4.9</div></div>
-          <div class="item glass"><div class="label">Reviews</div><div class="value" id="pp-rev">128</div></div>
-          <div class="item glass"><div class="label">Tickets</div><div class="value" id="pp-tick">42</div></div>
+          <div class="item glass"><div class="label">⭐ Avg</div><div class="value" id="pp-avg">—</div></div>
+          <div class="item glass"><div class="label">Reviews</div><div class="value" id="pp-rev">—</div></div>
+          <div class="item glass"><div class="label">Tickets</div><div class="value" id="pp-tick">—</div></div>
         </div>
         <div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
@@ -169,18 +153,9 @@
           <div class="progress"><span id="pp-prog-bar" style="width:73%"></span></div>
         </div>
         <div class="carousel">
-          <div class="glass" style="padding:14px; border-radius:12px">
-            <div style="font-size:13px; color:var(--muted); margin-bottom:6px">Recent Review</div>
-            <div>“Super helpful and quick to respond!”</div>
-          </div>
-          <div class="glass" style="padding:14px; border-radius:12px">
-            <div style="font-size:13px; color:var(--muted); margin-bottom:6px">Badge</div>
-            <div>💎 Problem Solver</div>
-          </div>
-          <div class="glass" style="padding:14px; border-radius:12px">
-            <div style="font-size:13px; color:var(--muted); margin-bottom:6px">Poll Win</div>
-            <div>Feature of the Month 🏆</div>
-          </div>
+          <div class="glass" style="padding:14px; border-radius:12px"><div style="font-size:13px; color:var(--muted); margin-bottom:6px">Recent Review</div><div>“Super helpful and quick to respond!”</div></div>
+          <div class="glass" style="padding:14px; border-radius:12px"><div style="font-size:13px; color:var(--muted); margin-bottom:6px">Badge</div><div>💎 Problem Solver</div></div>
+          <div class="glass" style="padding:14px; border-radius:12px"><div style="font-size:13px; color:var(--muted); margin-bottom:6px">Poll Win</div><div>Feature of the Month 🏆</div></div>
         </div>
         <div class="sparkle" style="left:10%; bottom:10%"></div>
         <div class="sparkle" style="right:12%; top:12%"></div>
@@ -193,36 +168,12 @@
     <h2 class="reveal">All-in-one staff toolkit</h2>
     <p class="lead reveal">Ratings, tickets, applications, and polls — plus dashboards and profiles your community will actually enjoy using.</p>
     <div class="features">
-      <div class="feature glass reveal" style="transition-delay:.05s">
-        <div class="icon">⭐</div>
-        <h3>Staff Ratings</h3>
-        <p>Collect fair feedback with DMs and result channels. Export CSV in one click.</p>
-      </div>
-      <div class="feature glass reveal" style="transition-delay:.1s">
-        <div class="icon">🎫</div>
-        <h3>Tickets</h3>
-        <p>One-click open/claim/close with logs and role-based access.</p>
-      </div>
-      <div class="feature glass reveal" style="transition-delay:.15s">
-        <div class="icon">📋</div>
-        <h3>Applications</h3>
-        <p>Interactive forms with choice/long answers and review workflow.</p>
-      </div>
-      <div class="feature glass reveal" style="transition-delay:.2s">
-        <div class="icon">📊</div>
-        <h3>Polls</h3>
-        <p>Instant results with anonymous option and auto-archiving.</p>
-      </div>
-      <div class="feature glass reveal" style="transition-delay:.25s">
-        <div class="icon">🛡️</div>
-        <h3>Moderation</h3>
-        <p>Warns, mutes, kicks, bans — with role-based control and logs.</p>
-      </div>
-      <div class="feature glass reveal" style="transition-delay:.3s">
-        <div class="icon">⚡</div>
-        <h3>Fast & Secure</h3>
-        <p>SQLite-backed. Minimal overhead. Built for managed hosts like 48bit.</p>
-      </div>
+      <div class="feature glass reveal" style="transition-delay:.05s"><div class="icon">⭐</div><h3>Staff Ratings</h3><p>Collect fair feedback with DMs and result channels. Export CSV in one click.</p></div>
+      <div class="feature glass reveal" style="transition-delay:.1s"><div class="icon">🎫</div><h3>Tickets</h3><p>One-click open/claim/close with logs and role-based access.</p></div>
+      <div class="feature glass reveal" style="transition-delay:.15s"><div class="icon">📋</div><h3>Applications</h3><p>Interactive forms with choice/long answers and review workflow.</p></div>
+      <div class="feature glass reveal" style="transition-delay:.2s"><div class="icon">📊</div><h3>Polls</h3><p>Instant results with anonymous option and auto-archiving.</p></div>
+      <div class="feature glass reveal" style="transition-delay:.25s"><div class="icon">🛡️</div><h3>Moderation</h3><p>Warns, mutes, kicks, bans — with role-based control and logs.</p></div>
+      <div class="feature glass reveal" style="transition-delay:.3s"><div class="icon">⚡</div><h3>Fast & Secure</h3><p>SQLite-backed. Minimal overhead. Built for managed hosts like 48bit.</p></div>
     </div>
   </section>
 
@@ -234,9 +185,9 @@
       <div class="glass reveal" style="padding:20px">
         <h3 style="margin:0 0 12px 0">Live Highlights</h3>
         <div class="kpi">
-          <div class="item glass"><div class="label">⭐ This Week</div><div class="value" id="hi-week">+12</div></div>
-          <div class="item glass"><div class="label">Tickets Closed</div><div class="value" id="hi-closed">18</div></div>
-          <div class="item glass"><div class="label">Poll Wins</div><div class="value" id="hi-wins">3</div></div>
+          <div class="item glass"><div class="label">⭐ This Week</div><div class="value" id="hi-week">—</div></div>
+          <div class="item glass"><div class="label">Tickets Closed</div><div class="value" id="hi-closed">—</div></div>
+          <div class="item glass"><div class="label">Poll Wins</div><div class="value" id="hi-wins">—</div></div>
         </div>
         <div style="margin-top:18px">
           <div style="font-weight:700; margin-bottom:8px">Consistency</div>
@@ -261,7 +212,7 @@
       <div style="font-weight:800; font-size:20px">Ready to level up your staff experience?</div>
       <div style="display:flex; gap:10px">
         <a class="btn" href="/dashboard">Open Dashboard</a>
-        <a class="btn outline" href="/support">Join Support</a>
+        <a class="btn outline" id="supportLink2" href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noopener">Join Support</a>
       </div>
     </div>
   </section>
@@ -276,7 +227,7 @@
       </details>
       <details>
         <summary>Where do the stats numbers come from?</summary>
-        <div style="color:var(--muted); margin-top:8px">The bot already pushes snapshots. This page tries <code>/api/stats</code> (or similar) and animates counters. If unavailable, it shows demo values.</div>
+        <div style="color:var(--muted); margin-top:8px">The bot already pushes snapshots. This page fetches your real stats endpoint. If not reachable, the counters show “—”.</div>
       </details>
       <details>
         <summary>Can I customize colors?</summary>
@@ -293,6 +244,14 @@
   </footer>
 
   <script>
+    // ---------- Configurable URLs (override via globals if you want) ----------
+    const DEFAULTS = {
+      STATS_URLS: [window.STATS_URL, '/api/stats', '/api/metrics', '/api/stats-get'].filter(Boolean),
+      AUTH_URLS: [window.AUTH_DISCORD_URL, '/auth/discord', '/api/auth/discord', '/login/discord'].filter(Boolean),
+      SUPPORT_URL: window.SUPPORT_URL || 'https://discord.gg/BR7zmffNFC',
+      INVITE_URL: window.INVITE_URL || null // if null, we try /api/meta then /api/client then fallback '/invite'
+    };
+
     // ---------- Theme toggle ----------
     const themeKey = 'sr-theme';
     const html = document.documentElement;
@@ -308,91 +267,67 @@
     const canvas = document.getElementById('stars');
     const ctx = canvas.getContext('2d');
     let w, h, stars;
-    const initStars = ()=>{
-      w = canvas.width = innerWidth; h = canvas.height = innerHeight;
-      stars = Array.from({length: Math.min(400, Math.floor(w*h/6000))}, () => ({
-        x: Math.random()*w, y: Math.random()*h, z: Math.random()*1 + .2, s: Math.random()*2
-      }));
-    }
-    const drawStars = ()=>{
-      ctx.clearRect(0,0,w,h);
-      for(const p of stars){
-        ctx.fillStyle = `rgba(200,220,255,${0.25+p.z*0.5})`;
-        ctx.fillRect(p.x, p.y, p.s, p.s);
-        p.y += p.z; if(p.y>h) p.y = 0;
-      }
-      requestAnimationFrame(drawStars);
-    }
-    initStars(); drawStars();
-    addEventListener('resize', initStars);
+    const initStars = ()=>{ w = canvas.width = innerWidth; h = canvas.height = innerHeight; stars = Array.from({length: Math.min(400, Math.floor(w*h/6000))}, () => ({ x: Math.random()*w, y: Math.random()*h, z: Math.random()*1 + .2, s: Math.random()*2 })); }
+    const drawStars = ()=>{ ctx.clearRect(0,0,w,h); for(const p of stars){ ctx.fillStyle = `rgba(200,220,255,${0.25+p.z*0.5})`; ctx.fillRect(p.x, p.y, p.s, p.s); p.y += p.z; if(p.y>h) p.y = 0; } requestAnimationFrame(drawStars); }
+    initStars(); drawStars(); addEventListener('resize', initStars);
 
     // ---------- Reveal on scroll ----------
-    const io = new IntersectionObserver((entries)=>{
-      for(const e of entries){ if(e.isIntersecting) e.target.classList.add('in'); }
-    }, {threshold:.15});
+    const io = new IntersectionObserver((entries)=>{ for(const e of entries){ if(e.isIntersecting) e.target.classList.add('in'); } }, {threshold:.15});
     document.querySelectorAll('.reveal').forEach(el=> io.observe(el));
 
     // ---------- Tilt card ----------
     const tilt = document.getElementById('tilt');
-    if(tilt){
-      const rot = (x,y)=>{ const rX = ((y - tilt.clientHeight/2)/tilt.clientHeight)*-6; const rY = ((x - tilt.clientWidth/2)/tilt.clientWidth)*6; tilt.style.transform=`rotateX(${rX}deg) rotateY(${rY}deg)`; }
-      tilt.addEventListener('mousemove', e=> rot(e.offsetX,e.offsetY));
-      tilt.addEventListener('mouseleave', ()=> tilt.style.transform='rotateX(0) rotateY(0)');
-    }
+    if(tilt){ const rot = (x,y)=>{ const rX = ((y - tilt.clientHeight/2)/tilt.clientHeight)*-6; const rY = ((x - tilt.clientWidth/2)/tilt.clientWidth)*6; tilt.style.transform=`rotateX(${rX}deg) rotateY(${rY}deg)`; };
+      tilt.addEventListener('mousemove', e=> rot(e.offsetX,e.offsetY)); tilt.addEventListener('mouseleave', ()=> tilt.style.transform='rotateX(0) rotateY(0)'); }
 
-    // ---------- Counters (live stats) ----------
-    const counters = {
-      guilds: 0, total_ratings: 0, avg_rating: 0, tickets_open: 0, cmds_24h: 0
-    };
-
+    // ---------- Real Counters (no fake fallback) ----------
+    const setText = (sel, txt)=>{ const el=document.querySelector(sel); if(el) el.textContent = txt; };
+    const counters = ['guilds','total_ratings','avg_rating','tickets_open','cmds_24h'];
+    function setError(key, msg){ const e=document.querySelector(`[data-err="${key}"]`); if(e) e.textContent = msg||''; }
     async function fetchStats(){
-      // You can override this with window.STATS_URL = '/your-endpoint'
-      const endpoints = [window.STATS_URL, '/api/stats', '/api/metrics', '/api/stats-get'].filter(Boolean);
-      for(const url of endpoints){
-        try{
-          const r = await fetch(url, {cache:'no-store'});
-          if(r.ok){ const data = await r.json(); return data; }
-        }catch(e){ /* try next */ }
+      for(const url of DEFAULTS.STATS_URLS){
+        try{ const r = await fetch(url, {cache:'no-store'}); if(r.ok){ return await r.json(); } }catch(e){ /* next */ }
       }
-      // fallback demo values so page still looks good
-      return {
-        guilds: 7,
-        total_ratings: 1324,
-        avg_rating: 4.72,
-        tickets_open: 3,
-        cmds_24h: 289
-      };
+      throw new Error('Stats unreachable');
     }
-
-    function animateNumber(el, to, duration=900){
-      const from = parseFloat(el.textContent)||0; const start = performance.now();
-      const fmt = (n)=> (el.dataset.counter==='avg_rating' ? n.toFixed(2) : Math.round(n).toString());
-      const step = (t)=>{ const p=Math.min(1,(t-start)/duration); const v = from + (to-from)*(0.5-0.5*Math.cos(Math.PI*p)); el.textContent = fmt(v); if(p<1) requestAnimationFrame(step); };
-      requestAnimationFrame(step);
-    }
-
     (async ()=>{
-      const data = await fetchStats();
-      for(const k in counters){ if(k in data){ counters[k]=data[k]; const el = document.querySelector(`[data-counter="${k}"]`); if(el) animateNumber(el, counters[k]); } }
-      // Update profile preview from stats if available
-      const avg = document.getElementById('pp-avg'); if(avg && data.avg_rating){ avg.textContent = data.avg_rating.toFixed(2); }
-      const rev = document.getElementById('pp-rev'); if(rev && data.total_ratings){ rev.textContent = data.total_ratings; }
-      const tick = document.getElementById('pp-tick'); if(tick && typeof data.tickets_open==='number'){ tick.textContent = data.tickets_open; }
+      try {
+        const data = await fetchStats();
+        counters.forEach(k=>{ const el = document.querySelector(`[data-counter="${k}"]`); if(!el) return; const v = data[k]; if(typeof v === 'number'){ el.textContent = (k==='avg_rating')? v.toFixed(2): String(v); } else if(typeof v === 'string'){ el.textContent = v; } else { el.textContent='—'; }
+          setError(k, ''); });
+        if(data.avg_rating) setText('#pp-avg', Number(data.avg_rating).toFixed(2));
+        if(data.total_ratings) setText('#pp-rev', String(data.total_ratings));
+        if(typeof data.tickets_open!== 'undefined') setText('#pp-tick', String(data.tickets_open));
+      } catch(err){ counters.forEach(k=> setError(k, 'Unavailable')); }
+    })();
+
+    // ---------- Dynamic Links (Auth / Invite / Support) ----------
+    const inviteEl = document.getElementById('inviteLink');
+    const supportEls = [document.getElementById('supportLink'), document.getElementById('supportLink2')].filter(Boolean);
+    const loginEl = document.getElementById('loginLink');
+
+    // Support
+    supportEls.forEach(a=> a.href = DEFAULTS.SUPPORT_URL);
+
+    // Auth
+    (function resolveAuth(){ for(const u of DEFAULTS.AUTH_URLS){ if(u){ loginEl.href = u; break; } } })();
+
+    // Invite
+    (async function resolveInvite(){
+      if(DEFAULTS.INVITE_URL){ inviteEl.href = DEFAULTS.INVITE_URL; return; }
+      // try common meta endpoints your backend might expose
+      try{ const r = await fetch('/api/meta', {cache:'no-store'}); if(r.ok){ const j = await r.json(); if(j.invite_url){ inviteEl.href = j.invite_url; return; } } }catch(e){}
+      try{ const r2 = await fetch('/api/client', {cache:'no-store'}); if(r2.ok){ const j2 = await r2.json(); if(j2.client_id){ inviteEl.href = `https://discord.com/oauth2/authorize?client_id=${encodeURIComponent(j2.client_id)}&scope=bot%20applications.commands&permissions=0`; return; } if(j2.invite_url){ inviteEl.href=j2.invite_url; return; } } }catch(e){}
+      // final fallback: keep /invite (your server can redirect that path)
+      inviteEl.href = '/invite';
     })();
 
     // ---------- Shoutouts auto-scroll ----------
-    const scroller = document.getElementById('shoutouts');
-    if(scroller){ setInterval(()=> scroller.scrollBy({left:300, behavior:'smooth'}), 3500); }
+    const scroller = document.getElementById('shoutouts'); if(scroller){ setInterval(()=> scroller.scrollBy({left:300, behavior:'smooth'}), 3500); }
 
     // ---------- Confetti on CTA ----------
-    const cta = document.getElementById('getStarted');
-    if(cta){ cta.addEventListener('click', confettiBurst); }
-    function confettiBurst(e){
-      const conf = document.createElement('canvas'); conf.width = innerWidth; conf.height = innerHeight; conf.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:2000'; document.body.appendChild(conf);
-      const cx = conf.getContext('2d'); const pieces = Array.from({length: 220}, () => ({ x: Math.random()*conf.width, y: Math.random()*-30, r: Math.random()*6+2, c: `hsl(${Math.random()*360},85%,60%)`, s: Math.random()*3+1 }));
-      let t = 0; const draw = ()=>{ cx.clearRect(0,0,conf.width,conf.height); pieces.forEach(p=>{ p.y += p.s + Math.sin((t+p.x)*.02); p.x += Math.sin((t+p.y)*.02); cx.fillStyle=p.c; cx.save(); cx.translate(p.x,p.y); cx.rotate((t+p.x)*.02); cx.fillRect(-p.r/2,-p.r/2,p.r,p.r); cx.restore(); }); t++; if(t<220) requestAnimationFrame(draw); else document.body.removeChild(conf); };
-      draw();
-    }
+    const cta = document.getElementById('getStarted'); if(cta){ cta.addEventListener('click', confettiBurst); }
+    function confettiBurst(){ const conf = document.createElement('canvas'); conf.width = innerWidth; conf.height = innerHeight; conf.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:2000'; document.body.appendChild(conf); const cx = conf.getContext('2d'); const pieces = Array.from({length: 220}, () => ({ x: Math.random()*conf.width, y: Math.random()*-30, r: Math.random()*6+2, c: `hsl(${Math.random()*360},85%,60%)`, s: Math.random()*3+1 })); let t = 0; const draw = ()=>{ cx.clearRect(0,0,conf.width,conf.height); pieces.forEach(p=>{ p.y += p.s + Math.sin((t+p.x)*.02); p.x += Math.sin((t+p.y)*.02); cx.fillStyle=p.c; cx.save(); cx.translate(p.x,p.y); cx.rotate((t+p.x)*.02); cx.fillRect(-p.r/2,-p.r/2,p.r,p.r); cx.restore(); }); t++; if(t<220) requestAnimationFrame(draw); else document.body.removeChild(conf); }; draw(); }
 
     // Footer year
     document.getElementById('year').textContent = new Date().getFullYear();
