@@ -216,7 +216,12 @@
         let channels=[], roles=[], categories=[];
         try{
           const r=await fetch('/api/guild-structure?guild_id='+encodeURIComponent(guildId));
-          if(!r.ok){ info.textContent='Could not load guild structure.'; return; }
+if(!r.ok){
+  let txt = await r.text().catch(()=> '');
+  info.textContent = 'Could not load guild structure. ' + (txt || ('HTTP '+r.status));
+  return;
+}
+
           const g=await r.json();
           channels = Array.isArray(g.channels)?g.channels:[];
           roles     = Array.isArray(g.roles)?g.roles:[];
