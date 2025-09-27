@@ -6,16 +6,6 @@
   <title>Staff Rater — Rate. Support. Grow.</title>
   <link rel="icon" href="/staff-rater-icon.png">
 
-  <!-- Canonical host lock (same as dashboard) -->
-  <script>
-  (function(){
-    var wanted="www.staffrater.xyz";
-    if(location.host!==wanted){
-      location.replace("https://"+wanted+location.pathname+location.search+location.hash);
-    }
-  })();
-  </script>
-
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root { color-scheme: dark; }
@@ -23,42 +13,73 @@
     .tile { transition: transform .25s ease, box-shadow .25s ease; }
     .tile:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,.35); }
     .menu { box-shadow: 0 12px 30px rgba(0,0,0,.35); }
+    .backdrop { backdrop-filter: blur(8px); }
   </style>
 </head>
 <body class="text-white font-sans antialiased">
   <!-- HEADER -->
-  <header class="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-[#070b14]/50 bg-[#070b14]/80 border-b border-white/5">
+  <header class="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-[#070b14]/50 bg-[#070b14]/80 border-b border-white/5">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <a href="/" class="flex items-center gap-3">
         <img src="/staff-rater-icon.png" class="w-8 h-8 rounded-xl ring-1 ring-white/10" alt="">
         <span class="text-white/90 font-semibold">Staff Rater</span>
       </a>
 
-      <!-- Right: auth/profile -->
-      <div id="auth-area" class="flex items-center gap-3">
-        <!-- Filled by JS using /api/me like your dashboard -->
-        <a href="/api/login?return=/dashboard/index.html" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Sign in with Discord</a>
-      </div>
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-3" id="right-nav">
+        <a href="/docs" class="hidden lg:inline-flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/10 ring-1 ring-transparent">Docs</a>
+        <a href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Support</a>
+        <a id="invite-link" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600">Add to Discord</a>
+        <div id="auth-area" class="flex items-center"></div>
+      </nav>
+
+      <!-- Mobile hamburger -->
+      <button id="mobile-open" class="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-white/10" aria-label="Open menu">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
     </div>
   </header>
 
-  <!-- HERO -->
+  <!-- MOBILE DRAWER -->
+  <div id="drawer" class="fixed inset-0 z-50 hidden">
+    <div id="drawer-bg" class="absolute inset-0 bg-black/60"></div>
+    <div class="ml-auto h-full w-80 max-w-[85%] bg-[#0b1120] border-l border-white/10 p-4 flex flex-col">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img src="/staff-rater-icon.png" class="w-8 h-8 rounded-xl ring-1 ring-white/10" alt="">
+          <span class="text-white/90 font-semibold">Staff Rater</span>
+        </div>
+        <button id="mobile-close" class="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-white/10" aria-label="Close menu">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <nav class="mt-6 flex flex-col gap-2">
+        <a href="/dashboard" class="px-3 py-2 rounded-xl hover:bg-white/10">Dashboard</a>
+        <a href="/profile" class="px-3 py-2 rounded-xl hover:bg-white/10">Profile</a>
+        <a href="/docs" class="px-3 py-2 rounded-xl hover:bg-white/10">Docs</a>
+        <a href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noopener" class="px-3 py-2 rounded-xl hover:bg-white/10">Support</a>
+        <a id="invite-link-m" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands" class="px-3 py-2 rounded-xl hover:bg-white/10">Add to Discord</a>
+        <div id="auth-area-m" class="mt-2"></div>
+      </nav>
+    </div>
+  </div>
+
+  <!-- HERO + CTA -->
   <main>
     <section class="max-w-6xl mx-auto px-4 pt-10 pb-8">
       <div class="grid md:grid-cols-2 gap-8 items-center">
         <div>
-          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight">Rate. Support. Grow.</h1>
-          <p class="mt-3 text-white/80 max-w-prose">Run a professional community with staff ratings, tickets, applications, polls and a clean dashboard integrated with Discord.</p>
-          <div class="mt-6 flex flex-wrap gap-3">
-            <a href="/dashboard" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600">Open Dashboard</a>
-            <a id="invite-btn" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Add to Discord</a>
-            <a href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Support server</a>
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight">Run a professional community</h1>
+          <p class="mt-3 text-white/80 max-w-prose">Ratings, tickets, applications and polls — with a clean dashboard and Discord login. No fluff.</p>
+          <div class="mt-6 flex flex-wrap gap-3" id="cta-row">
+            <a id="primary-cta" href="/api/login?return=/dashboard/index.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600">Sign in with Discord</a>
+            <a id="secondary-cta" href="/dashboard" class="hidden inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Open Dashboard</a>
           </div>
         </div>
         <div class="grid sm:grid-cols-2 gap-4">
           <a class="tile block rounded-2xl bg-white/5 ring-1 ring-white/10 p-5" href="/docs">
             <div class="font-semibold">Quick start</div>
-            <p class="text-white/70 text-sm mt-1">Invite the bot, configure staff, post rating UI, export CSV.</p>
+            <p class="text-white/70 text-sm mt-1">Invite the bot, register staff, post rating UI, export CSV.</p>
           </a>
           <a class="tile block rounded-2xl bg-white/5 ring-1 ring-white/10 p-5" href="/profile">
             <div class="font-semibold">Public Profiles</div>
@@ -66,32 +87,20 @@
           </a>
           <a class="tile block rounded-2xl bg-white/5 ring-1 ring-white/10 p-5" href="/dashboard">
             <div class="font-semibold">Tickets</div>
-            <p class="text-white/70 text-sm mt-1">Open/claim/close with logs and role access.</p>
+            <p class="text-white/70 text-sm mt-1">Open / claim / close with logs and roles.</p>
           </a>
           <a class="tile block rounded-2xl bg-white/5 ring-1 ring-white/10 p-5" href="/dashboard">
             <div class="font-semibold">Applications & Polls</div>
-            <p class="text-white/70 text-sm mt-1">Interactive forms and instant poll results.</p>
+            <p class="text-white/70 text-sm mt-1">Interactive forms and instant results.</p>
           </a>
         </div>
       </div>
     </section>
 
-    <!-- Simple feature list (no heavy animations) -->
-    <section class="max-w-6xl mx-auto px-4 pb-12">
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 p-5">
-          <div class="font-semibold">Fair staff ratings</div>
-          <p class="text-white/70 text-sm mt-1">DM notifications, result channel posts, edit/delete by rater.</p>
-        </div>
-        <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 p-5">
-          <div class="font-semibold">CSV export</div>
-          <p class="text-white/70 text-sm mt-1">One-click export for audits and analysis.</p>
-        </div>
-        <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 p-5">
-          <div class="font-semibold">Owner tools</div>
-          <p class="text-white/70 text-sm mt-1">Quiet owner-only commands and live command log.</p>
-        </div>
-      </div>
+    <!-- If logged in: show a small server preview -->
+    <section id="servers-section" class="hidden max-w-6xl mx-auto px-4 pb-12">
+      <h2 class="text-lg font-semibold">Your servers</h2>
+      <div id="grid" class="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
     </section>
   </main>
 
@@ -109,6 +118,9 @@
 
   <script>
   (function(){
+    // NOTE: Removed the aggressive canonical redirect on the homepage to avoid OAuth warnings.
+    // If you still want it, add it server-side (301) for HTTPS + host, not via JS.
+
     // 1) Capture token from HASH/QUERY, save, clean (same approach as dashboard)
     (function captureToken() {
       try {
@@ -150,28 +162,22 @@
       };
     })();
 
-    // 3) Hydrate header profile menu from /api/me
-    (async function hydrateHeader(){
-      var auth=document.getElementById('auth-area');
-      var me=null;
-      try {
-        var r=await fetch('/api/me');
-        me = r.ok ? await r.json() : null;
-      } catch(e){}
+    // 3) Hydrate header profile menu + hero CTA + (optional) servers preview
+    const rightNav = document.getElementById('right-nav');
+    const authD = document.getElementById('auth-area');
+    const authM = document.getElementById('auth-area-m');
+    const primaryCTA = document.getElementById('primary-cta');
+    const secondaryCTA = document.getElementById('secondary-cta');
+    const serversSec = document.getElementById('servers-section');
+    const grid = document.getElementById('grid');
 
-      if (!me || !me.ok) {
-        auth.innerHTML = '<a href="/api/login?return=/dashboard/index.html" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Sign in with Discord</a>';
-        return;
-      }
-
-      var u = me.session.user;
-      var avatar = u.avatar ? ('https://cdn.discordapp.com/avatars/'+u.id+'/'+u.avatar+'.png?size=64') : 'https://cdn.discordapp.com/embed/avatars/0.png';
-
-      auth.innerHTML = `
+    function profileMenuHTML(u){
+      const avatar = u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64` : 'https://cdn.discordapp.com/embed/avatars/0.png';
+      return `
         <div class="relative">
           <button id="userMenuButton" class="flex items-center gap-2 px-2 py-1 rounded-xl hover:bg-white/10">
             <img src="${avatar}" class="w-8 h-8 rounded-full ring-1 ring-white/10" alt="">
-            <span class="hidden sm:block text-white/80 text-sm max-w-[140px] truncate">${u.username}</span>
+            <span class="hidden xl:block text-white/80 text-sm max-w-[160px] truncate">${u.username}</span>
             <svg class="w-4 h-4 text-white/60" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/></svg>
           </button>
           <div id="userMenu" class="menu hidden absolute right-0 mt-2 w-48 rounded-xl bg-[#0b1120] ring-1 ring-white/10">
@@ -181,18 +187,74 @@
             <a href="/api/logout?redirect=/" class="block px-4 py-2 hover:bg-white/10">Log out</a>
           </div>
         </div>`;
+    }
 
-      // dropdown logic
-      var btn = document.getElementById('userMenuButton');
-      var menu = document.getElementById('userMenu');
-      function close(){ menu.classList.add('hidden'); }
-      btn.addEventListener('click', function(e){ e.stopPropagation(); menu.classList.toggle('hidden'); });
-      document.addEventListener('click', close);
-      document.addEventListener('keydown', function(e){ if(e.key==='Escape') close(); });
-    })();
+    function signInBtn(){ return '<a href="/api/login?return=/dashboard/index.html" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Sign in with Discord</a>'; }
+
+    async function hydrate(){
+      let me=null; try{ const r = await fetch('/api/me'); me = r.ok ? await r.json() : null; }catch(e){}
+      if (!me || !me.ok){
+        authD.innerHTML = signInBtn();
+        if(authM) authM.innerHTML = signInBtn();
+        primaryCTA.classList.remove('hidden');
+        secondaryCTA.classList.add('hidden');
+        return;
+      }
+      // logged in
+      const u = me.session.user;
+      authD.innerHTML = profileMenuHTML(u);
+      if(authM) authM.innerHTML = '<a href="/dashboard" class="px-3 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600">Open Dashboard</a>\n<a href="/api/logout?redirect=/" class="mt-2 block px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Log out</a>';
+      primaryCTA.classList.add('hidden');
+      secondaryCTA.classList.remove('hidden');
+
+      // user menu behavior
+      const btn = document.getElementById('userMenuButton');
+      const menu = document.getElementById('userMenu');
+      function close(){ menu && menu.classList.add('hidden'); }
+      if(btn){ btn.addEventListener('click', e=>{ e.stopPropagation(); menu.classList.toggle('hidden'); }); document.addEventListener('click', close); document.addEventListener('keydown', e=>{ if(e.key==='Escape') close(); }); }
+
+      // servers preview (subset of manageable guilds)
+      let guilds = me.session.guilds || [];
+      const ADMIN = 0x00000008, MANAGE_GUILD = 0x00000020;
+      guilds = guilds.filter(g => g.owner || ((g.permissions & (ADMIN|MANAGE_GUILD)) !== 0)).slice(0,6);
+      if (guilds.length){
+        serversSec.classList.remove('hidden');
+        grid.innerHTML = guilds.map(g=>{
+          const icon = g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128` : 'https://cdn.discordapp.com/embed/avatars/1.png';
+          return `
+            <a class="tile block rounded-2xl bg-white/5 ring-1 ring-white/10 p-5" href="/dashboard/guild.html?guild_id=${encodeURIComponent(g.id)}">
+              <div class="flex items-center gap-4">
+                <img src="${icon}" class="w-12 h-12 rounded-xl ring-1 ring-white/10" alt="">
+                <div>
+                  <div class="font-semibold">${g.name}</div>
+                  <div class="text-white/60 text-sm">${g.owner ? 'Owner' : 'Staff'}</div>
+                </div>
+              </div>
+            </a>`;
+        }).join('');
+      }
+    }
+
+    hydrate();
+
+    // Mobile drawer
+    const drawer = document.getElementById('drawer');
+    const openBtn = document.getElementById('mobile-open');
+    const closeBtn = document.getElementById('mobile-close');
+    const bg = document.getElementById('drawer-bg');
+    function open(){ drawer.classList.remove('hidden'); }
+    function close(){ drawer.classList.add('hidden'); }
+    openBtn.addEventListener('click', open);
+    closeBtn.addEventListener('click', close);
+    bg.addEventListener('click', close);
 
     // Footer year
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Duplicate invite link in drawer
+    const inv = document.getElementById('invite-link');
+    const invm = document.getElementById('invite-link-m');
+    if(inv && invm) invm.href = inv.href;
   })();
   </script>
 </body>
