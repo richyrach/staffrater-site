@@ -38,7 +38,7 @@ const UP_TOKEN =
 function toBigInt(x){ try { return BigInt(String(x)); } catch { return 0n; } }
 
 // ---- Upstash helper using URL path style ----
-// Example: GET ${UP_URL}/hset/guild:123:config/field/value/field2/value2
+// Example: GET ${UP_URL}/hset/guild:123:config/field/value
 async function redisPath(cmd, args = []) {
   if (!UP_URL || !UP_TOKEN) {
     const e = new Error("missing_upstash_env");
@@ -120,24 +120,32 @@ module.exports = async (req, res) => {
     }
 
     const key = `guild:${guildId}:config`;
-    const fields = [
-      ["rating_channel",       body.rating_channel_id],
-      ["result_channel",       body.result_channel_id],
-      ["ticket_category",      body.ticket_category_id],
-      ["ticket_staff_role",    body.ticket_staff_role_id],
-      ["ticket_log_channel",  (body.ticket_log_channel_id ?? "")]
-    ].filter(([,v]) => typeof v !== "undefined");
 
-    if (!fields.length) {
+    // Build assignments
+    const assignments = {
+      rating_channel:        body.rating_channel_id,
+      result_channel:        body.result_channel_id,
+      ticket_category:       body.ticket_category_id,
+      ticket_staff_role:     body.ticket_staff_role_id,
+      ticket_log_channel:    (body.ticket_log_channel_id ?? null)  // null/empty => delete
+    };
+
+    const providedKeys = Object.keys(assignments).filter(k => typeof assignments[k] !== "undefined");
+    if (!providedKeys.length) {
       res.statusCode = 400;
       return res.end(JSON.stringify({ ok:false, error:"no_fields_to_set" }));
     }
 
-    const flat = [];
-    for (const [f, v] of fields) flat.push(f, (v == null ? "" : String(v)));
-
-    // HSET key field value [field value ...]
-    await redisPath("hset", [key, ...flat]);
+    // Apply each field individually:
+    for (const field of providedKeys) {
+      const val = assignments[field];
+      if (val === null || val === "") {
+        // Remove the field if empty to avoid empty segment issues
+        await redisPath("hdel", [key, field]);
+      } else {
+        await redisPath("hset", [key, field, String(val)]);
+      }
+    }
 
     res.statusCode = 200;
     res.end(JSON.stringify({ ok:true }));
