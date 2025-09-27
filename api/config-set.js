@@ -1,7 +1,7 @@
 "use strict";
 /**
  * POST /api/config-set
- * Body JSON can include any of:
+ * Body JSON any of:
  * {
  *   guild_id: "123",
  *   rating_channel_id: "...",
@@ -14,7 +14,7 @@
  * Auth:
  *  - Must be logged in.
  *  - Must be in guild with Admin or Manage Server (checked via BOT token).
- * Writes to Redis hash: guild:{guild_id}:config
+ * Writes to Upstash Hash: guild:{guild_id}:config
  */
 
 const { getSessionFromReq } = require("../lib/auth");
@@ -37,22 +37,23 @@ const UP_TOKEN =
 
 function toBigInt(x){ try { return BigInt(String(x)); } catch { return 0n; } }
 
-async function redis(cmd, args=[]) {
+// ---- Upstash helper using URL path style ----
+// Example: GET ${UP_URL}/hset/guild:123:config/field/value/field2/value2
+async function redisPath(cmd, args = []) {
   if (!UP_URL || !UP_TOKEN) {
     const e = new Error("missing_upstash_env");
     e.code = "missing_upstash_env";
     throw e;
   }
-  const r = await fetch(UP_URL, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${UP_TOKEN}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ cmd, args })
-  });
-  if (!r.ok) throw new Error("upstash_http_" + r.status);
-  return r.json(); // { result: ... }
+  const url = `${UP_URL}/${cmd}/${args.map(a => encodeURIComponent(String(a))).join("/")}`;
+  const r = await fetch(url, { headers: { Authorization: `Bearer ${UP_TOKEN}` } });
+  const j = await r.json().catch(() => null);
+  if (!r.ok || !j || j.error) {
+    const e = new Error((j && j.error) || `upstash_${cmd}_failed`);
+    e.code = (j && j.error) || `upstash_${cmd}_failed`;
+    throw e;
+  }
+  return j.result;
 }
 
 module.exports = async (req, res) => {
@@ -75,10 +76,10 @@ module.exports = async (req, res) => {
       return res.end(JSON.stringify({ ok:false, error:"missing_bot_token" }));
     }
 
-    // Read body
-    let body = null;
+    // Body
+    let body = {};
     try {
-      const text = await new Promise((resolve, reject)=> {
+      const text = await new Promise((resolve, reject)=>{
         let b=""; req.on("data", c=> b+=c); req.on("end", ()=> resolve(b)); req.on("error", reject);
       });
       body = text ? JSON.parse(text) : {};
@@ -90,7 +91,7 @@ module.exports = async (req, res) => {
     const guildId = String(body.guild_id || "");
     if (!guildId) { res.statusCode=400; return res.end(JSON.stringify({ ok:false, error:"missing_guild_id" })); }
 
-    // Permission check (owner/admin/manage)
+    // Permission check
     const gR = await fetch(`https://discord.com/api/guilds/${guildId}`, { headers: { Authorization: `Bot ${BOT_TOKEN}` }});
     if (!gR.ok) { res.statusCode=502; return res.end(JSON.stringify({ ok:false, error:"discord_guild_failed" })); }
     const guild = await gR.json();
@@ -118,15 +119,14 @@ module.exports = async (req, res) => {
       }
     }
 
-    // Build HSET args
     const key = `guild:${guildId}:config`;
     const fields = [
-      ["rating_channel",  body.rating_channel_id],
-      ["result_channel",  body.result_channel_id],
-      ["ticket_category", body.ticket_category_id],
-      ["ticket_staff_role", body.ticket_staff_role_id],
-      ["ticket_log_channel", (body.ticket_log_channel_id ?? "")] // store empty if null
-    ].filter(([_, v]) => typeof v !== "undefined"); // only set provided fields
+      ["rating_channel",       body.rating_channel_id],
+      ["result_channel",       body.result_channel_id],
+      ["ticket_category",      body.ticket_category_id],
+      ["ticket_staff_role",    body.ticket_staff_role_id],
+      ["ticket_log_channel",  (body.ticket_log_channel_id ?? "")]
+    ].filter(([,v]) => typeof v !== "undefined");
 
     if (!fields.length) {
       res.statusCode = 400;
@@ -134,10 +134,10 @@ module.exports = async (req, res) => {
     }
 
     const flat = [];
-    for (const [f,v] of fields) flat.push(f, (v == null ? "" : String(v)));
+    for (const [f, v] of fields) flat.push(f, (v == null ? "" : String(v)));
 
-    // HSET key field value [field value...]
-    await redis("HSET", [key, ...flat]);
+    // HSET key field value [field value ...]
+    await redisPath("hset", [key, ...flat]);
 
     res.statusCode = 200;
     res.end(JSON.stringify({ ok:true }));
