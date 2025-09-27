@@ -1,51 +1,149 @@
-const { createHmac } = require("crypto");
+"use strict";
+/**
+ * POST /api/config-set
+ * Body JSON can include any of:
+ * {
+ *   guild_id: "123",
+ *   rating_channel_id: "...",
+ *   result_channel_id: "...",
+ *   ticket_category_id: "...",
+ *   ticket_staff_role_id: "...",
+ *   ticket_log_channel_id: "..." | null
+ * }
+ *
+ * Auth:
+ *  - Must be logged in.
+ *  - Must be in guild with Admin or Manage Server (checked via BOT token).
+ * Writes to Redis hash: guild:{guild_id}:config
+ */
 
-function parseCookies(req){ const h=req.headers.cookie||""; const o={}; h.split(";").forEach(p=>{const i=p.indexOf("="); if(i>-1)o[p.slice(0,i).trim()]=decodeURIComponent(p.slice(i+1));}); return o; }
-function verify(payload, sig, secret){ const expected=createHmac("sha256", secret).update(payload).digest("base64url"); return expected===sig; }
+const { getSessionFromReq } = require("../lib/auth");
 
-async function userGuilds(access_token){
-  const r = await fetch("https://discord.com/api/users/@me/guilds", { headers:{Authorization:`Bearer ${access_token}`}});
-  if(!r.ok) return null; return r.json();
+const PERM_ADMIN = 0x00000008;
+const PERM_MANAGE_GUILD = 0x00000020;
+
+const BOT_TOKEN =
+  process.env.BOT_TOKEN ||
+  process.env.DISCORD_BOT_TOKEN ||
+  process.env.BOT_SECRET;
+
+const UP_URL =
+  process.env.UPSTASH_REDIS_REST_URL ||
+  process.env.REDIS_REST_URL;
+
+const UP_TOKEN =
+  process.env.UPSTASH_REDIS_REST_TOKEN ||
+  process.env.REDIS_REST_TOKEN;
+
+function toBigInt(x){ try { return BigInt(String(x)); } catch { return 0n; } }
+
+async function redis(cmd, args=[]) {
+  if (!UP_URL || !UP_TOKEN) {
+    const e = new Error("missing_upstash_env");
+    e.code = "missing_upstash_env";
+    throw e;
+  }
+  const r = await fetch(UP_URL, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${UP_TOKEN}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ cmd, args })
+  });
+  if (!r.ok) throw new Error("upstash_http_" + r.status);
+  return r.json(); // { result: ... }
 }
 
 module.exports = async (req, res) => {
-  if (req.method !== "POST") { res.statusCode = 405; return res.end("POST only"); }
-  const url = new URL(req.url, `http://${req.headers.host}`);
-  const guild_id = url.searchParams.get("guild_id");
-  if(!guild_id){ res.statusCode=400; return res.end("guild_id required"); }
+  res.setHeader("Content-Type", "application/json");
+  res.setHeader("Cache-Control", "no-store");
 
-  const cookies = parseCookies(req);
-  const raw = cookies["sr_auth"];
-  if(!raw || !raw.includes(".")){ res.statusCode=401; return res.end("no session"); }
-  const [payload,sig] = raw.split(".");
-  if(!verify(payload,sig,process.env.SESSION_SECRET)){ res.statusCode=401; return res.end("bad signature"); }
-  const auth = JSON.parse(Buffer.from(payload,"base64url").toString());
+  try {
+    if (req.method !== "POST") {
+      res.statusCode = 405;
+      return res.end(JSON.stringify({ ok:false, error:"method_not_allowed" }));
+    }
 
-  const guilds = await userGuilds(auth.access_token);
-  if(!guilds){ res.statusCode=401; return res.end("token invalid"); }
-  const g = guilds.find(x=>x.id===guild_id);
-  const ADMIN=0x8, MANAGE_GUILD=0x20;
-  const can = g && (g.owner || (g.permissions & ADMIN)===ADMIN || (g.permissions & MANAGE_GUILD)===MANAGE_GUILD);
-  if(!can){ res.statusCode=403; return res.end("forbidden"); }
+    const session = getSessionFromReq(req);
+    if (!session || !session.user || !session.user.id) {
+      res.statusCode = 401;
+      return res.end(JSON.stringify({ ok:false, error:"no_session" }));
+    }
+    if (!BOT_TOKEN) {
+      res.statusCode = 500;
+      return res.end(JSON.stringify({ ok:false, error:"missing_bot_token" }));
+    }
 
-  // read body
-  const buf = await new Promise(r=>{ let b=""; req.on("data",d=>b+=d); req.on("end",()=>r(b)); });
-  let incoming = {};
-  try { incoming = JSON.parse(buf || "{}"); } catch {}
+    // Read body
+    let body = null;
+    try {
+      const text = await new Promise((resolve, reject)=> {
+        let b=""; req.on("data", c=> b+=c); req.on("end", ()=> resolve(b)); req.on("error", reject);
+      });
+      body = text ? JSON.parse(text) : {};
+    } catch {
+      res.statusCode = 400;
+      return res.end(JSON.stringify({ ok:false, error:"invalid_json" }));
+    }
 
-  // keep only known keys as strings
-  const cfg = {
-    rating_channel: incoming.rating_channel || "",
-    result_channel: incoming.result_channel || "",
-    ticket_category: incoming.ticket_category || "",
-    ticket_staff_role: incoming.ticket_staff_role || "",
-    ticket_log_channel: incoming.ticket_log_channel || ""
-  };
+    const guildId = String(body.guild_id || "");
+    if (!guildId) { res.statusCode=400; return res.end(JSON.stringify({ ok:false, error:"missing_guild_id" })); }
 
-  const base = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  await fetch(`${base}/set/cfg:${guild_id}/${encodeURIComponent(JSON.stringify(cfg))}`, { method:"POST", headers:{Authorization:`Bearer ${token}`} });
+    // Permission check (owner/admin/manage)
+    const gR = await fetch(`https://discord.com/api/guilds/${guildId}`, { headers: { Authorization: `Bot ${BOT_TOKEN}` }});
+    if (!gR.ok) { res.statusCode=502; return res.end(JSON.stringify({ ok:false, error:"discord_guild_failed" })); }
+    const guild = await gR.json();
 
-  res.setHeader("Content-Type","application/json");
-  res.end(JSON.stringify({ ok:true }));
+    const rolesR = await fetch(`https://discord.com/api/guilds/${guildId}/roles`, { headers: { Authorization: `Bot ${BOT_TOKEN}` }});
+    if (!rolesR.ok) { res.statusCode=502; return res.end(JSON.stringify({ ok:false, error:"discord_roles_failed" })); }
+    const rolesRaw = await rolesR.json();
+    const roleMap = new Map(rolesRaw.map(r => [String(r.id), r]));
+
+    const mR = await fetch(`https://discord.com/api/guilds/${guildId}/members/${session.user.id}`, { headers: { Authorization: `Bot ${BOT_TOKEN}` }});
+    if (mR.status === 404) { res.statusCode=403; return res.end(JSON.stringify({ ok:false, error:"not_in_guild" })); }
+    if (!mR.ok) { res.statusCode=502; return res.end(JSON.stringify({ ok:false, error:"discord_member_failed" })); }
+    const member = await mR.json();
+
+    if (String(guild.owner_id) !== String(session.user.id)) {
+      let permBits = toBigInt((roleMap.get(String(guildId))?.permissions)||"0"); // @everyone
+      for (const rid of (member.roles||[])) {
+        const r = roleMap.get(String(rid));
+        if (r && r.permissions != null) permBits |= toBigInt(r.permissions);
+      }
+      const hasAdmin = (permBits & BigInt(PERM_ADMIN)) !== 0n;
+      const hasManage = (permBits & BigInt(PERM_MANAGE_GUILD)) !== 0n;
+      if (!hasAdmin && !hasManage) {
+        res.statusCode=403; return res.end(JSON.stringify({ ok:false, error:"insufficient_permissions" }));
+      }
+    }
+
+    // Build HSET args
+    const key = `guild:${guildId}:config`;
+    const fields = [
+      ["rating_channel",  body.rating_channel_id],
+      ["result_channel",  body.result_channel_id],
+      ["ticket_category", body.ticket_category_id],
+      ["ticket_staff_role", body.ticket_staff_role_id],
+      ["ticket_log_channel", (body.ticket_log_channel_id ?? "")] // store empty if null
+    ].filter(([_, v]) => typeof v !== "undefined"); // only set provided fields
+
+    if (!fields.length) {
+      res.statusCode = 400;
+      return res.end(JSON.stringify({ ok:false, error:"no_fields_to_set" }));
+    }
+
+    const flat = [];
+    for (const [f,v] of fields) flat.push(f, (v == null ? "" : String(v)));
+
+    // HSET key field value [field value...]
+    await redis("HSET", [key, ...flat]);
+
+    res.statusCode = 200;
+    res.end(JSON.stringify({ ok:true }));
+  } catch (e) {
+    const code = e && e.code ? e.code : "server_error";
+    res.statusCode = 500;
+    res.end(JSON.stringify({ ok:false, error: code }));
+  }
 };
