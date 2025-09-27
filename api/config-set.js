@@ -15,6 +15,10 @@
  *  - Must be logged in.
  *  - Must be in guild with Admin or Manage Server (checked via BOT token).
  * Writes to Upstash Hash: guild:{guild_id}:config
+ * ALSO LPUSHes jobs that the bot will consume:
+ *   - {type:"apply_config", guild_id}
+ *   - {type:"post_rating_ui", guild_id}            (if rating_channel_id provided)
+ *   - {type:"post_ticket_button", guild_id}        (if ticket_category_id provided)
  */
 
 const { getSessionFromReq } = require("../lib/auth");
@@ -38,7 +42,6 @@ const UP_TOKEN =
 function toBigInt(x){ try { return BigInt(String(x)); } catch { return 0n; } }
 
 // ---- Upstash helper using URL path style ----
-// Example: GET ${UP_URL}/hset/guild:123:config/field/value
 async function redisPath(cmd, args = []) {
   if (!UP_URL || !UP_TOKEN) {
     const e = new Error("missing_upstash_env");
@@ -91,7 +94,7 @@ module.exports = async (req, res) => {
     const guildId = String(body.guild_id || "");
     if (!guildId) { res.statusCode=400; return res.end(JSON.stringify({ ok:false, error:"missing_guild_id" })); }
 
-    // Permission check
+    // Permission check (owner or ADMINISTRATOR/MANAGE_GUILD)
     const gR = await fetch(`https://discord.com/api/guilds/${guildId}`, { headers: { Authorization: `Bot ${BOT_TOKEN}` }});
     if (!gR.ok) { res.statusCode=502; return res.end(JSON.stringify({ ok:false, error:"discord_guild_failed" })); }
     const guild = await gR.json();
@@ -121,7 +124,7 @@ module.exports = async (req, res) => {
 
     const key = `guild:${guildId}:config`;
 
-    // Build assignments
+    // Assignments
     const assignments = {
       rating_channel:        body.rating_channel_id,
       result_channel:        body.result_channel_id,
@@ -130,21 +133,34 @@ module.exports = async (req, res) => {
       ticket_log_channel:    (body.ticket_log_channel_id ?? null)  // null/empty => delete
     };
 
-    const providedKeys = Object.keys(assignments).filter(k => typeof assignments[k] !== "undefined");
-    if (!providedKeys.length) {
+    const provided = Object.keys(assignments).filter(k => typeof assignments[k] !== "undefined");
+    if (!provided.length) {
       res.statusCode = 400;
       return res.end(JSON.stringify({ ok:false, error:"no_fields_to_set" }));
     }
 
-    // Apply each field individually:
-    for (const field of providedKeys) {
+    // Write each field; delete if empty
+    for (const field of provided) {
       const val = assignments[field];
       if (val === null || val === "") {
-        // Remove the field if empty to avoid empty segment issues
         await redisPath("hdel", [key, field]);
       } else {
         await redisPath("hset", [key, field, String(val)]);
       }
+    }
+
+    // ---- Push jobs so the bot applies and posts UIs ----
+    // Always apply config:
+    await redisPath("lpush", ["sr:jobs", JSON.stringify({ type:"apply_config", guild_id: guildId })]);
+
+    // If user touched rating channel, post rating UI:
+    if (typeof assignments.rating_channel !== "undefined") {
+      await redisPath("lpush", ["sr:jobs", JSON.stringify({ type:"post_rating_ui", guild_id: guildId })]);
+    }
+
+    // If user touched ticket category, post ticket button:
+    if (typeof assignments.ticket_category !== "undefined") {
+      await redisPath("lpush", ["sr:jobs", JSON.stringify({ type:"post_ticket_button", guild_id: guildId })]);
     }
 
     res.statusCode = 200;
