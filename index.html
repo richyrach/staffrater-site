@@ -7,17 +7,18 @@
   <meta name="description" content="Staff Rater is a sleek Discord bot for staff ratings, tickets, applications, leaderboards, and profiles. Beautiful UI, fast setup, and honest moderation workflows." />
   <link rel="icon" href="/staff-rater-icon.png">
 
-  <!-- Canonical host lock -->
+  <!-- Canonical host lock (allows both apex + www to avoid breaking) -->
   <script>
-    (function(){
-      var wanted="www.staffrater.xyz";
-      if(location.host!==wanted){
-        location.replace("https://"+wanted+location.pathname+location.search+location.hash);
+    (function () {
+      var canonical = "staffrater.xyz";                 // <— set your preferred canonical here
+      var allowed = ["staffrater.xyz","www.staffrater.xyz"];
+      if (!allowed.includes(location.host)) {
+        location.replace("https://" + canonical + location.pathname + location.search + location.hash);
       }
     })();
   </script>
 
-  <!-- OG -->
+  <!-- Open Graph -->
   <meta property="og:title" content="Staff Rater — Elevate your Discord staff" />
   <meta property="og:description" content="A sleek Discord bot for staff ratings, tickets, applications, leaderboards, and profiles." />
   <meta property="og:image" content="/staff-rater-icon.png" />
@@ -69,16 +70,19 @@
     }
   </style>
 
-  <!-- [ADS] Minimal consent + lazy loader (does NOT run unless accepted) -->
-  <script>
-    (function(){
-      var CLIENT_ID = 'ca-pub-YOUR_PUBLISHER_ID'; // TODO: replace
-      var ADSENSE_LOADED = false;
+  <!-- Speed up account detection for Auto ads -->
+  <meta name="google-adsense-account" content="ca-pub-5888775788301303">
 
-      function loadAdsense(){
-        if(ADSENSE_LOADED) return;
-        ADSENSE_LOADED = true;
-        // Consent Mode v2 default (update to granted on Accept)
+  <!-- [ADS] Consent + Auto Ads loader (no ad slots needed) -->
+  <script>
+    (function () {
+      var CLIENT_ID = 'ca-pub-5888775788301303';
+      var LOADED = false;
+
+      function loadAdsense() {
+        if (LOADED) return; LOADED = true;
+
+        // Consent Mode v2 defaults; flipped to granted on Accept
         window.dataLayer = window.dataLayer || [];
         function gtag(){ dataLayer.push(arguments); }
         window.gtag = window.gtag || gtag;
@@ -89,33 +93,19 @@
           'analytics_storage': 'denied'
         });
 
-        var s=document.createElement('script');
-        s.async=true;
-        s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+encodeURIComponent(CLIENT_ID);
-        s.crossOrigin='anonymous';
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + encodeURIComponent(CLIENT_ID);
+        s.crossOrigin = 'anonymous';
         document.head.appendChild(s);
-
-        // initialize any ad units already on the page
-        s.onload = initAdUnits;
-        // also try after a short delay in case load order differs
-        setTimeout(initAdUnits, 2000);
       }
 
-      function initAdUnits(){
-        try {
-          var nodes=document.querySelectorAll('ins.adsbygoogle:not([data-adsbygoogle-status])');
-          if(!nodes.length) return;
-          window.adsbygoogle = window.adsbygoogle || [];
-          nodes.forEach(function(){ window.adsbygoogle.push({}); });
-        } catch(e){}
-      }
-
-      function showBanner(){
-        if(localStorage.getItem('sr_ads_consent')) return; // already set
-        document.addEventListener('DOMContentLoaded', function(){
-          var banner=document.createElement('div');
-          banner.id='ads-consent';
-          banner.className='fixed inset-x-0 bottom-0 z-40';
+      function showConsentBanner() {
+        if (localStorage.getItem('sr_ads_consent')) return; // already set
+        document.addEventListener('DOMContentLoaded', function () {
+          var banner = document.createElement('div');
+          banner.id = 'ads-consent';
+          banner.className = 'fixed inset-x-0 bottom-0 z-40';
           banner.innerHTML = `
             <div class="mx-auto max-w-6xl px-4 pb-4">
               <div class="rounded-2xl bg-[#0c1322]/95 ring-1 ring-white/10 p-4 shadow-glow flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -131,35 +121,33 @@
             </div>`;
           document.body.appendChild(banner);
 
-          document.getElementById('ads-accept').onclick=function(){
-            try{
-              localStorage.setItem('sr_ads_consent','granted');
-              // flip to granted and load AdSense
+          document.getElementById('ads-accept').onclick = function () {
+            try {
+              localStorage.setItem('sr_ads_consent', 'granted');
               gtag('consent', 'update', {
                 'ad_user_data': 'granted',
                 'ad_personalization': 'granted',
                 'ad_storage': 'granted',
                 'analytics_storage': 'granted'
               });
-            }catch(e){}
+            } catch (e) {}
             loadAdsense();
             banner.remove();
           };
 
-          document.getElementById('ads-reject').onclick=function(){
-            localStorage.setItem('sr_ads_consent','denied');
-            // keep denied; do not load ads
-            banner.remove();
+          document.getElementById('ads-reject').onclick = function () {
+            localStorage.setItem('sr_ads_consent', 'denied');
+            banner.remove(); // keep denied; do not load AdSense
           };
         });
       }
 
-      // boot: if previously accepted, load right away; else show banner
-      if(localStorage.getItem('sr_ads_consent') === 'granted'){ loadAdsense(); }
-      else { showBanner(); }
+      // Boot: if previously accepted, load immediately; else show banner
+      if (localStorage.getItem('sr_ads_consent') === 'granted') { loadAdsense(); }
+      else { showConsentBanner(); }
 
-      // Expose for manual retry if needed (optional, no globals leaked)
-      window.__srAds = { load: loadAdsense, init: initAdUnits };
+      // Optional: expose for manual retry
+      window.__srAds = { load: loadAdsense };
     })();
   </script>
   <!-- [/ADS] -->
@@ -234,21 +222,6 @@
     </div>
   </section>
 
-  <!-- [ADS LOADER] -->
-var CLIENT_ID = 'ca-pub-5888775788301303';
-
-<!-- [AD UNIT 1] -->
-<ins class="adsbygoogle"
-     ...
-     data-ad-client="ca-pub-5888775788301303"
-     data-ad-slot="YOUR_SLOT_ID_1" ...></ins>
-
-<!-- [AD UNIT 2] -->
-<ins class="adsbygoogle"
-     ...
-     data-ad-client="ca-pub-5888775788301303"
-     data-ad-slot="YOUR_SLOT_ID_2" ...></ins>
-
   <!-- FEATURES -->
   <section id="features" class="max-w-6xl mx-auto px-4 pb-16">
     <h2 class="text-2xl font-semibold mb-6">Why servers pick Staff Rater</h2>
@@ -299,20 +272,6 @@ var CLIENT_ID = 'ca-pub-5888775788301303';
     </div>
   </section>
 
-  <!-- [ADS] Another ad after HOW (second safe slot) -->
-  <div class="max-w-6xl mx-auto px-4 pb-10">
-    <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 p-3">
-      <ins class="adsbygoogle"
-           style="display:block;min-height:250px"
-           data-ad-client="ca-pub-YOUR_PUBLISHER_ID"
-           data-ad-slot="YOUR_SLOT_ID_2"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-      <script>window.adsbygoogle=window.adsbygoogle||[];try{window.adsbygoogle.push({});}catch(e){}</script>
-    </div>
-  </div>
-  <!-- [/ADS] -->
-
   <!-- FAQ -->
   <section id="faq" class="max-w-6xl mx-auto px-4 pb-20">
     <h2 class="text-2xl font-semibold mb-6">FAQ</h2>
@@ -335,7 +294,6 @@ var CLIENT_ID = 'ca-pub-5888775788301303';
       <div class="flex gap-4">
         <a href="/dashboard/index.html" class="hover:text-white/70">Dashboard</a>
         <a href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noopener" class="hover:text-white/70">Support</a>
-        <!-- [ADS] Optional privacy link (create /privacy.html when ready) -->
         <a href="/privacy.html" class="hover:text-white/70">Privacy</a>
       </div>
     </div>
@@ -418,4 +376,3 @@ var CLIENT_ID = 'ca-pub-5888775788301303';
   </script>
 </body>
 </html>
-
