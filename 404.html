@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Page Not Found — Staff Rater</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/staff-rater-icon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { bg:'#070b14', panel:'#0c1322' },
+          boxShadow: { glow:'0 0 0 1px rgba(255,255,255,0.08), 0 15px 35px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.04)'}
+        }
+      }
+    }
+  </script>
+  <style>
+    :root { color-scheme: dark; } html,body{background:#070b14}
+    .mesh{position:fixed;inset:0;pointer-events:none;z-index:-1}
+    .mesh:before,.mesh:after{content:"";position:absolute;width:1200px;height:1200px;filter:blur(90px);opacity:.25;border-radius:50%}
+    .mesh:before{left:-300px;top:-300px;background:radial-gradient(600px 600px at 50% 50%, #22d3ee33, transparent 70%)}
+    .mesh:after{right:-200px;bottom:-300px;background:radial-gradient(600px 600px at 50% 50%, #a78bfa33, transparent 70%)}
+    @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body class="text-white antialiased">
+  <div class="mesh"></div>
+
+  <main class="min-h-[80vh] flex items-center">
+    <div class="max-w-3xl mx-auto px-6 text-center">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 ring-1 ring-white/10 shadow-glow mb-6">
+        <span class="text-2xl">🛰️</span>
+      </div>
+      <h1 class="text-4xl font-extrabold">404 — Page Not Found</h1>
+      <p class="text-white/70 mt-3">
+        The page you’re looking for doesn’t exist or was moved. You’ll be redirected to the homepage shortly.
+      </p>
+
+      <div class="flex flex-wrap justify-center gap-3 mt-8">
+        <a href="/" class="px-4 py-3 rounded-xl bg-indigo-500 hover:bg-indigo-600 font-medium shadow-glow">Go to Home</a>
+        <a href="/dashboard/index.html" class="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Open Dashboard</a>
+        <a href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands" class="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Invite Bot</a>
+        <a href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noopener" class="px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Support</a>
+      </div>
+
+      <p class="text-white/50 text-sm mt-6" id="count">Redirecting in 8s…</p>
+    </div>
+  </main>
+
+  <footer class="border-t border-white/10">
+    <div class="max-w-3xl mx-auto px-6 py-6 text-sm text-white/60 text-center">
+      © <span id="yr"></span> Staff Rater
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    var s = 8, el = document.getElementById('count');
+    var id = setInterval(function(){
+      s--; if (s<=0){ clearInterval(id); location.href = '/'; }
+      else { el.textContent = 'Redirecting in ' + s + 's…'; }
+    }, 1000);
+  </script>
+</body>
+</html>
