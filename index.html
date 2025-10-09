@@ -68,6 +68,101 @@
       *{ animation: none !important; transition: none !important; }
     }
   </style>
+
+  <!-- [ADS] Minimal consent + lazy loader (does NOT run unless accepted) -->
+  <script>
+    (function(){
+      var CLIENT_ID = 'ca-pub-YOUR_PUBLISHER_ID'; // TODO: replace
+      var ADSENSE_LOADED = false;
+
+      function loadAdsense(){
+        if(ADSENSE_LOADED) return;
+        ADSENSE_LOADED = true;
+        // Consent Mode v2 default (update to granted on Accept)
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+        window.gtag = window.gtag || gtag;
+        gtag('consent', 'default', {
+          'ad_user_data': 'denied',
+          'ad_personalization': 'denied',
+          'ad_storage': 'denied',
+          'analytics_storage': 'denied'
+        });
+
+        var s=document.createElement('script');
+        s.async=true;
+        s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+encodeURIComponent(CLIENT_ID);
+        s.crossOrigin='anonymous';
+        document.head.appendChild(s);
+
+        // initialize any ad units already on the page
+        s.onload = initAdUnits;
+        // also try after a short delay in case load order differs
+        setTimeout(initAdUnits, 2000);
+      }
+
+      function initAdUnits(){
+        try {
+          var nodes=document.querySelectorAll('ins.adsbygoogle:not([data-adsbygoogle-status])');
+          if(!nodes.length) return;
+          window.adsbygoogle = window.adsbygoogle || [];
+          nodes.forEach(function(){ window.adsbygoogle.push({}); });
+        } catch(e){}
+      }
+
+      function showBanner(){
+        if(localStorage.getItem('sr_ads_consent')) return; // already set
+        document.addEventListener('DOMContentLoaded', function(){
+          var banner=document.createElement('div');
+          banner.id='ads-consent';
+          banner.className='fixed inset-x-0 bottom-0 z-40';
+          banner.innerHTML = `
+            <div class="mx-auto max-w-6xl px-4 pb-4">
+              <div class="rounded-2xl bg-[#0c1322]/95 ring-1 ring-white/10 p-4 shadow-glow flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div class="text-sm text-white/80">
+                  We use cookies for ads & analytics. You can accept to support Staff Rater or continue without personalized ads.
+                  <a href="/privacy.html" class="underline text-white/70 hover:text-white">Privacy</a>
+                </div>
+                <div class="flex gap-2">
+                  <button id="ads-reject" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10 text-sm">Continue without ads</button>
+                  <button id="ads-accept" class="px-3 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-sm font-medium">Accept</button>
+                </div>
+              </div>
+            </div>`;
+          document.body.appendChild(banner);
+
+          document.getElementById('ads-accept').onclick=function(){
+            try{
+              localStorage.setItem('sr_ads_consent','granted');
+              // flip to granted and load AdSense
+              gtag('consent', 'update', {
+                'ad_user_data': 'granted',
+                'ad_personalization': 'granted',
+                'ad_storage': 'granted',
+                'analytics_storage': 'granted'
+              });
+            }catch(e){}
+            loadAdsense();
+            banner.remove();
+          };
+
+          document.getElementById('ads-reject').onclick=function(){
+            localStorage.setItem('sr_ads_consent','denied');
+            // keep denied; do not load ads
+            banner.remove();
+          };
+        });
+      }
+
+      // boot: if previously accepted, load right away; else show banner
+      if(localStorage.getItem('sr_ads_consent') === 'granted'){ loadAdsense(); }
+      else { showBanner(); }
+
+      // Expose for manual retry if needed (optional, no globals leaked)
+      window.__srAds = { load: loadAdsense, init: initAdUnits };
+    })();
+  </script>
+  <!-- [/ADS] -->
 </head>
 <body class="text-white font-sans antialiased">
   <div class="mesh"></div>
@@ -139,6 +234,20 @@
     </div>
   </section>
 
+  <!-- [ADS] In-article responsive ad (safe placement between sections) -->
+  <div class="max-w-6xl mx-auto px-4 pb-6">
+    <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 p-3">
+      <ins class="adsbygoogle"
+           style="display:block;min-height:280px"
+           data-ad-client="ca-pub-YOUR_PUBLISHER_ID"
+           data-ad-slot="YOUR_SLOT_ID_1"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>window.adsbygoogle=window.adsbygoogle||[];try{window.adsbygoogle.push({});}catch(e){}</script>
+    </div>
+  </div>
+  <!-- [/ADS] -->
+
   <!-- FEATURES -->
   <section id="features" class="max-w-6xl mx-auto px-4 pb-16">
     <h2 class="text-2xl font-semibold mb-6">Why servers pick Staff Rater</h2>
@@ -189,6 +298,20 @@
     </div>
   </section>
 
+  <!-- [ADS] Another ad after HOW (second safe slot) -->
+  <div class="max-w-6xl mx-auto px-4 pb-10">
+    <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 p-3">
+      <ins class="adsbygoogle"
+           style="display:block;min-height:250px"
+           data-ad-client="ca-pub-YOUR_PUBLISHER_ID"
+           data-ad-slot="YOUR_SLOT_ID_2"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>window.adsbygoogle=window.adsbygoogle||[];try{window.adsbygoogle.push({});}catch(e){}</script>
+    </div>
+  </div>
+  <!-- [/ADS] -->
+
   <!-- FAQ -->
   <section id="faq" class="max-w-6xl mx-auto px-4 pb-20">
     <h2 class="text-2xl font-semibold mb-6">FAQ</h2>
@@ -211,6 +334,8 @@
       <div class="flex gap-4">
         <a href="/dashboard/index.html" class="hover:text-white/70">Dashboard</a>
         <a href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noopener" class="hover:text-white/70">Support</a>
+        <!-- [ADS] Optional privacy link (create /privacy.html when ready) -->
+        <a href="/privacy.html" class="hover:text-white/70">Privacy</a>
       </div>
     </div>
   </footer>
