@@ -81,10 +81,7 @@
     <aside class="panel p-3 menu h-max">
       <div class="text-white/70 text-sm mb-2">Sections</div>
       <a href="#overview" class="active">Overview</a>
-      <a href="#ratings">Ratings</a>
-      <a href="#tickets">Tickets</a>
-      <a href="#applications">Applications</a>
-      <a href="#polls">Polls</a>
+      <a href="#setup">Setup</a>
       <a href="#commandlog">Command Log</a>
     </aside>
 
@@ -110,8 +107,15 @@
         <div id="info" class="text-white/70 mt-2 text-sm">Loading…</div>
       </div>
 
+      <!-- Setup (read-only) -->
+      <div id="setup" class="panel p-5 animate-reveal">
+        <h2 class="font-semibold">Quick setup (run in Discord)</h2>
+        <p class="note mt-1">Server settings live in Discord. These commands are the recommended setup flow.</p>
+        <pre id="setupCommands" class="mt-4 p-4 rounded-xl border border-white/10 bg-white/5 font-mono text-sm text-white/80 overflow-auto"></pre>
+      </div>
+
       <!-- Ratings -->
-      <div id="ratings" class="panel p-5 animate-reveal">
+      <div id="ratings" data-legacy-config class="panel p-5 animate-reveal">
         <h2 class="font-semibold">Ratings</h2>
         <p class="note mt-1">Choose channels by name (no IDs needed).</p>
         <div class="grid md:grid-cols-2 gap-4 mt-4">
@@ -131,7 +135,7 @@
       </div>
 
       <!-- Tickets -->
-      <div id="tickets" class="panel p-5 animate-reveal">
+      <div id="tickets" data-legacy-config class="panel p-5 animate-reveal">
         <h2 class="font-semibold">Tickets</h2>
         <p class="note mt-1">Pick your ticket category, staff role, and optional log channel.</p>
         <div class="grid md:grid-cols-3 gap-4 mt-4">
@@ -155,13 +159,13 @@
       </div>
 
       <!-- Applications -->
-      <div id="applications" class="panel p-5 animate-reveal">
+      <div id="applications" data-legacy-config class="panel p-5 animate-reveal">
         <h2 class="font-semibold">Applications</h2>
         <p class="note mt-1">Create templates and add questions using your bot’s slash commands. This page will later show pending applications.</p>
       </div>
 
       <!-- Polls -->
-      <div id="polls" class="panel p-5 animate-reveal">
+      <div id="polls" data-legacy-config class="panel p-5 animate-reveal">
         <h2 class="font-semibold">Polls</h2>
         <p class="note mt-1">Create and review polls via slash commands. Recent polls will appear here in a future update.</p>
       </div>
@@ -253,92 +257,27 @@
         }
       })();
 
-      // 4) Load guild structure & config
+      // 4) Load guild (read-only portal)
       (async function loadGuild(){
         if(!guildId){ info.innerHTML='<span class="err">Missing guild_id.</span>'; return; }
+        info.innerHTML='<span class="ok">Guild loaded.</span> <span class="muted">•</span> <span class="muted">This site is read‑only — configure Staff Rater inside Discord.</span>';
 
-        let channels=[], roles=[], categories=[];
-        try{
-          const r=await fetch('/api/guild-structure?guild_id='+encodeURIComponent(guildId));
-          if(!r.ok){
-            let txt = await r.text().catch(()=> '');
-            info.innerHTML = '<span class="err">Could not load guild structure.</span> ' + (txt || ('HTTP '+r.status));
-            return;
-          }
-          const g=await r.json();
-          if(!g || g.ok===false){
-            info.innerHTML = '<span class="err">Could not load guild structure.</span> ' + JSON.stringify(g||{});
-            return;
-          }
-          channels = Array.isArray(g.channels)?g.channels:[];
-          roles     = Array.isArray(g.roles)?g.roles:[];
-          categories= Array.isArray(g.categories)?g.categories:(channels.filter(c=>c.type===4)||[]);
-          info.innerHTML='<span class="ok">Guild loaded.</span>';
-        }catch(e){
-          info.innerHTML='<span class="err">Error loading guild structure.</span>';
-          return;
+        // Hide old config panels (kept in HTML for backwards compat)
+        const old = document.querySelectorAll('[data-legacy-config]');
+        old.forEach(el=>el.style.display='none');
+
+        // Show setup commands
+        const setup = document.getElementById('setupCommands');
+        if (setup) {
+          setup.textContent = [
+            '/addadmin @StaffMember',
+            '/setratingchannel #ratings',
+            '/setresultchannel #staff-ratings',
+            '/postratingui',
+            '/setticketconfig <Category> <StaffRole> <LogChannel?>',
+            '/postticketbutton'
+          ].join('\n');
         }
-
-        // Populate selects by name
-        function fillSelect(sel, items, labelKey='name', valueKey='id'){
-          sel.innerHTML = items.map(it=>`<option value="${it[valueKey]}">${it[labelKey]}</option>`).join('');
-        }
-        const textChannels = channels.filter(c=>c.type===0 || c.type==='GUILD_TEXT' || typeof c.type==='undefined');
-        fillSelect($('ratingChannel'), textChannels);
-        fillSelect($('resultChannel'), textChannels);
-        fillSelect($('ticketLogChannel'), textChannels);
-        fillSelect($('ticketCategory'), categories);
-        fillSelect($('ticketStaffRole'), roles);
-
-        // Load current config to pre-select
-        try{
-          const r=await fetch('/api/config-get?guild_id='+encodeURIComponent(guildId));
-          if(r.ok){
-            const cfg=await r.json();
-            if(cfg && typeof cfg==='object'){
-              if(cfg.rating_channel) $('ratingChannel').value = String(cfg.rating_channel);
-              if(cfg.result_channel) $('resultChannel').value = String(cfg.result_channel);
-              if(cfg.ticket_category) $('ticketCategory').value = String(cfg.ticket_category);
-              if(cfg.ticket_staff_role) $('ticketStaffRole').value = String(cfg.ticket_staff_role);
-              if(cfg.ticket_log_channel) $('ticketLogChannel').value = String(cfg.ticket_log_channel);
-            }
-          } else {
-            // Show reason
-            $('info').innerHTML += ' • <span class="err">config-get failed:</span> '+ await r.text();
-          }
-        }catch(e){}
-
-        // Save handlers with detailed error output
-        $('saveRatings').addEventListener('click', async ()=>{
-          const msg=$('saveRatingsMsg'); msg.textContent='Saving...';
-          try{
-            const body={
-              guild_id: guildId,
-              rating_channel_id: $('ratingChannel').value,
-              result_channel_id: $('resultChannel').value
-            };
-            const r=await fetch('/api/config-set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-            if(r.ok){ msg.textContent='Saved!'; }
-            else { msg.textContent='Failed: '+ await r.text(); }
-          }catch(e){ msg.textContent='Failed: '+(e?.message||''); }
-          setTimeout(()=>msg.textContent='',3500);
-        });
-
-        $('saveTickets').addEventListener('click', async ()=>{
-          const msg=$('saveTicketsMsg'); msg.textContent='Saving...';
-          try{
-            const body={
-              guild_id: guildId,
-              ticket_category_id: $('ticketCategory').value,
-              ticket_staff_role_id: $('ticketStaffRole').value,
-              ticket_log_channel_id: $('ticketLogChannel').value || null
-            };
-            const r=await fetch('/api/config-set',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-            if(r.ok){ msg.textContent='Saved!'; }
-            else { msg.textContent='Failed: '+ await r.text(); }
-          }catch(e){ msg.textContent='Failed: '+(e?.message||''); }
-          setTimeout(()=>msg.textContent='',3500);
-        });
 
         // Live command log poll (last 20 entries)
         async function pollLog(){
