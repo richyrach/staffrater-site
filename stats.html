@@ -1,84 +1,157 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Staff Rater — Live Stats</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Stats — Staff Rater</title>
+  <meta name="description" content="Public stats and optional leaderboards for Staff Rater." />
   <link rel="icon" href="/staff-rater-icon.png" />
+  <link rel="stylesheet" href="/assets/site.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .inter { font-family: Inter, ui-sans-serif, system-ui; }
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-top:1px solid rgba(255,255,255,.08);text-align:left}
+    thead th{border-top:none;color:rgba(148,163,184,.95);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+    .brand{font-family:Inter, ui-sans-serif, system-ui}
+    pre{white-space:pre-wrap;word-break:break-word;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px}
+  </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-white">
-  <header class="border-b border-white/10 bg-slate-950/80 backdrop-blur">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3">
-        <img src="/staff-rater-icon.png" class="w-9 h-9 rounded-lg" alt="">
-        <span class="font-semibold">Staff Rater</span>
-      </a>
-      <nav class="flex items-center gap-3 text-sm text-white/70">
-        <a class="hover:text-white" href="/commands.html">Commands</a>
-        <a class="hover:text-white" href="/stats.html">Stats</a>
-        <a class="hover:text-white" href="/dashboard/">Dashboard</a>
-      </nav>
+<body>
+  <header class="nav">
+    <div class="container">
+      <div class="nav-inner">
+        <a class="brand" href="/">
+          <img src="/staff-rater-icon.png" alt="Staff Rater" />
+          <span class="inter">Staff Rater</span>
+          <span class="badge">Stats</span>
+        </a>
+        <nav class="nav-links">
+          <a href="/">Home</a>
+          <a href="/commands.html">Commands</a>
+          <a href="/dashboard/">Dashboard</a>
+        </nav>
+        <div class="nav-cta">
+          <a class="btn ghost" href="/api/login">Sign in</a>
+          <a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&scope=bot%20applications.commands" target="_blank" rel="noreferrer">Invite</a>
+        </div>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 py-10">
-    <h1 class="text-3xl font-extrabold">Live Stats</h1>
-    <p class="text-white/70 mt-2">Updated from the bot automatically.</p>
+  <main class="section">
+    <div class="container">
+      <h1 class="h-title inter" style="font-size:38px;margin:0 0 10px">Public Stats</h1>
+      <p class="lead" style="margin-top:0">
+        If your backend exposes a public stats endpoint (recommended: <span class="kbd">/api/stats-get</span>), this page will show live numbers and leaderboards.
+        Otherwise it stays as a static preview.
+      </p>
 
-    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-      <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
-        <div class="text-white/60 text-sm">Servers using the bot</div>
-        <div id="s_guilds" class="text-3xl font-extrabold mt-2">—</div>
+      <div class="panel pad reveal">
+        <div class="grid-3">
+          <div class="stat">
+            <div class="num" data-stat-key="guilds">90+</div>
+            <div class="lbl">servers</div>
+          </div>
+          <div class="stat">
+            <div class="num" data-stat-key="total_ratings">—</div>
+            <div class="lbl">ratings</div>
+          </div>
+          <div class="stat">
+            <div class="num" data-stat-key="cmds_24h">—</div>
+            <div class="lbl">commands (24h)</div>
+          </div>
+        </div>
+        <div class="hr"></div>
+        <div class="mini">Updated: <span id="sr-stats-updated" class="mono">—</span></div>
       </div>
-      <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
-        <div class="text-white/60 text-sm">Total ratings (all servers)</div>
-        <div id="s_ratings" class="text-3xl font-extrabold mt-2">—</div>
-      </div>
-      <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
-        <div class="text-white/60 text-sm">Average rating</div>
-        <div id="s_avg" class="text-3xl font-extrabold mt-2">—</div>
-      </div>
-      <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
-        <div class="text-white/60 text-sm">Commands (last 24h)</div>
-        <div id="s_cmds" class="text-3xl font-extrabold mt-2">—</div>
-      </div>
-    </div>
 
-    <div class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
-      <div class="text-white/60 text-sm">Last update</div>
-      <div id="s_ts" class="mt-2 text-white/90">—</div>
-      <div id="s_err" class="mt-2 text-rose-300 text-sm"></div>
+      <div class="hr"></div>
+
+      <div class="split">
+        <div class="panel pad reveal">
+          <div class="panel-title inter">Top servers (optional)</div>
+          <p class="muted" style="margin:8px 0 10px; line-height:1.65">
+            This table populates only if your stats endpoint returns <span class="mono">top_guilds</span>.
+          </p>
+          <div class="panel" style="background:rgba(0,0,0,.12); border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.08)">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Server</th><th>Members</th><th>Ratings</th>
+                </tr>
+              </thead>
+              <tbody id="sr-top-guilds">
+                <tr><td class="small muted">—</td><td class="small muted">No data yet</td><td class="small muted">—</td><td class="small muted">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel pad reveal">
+          <div class="panel-title inter">Raw payload (debug)</div>
+          <p class="muted" style="margin:8px 0 10px; line-height:1.65">
+            Helpful if you’re wiring the backend and want to verify field names.
+          </p>
+          <div class="mini" id="sr-stats-err" style="color:rgba(248,113,113,.95);margin-bottom:8px"></div>
+          <pre id="sr-stats-json">{}</pre>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="panel pad reveal">
+        <div class="split">
+          <div>
+            <div class="panel-title inter">Want stats like “top commands” too?</div>
+            <p class="muted" style="margin:8px 0 0; line-height:1.65">
+              Keep your existing bot-to-dashboard pushes (command logs + stats snapshots). This UI will automatically adapt if the endpoint exposes more fields later.
+            </p>
+          </div>
+          <div style="display:flex; gap:10px; justify-content:flex-end; align-items:center; flex-wrap:wrap;">
+            <a class="btn" href="/commands.html">Commands</a>
+            <a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&scope=bot%20applications.commands" target="_blank" rel="noreferrer">Invite</a>
+          </div>
+        </div>
+      </div>
+
     </div>
   </main>
 
-  <script>
-    function setText(id, v){
-      document.getElementById(id).textContent = (v === null || v === undefined || v === '') ? '—' : String(v);
-    }
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="brand" style="gap:10px">
+            <img src="/staff-rater-icon.png" alt="Staff Rater" />
+            <span class="inter">Staff Rater</span>
+          </div>
+          <p class="small" style="margin:10px 0 0; line-height:1.65;">
+            Public stats are optional. If the API is not present, the site still works.
+          </p>
+        </div>
+        <div>
+          <div class="panel-title inter">Pages</div>
+          <div class="small" style="margin-top:10px;display:grid;gap:8px">
+            <a href="/">Home</a>
+            <a href="/commands.html">Commands</a>
+            <a href="/privacy.html">Privacy</a>
+          </div>
+        </div>
+        <div>
+          <div class="panel-title inter">Support</div>
+          <div class="small" style="margin-top:10px;display:grid;gap:8px">
+            <a href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noreferrer">Discord</a>
+            <a href="/api/login">Sign in</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
 
-    async function loadStats(){
-      try{
-        const r = await fetch('/api/stats-get', { cache: 'no-store' });
-        const j = await r.json();
-        if(!r.ok || !j.ok){
-          setText('s_err', 'Could not load stats.');
-          return;
-        }
-        const s = j.stats || {};
-        setText('s_guilds', s.guilds);
-        setText('s_ratings', s.total_ratings);
-        setText('s_avg', s.avg_rating);
-        setText('s_cmds', s.cmds_24h);
-        setText('s_ts', s.ts || '—');
-        setText('s_err', '');
-      }catch(e){
-        setText('s_err', 'Network error.');
-      }
-    }
-
-    loadStats();
-    setInterval(loadStats, 60000);
-  </script>
+  <script src="/assets/site.js"></script>
+  <script src="/assets/stats.js"></script>
 </body>
 </html>

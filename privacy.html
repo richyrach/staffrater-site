@@ -2,151 +2,118 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Privacy Policy — Staff Rater</title>
-  <meta name="description" content="Privacy Policy for Staff Rater — how we handle data, cookies, ads, and your choices." />
-  <link rel="icon" href="/staff-rater-icon.png">
-  <meta name="google-adsense-account" content="ca-pub-5888775788301303">
-  <meta name="robots" content="noindex">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { bg:'#070b14', panel:'#0c1322' },
-          boxShadow: { glow:'0 0 0 1px rgba(255,255,255,0.08), 0 15px 35px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.04)'}
-        }
-      }
-    }
-  </script>
-  <style>
-    :root { color-scheme: dark; } html,body{background:#070b14}
-    .mesh{position:fixed;inset:0;pointer-events:none;z-index:-1}
-    .mesh:before,.mesh:after{content:"";position:absolute;width:1200px;height:1200px;filter:blur(90px);opacity:.25;border-radius:50%}
-    .mesh:before{left:-300px;top:-300px;background:radial-gradient(600px 600px at 50% 50%, #22d3ee33, transparent 70%)}
-    .mesh:after{right:-200px;bottom:-300px;background:radial-gradient(600px 600px at 50% 50%, #a78bfa33, transparent 70%)}
-    @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
-  </style>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Privacy — Staff Rater</title>
+  <meta name="description" content="Privacy policy for the Staff Rater Discord bot and website." />
+  <link rel="icon" href="/staff-rater-icon.png" />
+  <link rel="stylesheet" href="/assets/site.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>.inter{font-family:Inter, ui-sans-serif, system-ui}.brand{font-family:Inter, ui-sans-serif, system-ui}</style>
 </head>
-<body class="text-white antialiased">
-  <div class="mesh"></div>
-
-  <header class="border-b border-white/10 bg-bg/80 backdrop-blur sticky top-0 z-30">
-    <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3">
-        <img src="/staff-rater-icon.png" class="w-9 h-9 rounded-xl ring-1 ring-white/10" alt="Staff Rater">
-        <span class="text-white/90 font-semibold tracking-wide">Staff Rater</span>
-      </a>
-      <nav class="hidden sm:flex items-center gap-6 text-white/70">
-        <a href="/#features" class="hover:text-white">Features</a>
-        <a href="/#how" class="hover:text-white">How it works</a>
-        <a href="/dashboard/index.html" class="hover:text-white">Dashboard</a>
-      </nav>
+<body>
+  <header class="nav">
+    <div class="container">
+      <div class="nav-inner">
+        <a class="brand" href="/">
+          <img src="/staff-rater-icon.png" alt="Staff Rater" />
+          <span class="inter">Staff Rater</span>
+          <span class="badge">Privacy</span>
+        </a>
+        <nav class="nav-links">
+          <a href="/">Home</a>
+          <a href="/commands.html">Commands</a>
+          <a href="/stats.html">Stats</a>
+          <a href="/dashboard/">Dashboard</a>
+        </nav>
+        <div class="nav-cta">
+          <a class="btn ghost" href="/api/login">Sign in</a>
+          <a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&scope=bot%20applications.commands" target="_blank" rel="noreferrer">Invite</a>
+        </div>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 py-10">
-    <h1 class="text-3xl font-extrabold">Privacy Policy</h1>
-    <p class="text-white/70 mt-2">Last updated: <span id="d"></span></p>
+  <main class="section">
+    <div class="container">
+      <h1 class="h-title inter" style="font-size:38px;margin:0 0 10px">Privacy Policy</h1>
+      <p class="lead" style="margin-top:0">This is a plain-language overview. If you need a stricter legal version, we can expand it later.</p>
 
-    <div class="mt-6 space-y-6">
-      <section class="rounded-2xl bg-[#0c1322]/80 ring-1 ring-white/10 p-6 shadow-glow">
-        <h2 class="text-xl font-semibold">Who we are</h2>
-        <p class="text-white/80 mt-2">
-          Staff Rater is a Discord bot and lightweight web dashboard designed to help communities manage staff ratings,
-          tickets, applications, leaderboards, and profiles. This policy explains what data we collect, how we use it,
-          and the choices you have.
-        </p>
-      </section>
-
-      <section class="rounded-2xl bg-[#0c1322]/80 ring-1 ring-white/10 p-6 shadow-glow">
-        <h2 class="text-xl font-semibold">What we collect</h2>
-        <ul class="list-disc pl-6 text-white/80 mt-2 space-y-2">
-          <li><span class="font-medium">Account basics:</span> Discord user ID, username, and avatar when you sign in with Discord.</li>
-          <li><span class="font-medium">Server settings:</span> selected channels/roles, feature toggles, forms, and preferences you configure.</li>
-          <li><span class="font-medium">Operational logs:</span> basic request metadata (timestamps, endpoint, IP city/ASN) for security and abuse prevention.</li>
-          <li><span class="font-medium">Cookies/local storage:</span> session tokens and consent preferences for a smoother experience.</li>
+      <div class="panel pad reveal">
+        <h2 class="inter" style="margin-top:0">What data the bot stores</h2>
+        <ul class="list">
+          <li><b>Ratings:</b> staff user ID, rater user ID, score (1–5), optional comment, timestamp.</li>
+          <li><b>Configuration:</b> server ID and configured channels/roles (rating channels, ticket category, etc.).</li>
+          <li><b>Tickets/applications (if enabled):</b> metadata needed to manage the workflow (channel IDs, status, timestamps).</li>
         </ul>
-      </section>
 
-      <section class="rounded-2xl bg-[#0c1322]/80 ring-1 ring-white/10 p-6 shadow-glow">
-        <h2 class="text-xl font-semibold">Cookies & advertising</h2>
-        <p class="text-white/80 mt-2">
-          We use cookies/local storage for authentication and preferences. If you accept our banner, we also load
-          Google AdSense/ads scripts which may use cookies or local storage to measure effectiveness and, where allowed,
-          personalize ads. You can change your choice at any time by clearing site data or using your browser settings.
-        </p>
-        <p class="text-white/70 mt-3 text-sm">
-          Third-party vendor: Google. Learn more at
-          <a class="underline" href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">Google advertising policies</a>
-          and manage ad personalization at
-          <a class="underline" href="https://adssettings.google.com/" target="_blank" rel="noopener">Ads Settings</a>.
-        </p>
-      </section>
+        <div class="hr"></div>
 
-      <section class="rounded-2xl bg-[#0c1322]/80 ring-1 ring-white/10 p-6 shadow-glow">
-        <h2 class="text-xl font-semibold">How we use data</h2>
-        <ul class="list-disc pl-6 text-white/80 mt-2 space-y-2">
-          <li>Provide and improve bot features (ratings, tickets, applications, leaderboards, profiles).</li>
-          <li>Secure the service, detect abuse, and debug reliability issues.</li>
-          <li>Show and measure ads on the website when consent is granted.</li>
-          <li>Send essential service notices (e.g., breaking changes or outages).</li>
+        <h2 class="inter">What data the bot does not collect</h2>
+        <ul class="list">
+          <li>No reading or storing of your private DMs with the bot (unless you directly submit application answers via the flow).</li>
+          <li>No message content logging across your server as a background process.</li>
+          <li>No selling of user data.</li>
         </ul>
-      </section>
 
-      <section class="rounded-2xl bg-[#0c1322]/80 ring-1 ring-white/10 p-6 shadow-glow">
-        <h2 class="text-xl font-semibold">Legal bases & your rights</h2>
-        <p class="text-white/80 mt-2">
-          Depending on your region, we process data under legitimate interests and/or your consent (for ads/analytics).
-          Where applicable (e.g., EEA/UK), you may request access, correction, deletion, restriction, or objection to processing.
-          For California users, you can request to know/delete certain information and opt out of certain sharing.
-        </p>
-      </section>
+        <div class="hr"></div>
 
-      <section class="rounded-2xl bg-[#0c1322]/80 ring-1 ring-white/10 p-6 shadow-glow">
-        <h2 class="text-xl font-semibold">Data retention & security</h2>
-        <p class="text-white/80 mt-2">
-          We keep data only as long as needed for the purposes above, then delete or anonymize it.
-          We use industry-standard safeguards; no method is 100% secure, but we work to protect your data.
+        <h2 class="inter">Website login cookies</h2>
+        <p class="muted" style="line-height:1.7">
+          If you use the dashboard login, the website may set a session cookie (e.g. <span class="kbd">sr_session</span>) to keep you signed in.
+          This cookie is used only for authentication and is not a tracking cookie.
         </p>
-      </section>
 
-      <section class="rounded-2xl bg-[#0c1322]/80 ring-1 ring-white/10 p-6 shadow-glow">
-        <h2 class="text-xl font-semibold">Children</h2>
-        <p class="text-white/80 mt-2">
-          Staff Rater is not directed to children under 13 (or the age required by your region). Do not use the service
-          if you are under the minimum age or if your server is primarily for children.
-        </p>
-      </section>
+        <div class="hr"></div>
 
-      <section class="rounded-2xl bg-[#0c1322]/80 ring-1 ring-white/10 p-6 shadow-glow">
-        <h2 class="text-xl font-semibold">Contact</h2>
-        <p class="text-white/80 mt-2">
-          Questions or requests about this policy? Reach us via our
-          <a class="underline" href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noopener">Discord support server</a>.
+        <h2 class="inter">Data retention</h2>
+        <p class="muted" style="line-height:1.7">
+          Data is retained while the bot is installed in your server, unless you remove it or request deletion.
+          Server admins can also remove staff from rating lists and delete ratings when needed.
         </p>
-      </section>
 
-      <section class="rounded-2xl bg-[#0c1322]/80 ring-1 ring-white/10 p-6 shadow-glow">
-        <h2 class="text-xl font-semibold">Changes</h2>
-        <p class="text-white/80 mt-2">
-          We may update this policy as we add features or comply with new requirements. We’ll update the “Last updated”
-          date and, when appropriate, post a notice on the website.
+        <div class="hr"></div>
+
+        <h2 class="inter">Contact</h2>
+        <p class="muted" style="line-height:1.7;margin:0">
+          For privacy questions or deletion requests, contact support via the Discord server:
+          <a class="btn small" style="margin-left:10px" href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noreferrer">Support</a>
         </p>
-      </section>
+      </div>
+
     </div>
   </main>
 
-  <footer class="border-t border-white/10">
-    <div class="max-w-4xl mx-auto px-4 py-6 text-sm text-white/60 flex justify-between">
-      <span>© <span id="yr"></span> Staff Rater</span>
-      <a href="/" class="hover:text-white">Back to home</a>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="brand" style="gap:10px">
+            <img src="/staff-rater-icon.png" alt="Staff Rater" />
+            <span class="inter">Staff Rater</span>
+          </div>
+          <p class="small" style="margin:10px 0 0; line-height:1.65;">Last updated: <span class="mono">2026-02-06</span></p>
+        </div>
+        <div>
+          <div class="panel-title inter">Pages</div>
+          <div class="small" style="margin-top:10px;display:grid;gap:8px">
+            <a href="/">Home</a>
+            <a href="/commands.html">Commands</a>
+            <a href="/stats.html">Stats</a>
+          </div>
+        </div>
+        <div>
+          <div class="panel-title inter">Support</div>
+          <div class="small" style="margin-top:10px;display:grid;gap:8px">
+            <a href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noreferrer">Discord</a>
+            <a href="/api/login">Sign in</a>
+          </div>
+        </div>
+      </div>
     </div>
   </footer>
 
-  <script>
-    document.getElementById('yr').textContent = new Date().getFullYear();
-    document.getElementById('d').textContent = new Date().toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'});
-  </script>
+  <script src="/assets/site.js"></script>
 </body>
 </html>

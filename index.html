@@ -2,379 +2,350 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Staff Rater — Elevate your Discord staff</title>
-  <meta name="description" content="Staff Rater is a sleek Discord bot for staff ratings, tickets, applications, leaderboards, and profiles. Beautiful UI, fast setup, and honest moderation workflows." />
-  <link rel="icon" href="/staff-rater-icon.png">
-
-  <!-- Canonical host lock (allows both apex + www to avoid breaking) -->
-  <script>
-    (function () {
-      var canonical = "staffrater.xyz";                 // <— set your preferred canonical here
-      var allowed = ["staffrater.xyz","www.staffrater.xyz"];
-      if (!allowed.includes(location.host)) {
-        location.replace("https://" + canonical + location.pathname + location.search + location.hash);
-      }
-    })();
-  </script>
-
-  <!-- Open Graph -->
-  <meta property="og:title" content="Staff Rater — Elevate your Discord staff" />
-  <meta property="og:description" content="A sleek Discord bot for staff ratings, tickets, applications, leaderboards, and profiles." />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Staff Rater — Ratings, tickets, applications & moderation for Discord</title>
+  <meta name="description" content="Staff Rater is a Discord bot that helps communities run smoother: staff ratings, tickets, applications, leaderboards, and moderation—fast setup, clean UI." />
+  <meta property="og:title" content="Staff Rater — Staff ratings that actually work" />
+  <meta property="og:description" content="Ratings, tickets, applications, leaderboards, and moderation—built for real servers." />
   <meta property="og:image" content="/staff-rater-icon.png" />
   <meta property="og:type" content="website" />
-
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            bg: '#070b14',
-            panel: '#0c1322',
-            line: 'rgba(255,255,255,0.08)'
-          },
-          fontFamily: {
-            sans: ['Inter', 'ui-sans-serif', 'system-ui'],
-            mono: ['JetBrains Mono', 'ui-monospace']
-          },
-          boxShadow: {
-            glow: '0 0 0 1px rgba(255,255,255,0.08), 0 15px 35px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.04)'
-          },
-          keyframes: {
-            floaty: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-6px)' } },
-            glow: { '0%,100%': { opacity:.9 }, '50%': { opacity: .5 } },
-            shimmer: { '100%': { transform: 'translateX(100%)' } },
-          },
-          animation: {
-            floaty: 'floaty 6s ease-in-out infinite',
-            glow: 'glow 2.4s ease-in-out infinite',
-            shimmer: 'shimmer 1.25s linear infinite',
-          }
-        }
-      }
-    }
-  </script>
+  <meta name="theme-color" content="#0b1222" />
+  <link rel="icon" href="/staff-rater-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/site.css" />
   <style>
-    :root { color-scheme: dark; }
-    html, body { background:#070b14; }
-    .mesh { position:fixed; inset:0; pointer-events:none; z-index:-1; }
-    .mesh:before, .mesh:after { content:""; position:absolute; width:1200px; height:1200px; filter:blur(90px); opacity:.25; border-radius:50%; }
-    .mesh:before { left:-300px; top:-300px; background: radial-gradient(600px 600px at 50% 50%, #22d3ee33, transparent 70%); }
-    .mesh:after { right:-200px; bottom:-300px; background: radial-gradient(600px 600px at 50% 50%, #a78bfa33, transparent 70%); }
-    .gborder { position: relative; }
-    .gborder:before { content:''; position:absolute; inset:0; border-radius:18px; padding:1px; background:linear-gradient(120deg, rgba(34,211,238,.45), rgba(99,102,241,.45)); -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; border-radius:18px; }
-    @media (prefers-reduced-motion: reduce){
-      *{ animation: none !important; transition: none !important; }
-    }
+    .inter { font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+    .h-title{font-family:Inter, ui-sans-serif, system-ui}
+    .brand{font-family:Inter, ui-sans-serif, system-ui}
   </style>
-
-  <!-- Speed up account detection for Auto ads -->
-  <meta name="google-adsense-account" content="ca-pub-5888775788301303">
-
-  <!-- [ADS] Consent + Auto Ads loader (no ad slots needed) -->
-  <script>
-    (function () {
-      var CLIENT_ID = 'ca-pub-5888775788301303';
-      var LOADED = false;
-
-      function loadAdsense() {
-        if (LOADED) return; LOADED = true;
-
-        // Consent Mode v2 defaults; flipped to granted on Accept
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){ dataLayer.push(arguments); }
-        window.gtag = window.gtag || gtag;
-        gtag('consent', 'default', {
-          'ad_user_data': 'denied',
-          'ad_personalization': 'denied',
-          'ad_storage': 'denied',
-          'analytics_storage': 'denied'
-        });
-
-        var s = document.createElement('script');
-        s.async = true;
-        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + encodeURIComponent(CLIENT_ID);
-        s.crossOrigin = 'anonymous';
-        document.head.appendChild(s);
-      }
-
-      function showConsentBanner() {
-        if (localStorage.getItem('sr_ads_consent')) return; // already set
-        document.addEventListener('DOMContentLoaded', function () {
-          var banner = document.createElement('div');
-          banner.id = 'ads-consent';
-          banner.className = 'fixed inset-x-0 bottom-0 z-40';
-          banner.innerHTML = `
-            <div class="mx-auto max-w-6xl px-4 pb-4">
-              <div class="rounded-2xl bg-[#0c1322]/95 ring-1 ring-white/10 p-4 shadow-glow flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div class="text-sm text-white/80">
-                  We use cookies for ads & analytics. You can accept to support Staff Rater or continue without personalized ads.
-                  <a href="/privacy.html" class="underline text-white/70 hover:text-white">Privacy</a>
-                </div>
-                <div class="flex gap-2">
-                  <button id="ads-reject" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10 text-sm">Continue without ads</button>
-                  <button id="ads-accept" class="px-3 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-sm font-medium">Accept</button>
-                </div>
-              </div>
-            </div>`;
-          document.body.appendChild(banner);
-
-          document.getElementById('ads-accept').onclick = function () {
-            try {
-              localStorage.setItem('sr_ads_consent', 'granted');
-              gtag('consent', 'update', {
-                'ad_user_data': 'granted',
-                'ad_personalization': 'granted',
-                'ad_storage': 'granted',
-                'analytics_storage': 'granted'
-              });
-            } catch (e) {}
-            loadAdsense();
-            banner.remove();
-          };
-
-          document.getElementById('ads-reject').onclick = function () {
-            localStorage.setItem('sr_ads_consent', 'denied');
-            banner.remove(); // keep denied; do not load AdSense
-          };
-        });
-      }
-
-      // Boot: if previously accepted, load immediately; else show banner
-      if (localStorage.getItem('sr_ads_consent') === 'granted') { loadAdsense(); }
-      else { showConsentBanner(); }
-
-      // Optional: expose for manual retry
-      window.__srAds = { load: loadAdsense };
-    })();
-  </script>
-  <!-- [/ADS] -->
 </head>
-<body class="text-white font-sans antialiased">
-  <div class="mesh"></div>
+<body>
+  <div class="toast" id="sr-toast">Copied</div>
 
-  <!-- NAV -->
-  <header class="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-bg/50 bg-bg/80 border-b border-white/5">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3">
-        <img src="/staff-rater-icon.png" class="w-9 h-9 rounded-xl ring-1 ring-white/10" alt="Staff Rater">
-        <span class="text-white/90 font-semibold tracking-wide">Staff Rater</span>
-      </a>
-      <nav class="hidden md:flex items-center gap-6 text-white/70">
-        <a href="#features" class="hover:text-white">Features</a>
-        <a href="#how" class="hover:text-white">How it works</a>
-        <a href="#faq" class="hover:text-white">FAQ</a>
-        <a href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noopener" class="hover:text-white">Support</a>
-      </nav>
-
-      <!-- Auth area -->
-      <div id="auth-area" class="relative">
-        <!-- Signed-out UI gets injected from JS if needed -->
-        <a href="/api/login?return=/" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 127.14 96.36" fill="currentColor"><path d="M107.7,8.07A105.15,105.15,0,0,0,81.47.36a72.06,72.06,0,0,0-3.52,7.18A97.68,97.68,0,0,0,52,7.18,72.37,72.37,0,0,0,48.46,0,105.89,105.89,0,0,0,22.21,8.09C4,33.65-2.43,58.6.78,83.27A106.31,106.31,0,0,0,32.39,96.36,77.7,77.7,0,0,0,39.6,85.9a68.42,68.42,0,0,1-10.85-5.23c.91-.66,1.8-1.35,2.65-2.06A71.14,71.14,0,0,0,63.57,84.4a71.31,71.31,0,0,0,32.15-5.79c.85.71,1.74,1.39,2.65,2.06A68.68,68.68,0,0,1,87.52,85.9a77.33,77.33,0,0,0,7.21,10.46,106.12,106.12,0,0,0,31.61-13.09C129.57,58.71,123.13,33.76,107.7,8.07Z"/></svg>
-          <span>Sign in with Discord</span>
+  <header class="nav">
+    <div class="container">
+      <div class="nav-inner">
+        <a class="brand" href="/">
+          <img src="/staff-rater-icon.png" alt="Staff Rater" />
+          <span class="inter">Staff Rater</span>
+          <span class="badge">Discord bot</span>
         </a>
+
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="#features">Features</a>
+          <a href="/commands.html">Commands</a>
+          <a href="/stats.html">Stats</a>
+          <a href="#support">Support</a>
+        </nav>
+
+        <div class="nav-cta">
+          <a class="btn ghost" href="/api/login">Sign in</a>
+          <a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&scope=bot%20applications.commands" target="_blank" rel="noreferrer">Invite to Discord</a>
+        </div>
       </div>
     </div>
   </header>
 
-  <!-- HERO -->
-  <section class="max-w-6xl mx-auto px-4 pt-14 pb-10">
-    <div class="grid md:grid-cols-2 gap-10 items-center">
-      <div>
-        <h1 class="text-4xl sm:text-5xl font-extrabold leading-tight">
-          Fair, fast, and beautiful <span class="text-cyan-300">staff ratings</span> for your Discord
-        </h1>
-        <p class="text-white/70 mt-4 text-lg">
-          Tickets, applications, leaderboards, and profiles — all in one sleek bot. Set up in minutes, moderate with confidence.
-        </p>
-        <div class="flex flex-wrap gap-3 mt-6">
-          <a href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands" class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-indigo-500 hover:bg-indigo-600 font-medium shadow-glow">Invite to Server</a>
-          <a href="/commands.html" class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Commands</a>
-          <a href="/stats.html" class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Live Stats</a>
-          <a href="/dashboard/index.html" class="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Dashboard</a>
-        </div>
-        <div class="mt-6 text-sm text-white/60">made with ❤️ by richy_Rach</div>
-      </div>
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero-grid">
+          <div class="reveal">
+            <span class="badge">Fair, fast, and reliable</span>
+            <h1 class="h-title">Staff ratings that build trust — not drama.</h1>
+            <p class="h-sub">
+              Staff Rater helps communities run smoother with <b>clean ratings</b>, <b>tickets</b>, <b>applications</b>, and <b>moderation tools</b>.
+              Setup takes minutes. Everything stays organized.
+            </p>
 
-      <div class="gborder rounded-2xl p-[1px]">
-        <div class="rounded-2xl bg-panel/80 p-5 shadow-glow">
-          <div class="flex items-center gap-4">
-            <img src="/staff-rater-icon.png" class="w-16 h-16 rounded-xl ring-1 ring-white/10 animate-floaty" alt="">
-            <div>
-              <div class="text-white/90 font-semibold">Sleek slash commands</div>
-              <div class="text-white/60 text-sm">Beautiful embeds • Smooth workflows</div>
+            <div class="h-actions">
+              <a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&scope=bot%20applications.commands" target="_blank" rel="noreferrer">
+                <span>Invite</span> <span class="kbd">/</span>
+              </a>
+              <a class="btn" href="/commands.html">Explore commands</a>
+              <a class="btn" href="/dashboard/">Open dashboard</a>
+              <a class="btn ghost" href="#how">How it works</a>
+            </div>
+
+            <div class="hr"></div>
+
+            <div class="pill">
+              <span class="muted">Tip:</span>
+              <span>Use <span class="kbd">/postratingui</span> once and the UI persists after restarts.</span>
             </div>
           </div>
-          <ul class="mt-4 space-y-2 text-white/70 text-sm">
-            <li>⭐ <code class="font-mono">/rate</code> — rate your staff fairly</li>
-            <li>🎫 <code class="font-mono">/postticketbutton</code> — support tickets</li>
-            <li>📋 <code class="font-mono">/postappui</code> — applications</li>
-            <li>🏆 <code class="font-mono">/leaderboard</code> — top staff</li>
-            <li>📊 <code class="font-mono">/createpoll</code> — polls</li>
-          </ul>
-          <div class="mt-5 relative overflow-hidden rounded-xl bg-white/5 ring-1 ring-white/10">
-            <div class="absolute inset-y-0 left-0 w-1/3 bg-white/10 -skew-x-12 animate-shimmer"></div>
-            <div class="p-4 text-white/70 text-sm">Super lightweight frontend + serverless APIs = fast everywhere.</div>
+
+          <aside class="panel pad reveal" style="position:relative; overflow:hidden;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+              <div>
+                <div class="panel-title inter">Live overview</div>
+                <div class="mini">Auto-updates if your API exposes public stats.</div>
+              </div>
+              <span class="badge"><span style="width:7px;height:7px;border-radius:99px;background:rgba(34,197,94,.9);display:inline-block"></span> online</span>
+            </div>
+
+            <div class="grid-3" style="margin-top:14px;">
+              <div class="stat">
+                <div class="num" data-stat-key="guilds">90+</div>
+                <div class="lbl">servers using Staff Rater</div>
+              </div>
+              <div class="stat">
+                <div class="num" data-stat-key="total_ratings">—</div>
+                <div class="lbl">ratings recorded</div>
+              </div>
+              <div class="stat">
+                <div class="num" data-stat-key="avg_rating" data-fmt="float">—</div>
+                <div class="lbl">average staff score</div>
+              </div>
+            </div>
+
+            <div class="hr"></div>
+
+            <div class="mini">Last updated: <span id="sr-stats-updated" class="mono">—</span></div>
+
+            <div class="hr"></div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <span class="badge">Ratings</span>
+              <span class="badge">Tickets</span>
+              <span class="badge">Applications</span>
+              <span class="badge">Moderation</span>
+              <span class="badge">Slash commands</span>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="container">
+        <h2 class="reveal inter">Everything a staff team needs, without the clutter.</h2>
+        <p class="lead reveal">
+          Designed for real communities: clear flows, predictable permissions, and UI that doesn't break when the bot restarts.
+        </p>
+
+        <div class="cards">
+          <div class="card reveal">
+            <div class="icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2l3 7h7l-5.6 4.1 2.2 7L12 16.9 5.4 20.1l2.2-7L2 9h7l3-7z" stroke="rgba(226,232,240,.9)" stroke-width="1.6" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3 class="inter">Staff ratings & profiles</h3>
+            <p>Collect consistent 1–5 ratings with optional comments. View profiles, trends, and leaderboards when needed.</p>
+          </div>
+
+          <div class="card reveal">
+            <div class="icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M4 4h16v12H7l-3 3V4z" stroke="rgba(226,232,240,.9)" stroke-width="1.6" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3 class="inter">Tickets done right</h3>
+            <p>Open, claim, log, and close tickets with a simple button panel. Keeps support organized for staff.</p>
+          </div>
+
+          <div class="card reveal">
+            <div class="icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M6 3h12v18H6V3z" stroke="rgba(226,232,240,.9)" stroke-width="1.6"/>
+                <path d="M8 7h8M8 11h8M8 15h6" stroke="rgba(226,232,240,.9)" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="inter">Applications</h3>
+            <p>Collect structured applications with questions and review queues. Faster onboarding with less chaos.</p>
+          </div>
+
+          <div class="card reveal">
+            <div class="icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2a7 7 0 0 1 7 7v3l2 2v2H3v-2l2-2V9a7 7 0 0 1 7-7z" stroke="rgba(226,232,240,.9)" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M9.5 20a2.5 2.5 0 0 0 5 0" stroke="rgba(226,232,240,.9)" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="inter">Moderation toolbox</h3>
+            <p>Warns, mutes, bans, purge, and basic utilities—so you don't need 5 different bots for basics.</p>
+          </div>
+
+          <div class="card reveal">
+            <div class="icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M4 12h16M12 4v16" stroke="rgba(226,232,240,.9)" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h3 class="inter">Persistent UI</h3>
+            <p>Your button panels and menus are restored after restarts. Less maintenance, fewer broken messages.</p>
+          </div>
+
+          <div class="card reveal">
+            <div class="icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M7 12l3 3 7-7" stroke="rgba(226,232,240,.9)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="rgba(226,232,240,.9)" stroke-width="1.6"/>
+              </svg>
+            </div>
+            <h3 class="inter">Clean permissions</h3>
+            <p>Commands follow Discord permissions and server roles—so staff can manage, members can rate, and everything stays safe.</p>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- FEATURES -->
-  <section id="features" class="max-w-6xl mx-auto px-4 pb-16">
-    <h2 class="text-2xl font-semibold mb-6">Why servers pick Staff Rater</h2>
-    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      <div class="rounded-2xl bg-panel/60 p-5 shadow-glow">
-        <div class="text-cyan-300 font-semibold">Honest reviews</div>
-        <p class="text-white/70 mt-2">Anonymous ratings with optional comments. Flag unfair reviews for moderation.</p>
-      </div>
-      <div class="rounded-2xl bg-panel/60 p-5 shadow-glow">
-        <div class="text-cyan-300 font-semibold">Tickets done right</div>
-        <p class="text-white/70 mt-2">Open, claim, and close in one place — with logs.</p>
-      </div>
-      <div class="rounded-2xl bg-panel/60 p-5 shadow-glow">
-        <div class="text-cyan-300 font-semibold">Powerful applications</div>
-        <p class="text-white/70 mt-2">Custom forms, accept/reject flow, even interview tickets.</p>
-      </div>
-      <div class="rounded-2xl bg-panel/60 p-5 shadow-glow">
-        <div class="text-cyan-300 font-semibold">Live dashboards</div>
-        <p class="text-white/70 mt-2">Pick a server, configure channels and options by name.</p>
-      </div>
-      <div class="rounded-2xl bg-panel/60 p-5 shadow-glow">
-        <div class="text-cyan-300 font-semibold">Secure OAuth</div>
-        <p class="text-white/70 mt-2">Sign in with Discord. No passwords, no fuss.</p>
-      </div>
-      <div class="rounded-2xl bg-panel/60 p-5 shadow-glow">
-        <div class="text-cyan-300 font-semibold">Fast & lightweight</div>
-        <p class="text-white/70 mt-2">Pure static frontend + serverless API. Ultra quick.</p>
-      </div>
-    </div>
-  </section>
+    <section class="section" id="how">
+      <div class="container">
+        <div class="split">
+          <div class="panel pad reveal">
+            <h2 class="inter" style="margin-top:0">Setup in 3 steps</h2>
+            <ol class="list">
+              <li><b>Invite</b> the bot with Administrator permissions (or customize if you prefer).</li>
+              <li>Run <span class="kbd">/setratingchannel</span> and <span class="kbd">/postratingui</span> to create the rating panel.</li>
+              <li>Add staff with <span class="kbd">/addadmin</span> and you're live.</li>
+            </ol>
+            <div class="hr"></div>
+            <div class="mini">Want tickets too? Add <span class="kbd">/setticketconfig</span> then <span class="kbd">/postticketbutton</span>.</div>
+          </div>
 
-  <!-- HOW -->
-  <section id="how" class="max-w-6xl mx-auto px-4 pb-16">
-    <h2 class="text-2xl font-semibold mb-6">How it works</h2>
-    <div class="grid md:grid-cols-3 gap-5">
-      <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 p-5">
-        <div class="text-white/90 font-semibold">1. Invite</div>
-        <p class="text-white/70 mt-2">Add Staff Rater to your server with admin permissions.</p>
-      </div>
-      <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 p-5">
-        <div class="text-white/90 font-semibold">2. Configure</div>
-        <p class="text-white/70 mt-2">Open Dashboard → pick your server → select channels by name.</p>
-      </div>
-      <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 p-5">
-        <div class="text-white/90 font-semibold">3. Go live</div>
-        <p class="text-white/70 mt-2">Post the rating UI, accept applications, and manage tickets.</p>
-      </div>
-    </div>
-  </section>
+          <div class="panel pad reveal">
+            <h2 class="inter" style="margin-top:0">What your members see</h2>
+            <p class="lead" style="margin:0 0 12px;">
+              A simple rating flow: select staff, choose 1–5, optional comment. No messy forms.
+            </p>
+            <div class="card" style="margin-top:10px;">
+              <div class="panel-title inter">Example flow</div>
+              <p class="muted" style="margin:10px 0 0;">
+                <span class="kbd">/rate</span> → choose staff → choose score → (optional) comment → done.
+              </p>
+              <div class="hr"></div>
+              <div class="mini">Staff can view <span class="kbd">/profile</span> and <span class="kbd">/leaderboard</span> as needed.</div>
+            </div>
+          </div>
+        </div>
 
-  <!-- FAQ -->
-  <section id="faq" class="max-w-6xl mx-auto px-4 pb-20">
-    <h2 class="text-2xl font-semibold mb-6">FAQ</h2>
-    <div class="space-y-4">
-      <details class="rounded-xl bg-white/5 ring-1 ring-white/10 p-4">
-        <summary class="cursor-pointer font-medium text-white/90">Does the bot need Administrator?</summary>
-        <p class="text-white/70 mt-2">Yes, for best experience (tickets/categories, reading channel names, etc.).</p>
-      </details>
-      <details class="rounded-xl bg-white/5 ring-1 ring-white/10 p-4">
-        <summary class="cursor-pointer font-medium text-white/90">Can I manage settings without IDs?</summary>
-        <p class="text-white/70 mt-2">Yep. The dashboard lists channels and roles by name.</p>
-      </details>
-    </div>
-  </section>
+        <div class="hr"></div>
 
-  <!-- FOOTER -->
-  <footer class="border-t border-white/5">
-    <div class="max-w-6xl mx-auto px-4 py-6 text-sm text-white/50 flex flex-col sm:flex-row gap-2 justify-between">
-      <div>© <span id="yr"></span> Staff Rater</div>
-      <div class="flex gap-4">
-        <a href="/dashboard/index.html" class="hover:text-white/70">Dashboard</a>
-        <a href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noopener" class="hover:text-white/70">Support</a>
-        <a href="/privacy.html" class="hover:text-white/70">Privacy</a>
+        <div class="panel pad reveal">
+          <div class="split">
+            <div>
+              <h2 class="inter" style="margin-top:0">Built to scale past “small server” problems</h2>
+              <p class="lead" style="margin:0">
+                When communities grow, trust and consistency matter. Staff Rater adds structure without making your server feel corporate.
+              </p>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-content:flex-start;justify-content:flex-end;">
+              <span class="badge">No more anonymous drama</span>
+              <span class="badge">Clear review history</span>
+              <span class="badge">Simple staff accountability</span>
+              <span class="badge">Support workflows</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="section" id="support">
+      <div class="container">
+        <h2 class="reveal inter">Help center</h2>
+        <p class="lead reveal">Quick answers for the most common setup questions.</p>
+
+        <div class="faq reveal">
+          <div class="faq-item open">
+            <button class="faq-q" type="button">
+              How do I set up ratings?
+              <span class="chev">▾</span>
+            </button>
+            <div class="faq-a">
+              Invite the bot → set a channel with <span class="kbd">/setratingchannel</span> → post the UI with <span class="kbd">/postratingui</span> → add staff with <span class="kbd">/addadmin</span>.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q" type="button">
+              Can I move channels later?
+              <span class="chev">▾</span>
+            </button>
+            <div class="faq-a">
+              Yes. Re-run <span class="kbd">/setratingchannel</span> or <span class="kbd">/setresultchannel</span> and then post the UI again.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q" type="button">
+              Does Staff Rater read message content?
+              <span class="chev">▾</span>
+            </button>
+            <div class="faq-a">
+              Staff Rater is built around slash commands, buttons, and structured inputs. It focuses on rating data you intentionally submit.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-q" type="button">
+              Where can I get support?
+              <span class="chev">▾</span>
+            </button>
+            <div class="faq-a">
+              Join the support server: <a class="btn small" style="margin-left:10px" href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noreferrer">Discord Support</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="panel pad reveal">
+          <div class="split">
+            <div>
+              <div class="panel-title inter">Ready to try it?</div>
+              <p class="muted" style="margin:8px 0 0; line-height:1.6;">
+                Add Staff Rater to your server and set up the rating UI in a couple minutes.
+              </p>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-wrap:wrap;">
+              <a class="btn" href="/privacy.html">Privacy</a>
+              <a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&scope=bot%20applications.commands" target="_blank" rel="noreferrer">Invite to Discord</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="brand" style="gap:10px">
+            <img src="/staff-rater-icon.png" alt="Staff Rater" />
+            <span class="inter">Staff Rater</span>
+          </div>
+          <p class="small" style="margin:10px 0 0; line-height:1.65;">
+            A practical Discord bot for staff accountability and smoother operations:
+            ratings, tickets, applications, and moderation.
+          </p>
+          <p class="small muted" style="margin:10px 0 0;">© 2026 Staff Rater</p>
+        </div>
+        <div>
+          <div class="panel-title inter">Product</div>
+          <div class="small" style="margin-top:10px;display:grid;gap:8px">
+            <a href="/commands.html">Commands</a>
+            <a href="/stats.html">Public stats</a>
+            <a href="/dashboard/">Dashboard</a>
+          </div>
+        </div>
+        <div>
+          <div class="panel-title inter">Support</div>
+          <div class="small" style="margin-top:10px;display:grid;gap:8px">
+            <a href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noreferrer">Discord server</a>
+            <a href="/privacy.html">Privacy policy</a>
+          </div>
+        </div>
       </div>
     </div>
   </footer>
 
-  <script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
-
-  <!-- Auth: capture #token, patch fetch, header dropdown -->
-  <script>
-    (function(){
-      // Capture token from hash/query, save to sessionStorage, clean URL
-      (function captureToken(){
-        try{
-          var t=null;
-          if(location.hash){ var m=location.hash.match(/(?:^|[&#])token=([^&#]+)/); if(m) t=decodeURIComponent(m[1]); }
-          if(!t && location.search){ var m2=location.search.match(/(?:\?|&)token=([^&#]+)/); if(m2) t=decodeURIComponent(m2[1]); }
-          if(t){
-            sessionStorage.setItem('sr_token', t);
-            var clean = location.origin+location.pathname+location.search.replace(/([?&])token=[^&#]+(&|$)/,(_,a,b)=>a==='?'&&b?'?':'')+(location.hash.replace(/(#|&)token=[^&#]+/,'')||'');
-            history.replaceState(null,'',clean);
-          }
-        }catch(e){}
-      })();
-
-      // Patch fetch for /api/*
-      (function patchFetch(){
-        var orig=window.fetch;
-        window.fetch=function(input, init){
-          try{
-            var url=typeof input==='string'?input:input.url;
-            if(url && url.indexOf('http')!==0 && url.startsWith('/api/')){
-              init=init||{};
-              var h=new Headers(init.headers||{});
-              var tok=sessionStorage.getItem('sr_token');
-              if(tok) h.set('Authorization','Bearer '+tok);
-              init.headers=h; init.credentials='omit'; init.cache='no-store';
-              return orig(url, init);
-            }
-          }catch(e){}
-          return orig(input, init);
-        };
-      })();
-
-      // Hydrate header: if logged in, show avatar with dropdown
-      (async function hydrateHeader(){
-        var root=document.getElementById('auth-area');
-        try{
-          var r=await fetch('/api/me'); var d=r.ok?await r.json():null;
-          if(!d||!d.ok||!d.session||!d.session.user) return;
-
-          var u=d.session.user;
-          var avatar = u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64` : 'https://cdn.discordapp.com/embed/avatars/0.png';
-
-          root.innerHTML = `
-            <button id="userBtn" class="flex items-center gap-2 px-2 py-1 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">
-              <img src="${avatar}" class="w-8 h-8 rounded-full ring-1 ring-white/10" alt="">
-              <span class="hidden sm:block text-sm text-white/80 max-w-[140px] truncate">${u.username}</span>
-              <svg class="w-4 h-4 text-white/60" viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.08 1.04l-4.25 4.25a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"/></svg>
-            </button>
-            <div id="userMenu" class="hidden absolute right-0 mt-2 w-56 rounded-xl bg-[#0c1322] ring-1 ring-white/10 shadow-glow overflow-hidden">
-              <a class="block px-3 py-2 text-sm text-white/80 hover:bg-white/10" href="/dashboard/index.html">Open Dashboard</a>
-              <a class="block px-3 py-2 text-sm text-white/80 hover:bg-white/10" href="/dashboard/index.html">My Servers</a>
-              <a class="block px-3 py-2 text-sm text-white/80 hover:bg-white/10" href="/api/logout?redirect=/">Log out</a>
-            </div>
-          `;
-
-          var btn=document.getElementById('userBtn');
-          var menu=document.getElementById('userMenu');
-          function close(){ menu.classList.add('hidden'); document.removeEventListener('click', onDoc); }
-          function onDoc(e){ if(!root.contains(e.target)) close(); }
-          btn.addEventListener('click', function(){
-            if(menu.classList.contains('hidden')){
-              menu.classList.remove('hidden');
-              setTimeout(()=>document.addEventListener('click', onDoc), 0);
-            } else { close(); }
-          });
-        }catch(e){}
-      })();
-    })();
-  </script>
+  <script src="/assets/site.js"></script>
 </body>
 </html>

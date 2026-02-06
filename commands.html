@@ -1,94 +1,141 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Staff Rater — Commands</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Commands — Staff Rater</title>
+  <meta name="description" content="Explore Staff Rater commands by category. Search, filter, and copy examples." />
   <link rel="icon" href="/staff-rater-icon.png" />
+  <link rel="stylesheet" href="/assets/site.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .inter { font-family: Inter, ui-sans-serif, system-ui; }
+    .brand{font-family:Inter, ui-sans-serif, system-ui}
+  </style>
 </head>
-<body class="min-h-screen bg-slate-950 text-white">
-  <header class="border-b border-white/10 bg-slate-950/80 backdrop-blur">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3">
-        <img src="/staff-rater-icon.png" class="w-9 h-9 rounded-lg" alt="">
-        <span class="font-semibold">Staff Rater</span>
-      </a>
-      <nav class="flex items-center gap-3 text-sm text-white/70">
-        <a class="hover:text-white" href="/commands.html">Commands</a>
-        <a class="hover:text-white" href="/stats.html">Stats</a>
-        <a class="hover:text-white" href="/dashboard/">Dashboard</a>
-      </nav>
+<body>
+  <div class="toast" id="sr-toast">Copied</div>
+
+  <header class="nav">
+    <div class="container">
+      <div class="nav-inner">
+        <a class="brand" href="/">
+          <img src="/staff-rater-icon.png" alt="Staff Rater" />
+          <span class="inter">Staff Rater</span>
+          <span class="badge">Commands</span>
+        </a>
+        <nav class="nav-links">
+          <a href="/">Home</a>
+          <a href="/stats.html">Stats</a>
+          <a href="/dashboard/">Dashboard</a>
+          <a href="/privacy.html">Privacy</a>
+        </nav>
+        <div class="nav-cta">
+          <a class="btn ghost" href="/api/login">Sign in</a>
+          <a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&scope=bot%20applications.commands" target="_blank" rel="noreferrer">Invite</a>
+        </div>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 py-10">
-    <h1 class="text-3xl font-extrabold">Commands</h1>
-    <p class="text-white/70 mt-2">Everything is slash-commands. Permissions are enforced per command.</p>
+  <main class="section">
+    <div class="container">
+      <h1 class="h-title inter" style="font-size:38px;margin:0 0 10px">Command Explorer</h1>
+      <p class="lead" style="margin-top:0">
+        Search by keyword, filter by category, and click <b>Copy</b> to paste examples directly in Discord.
+      </p>
 
-    <div class="grid lg:grid-cols-2 gap-6 mt-8">
-      <section class="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <h2 class="font-semibold text-xl">Ratings</h2>
-        <ul class="mt-4 space-y-2 text-sm text-white/80">
-          <li><code class="text-cyan-300">/addadmin</code> — register a staff member (Admin)</li>
-          <li><code class="text-cyan-300">/removeadmin</code> — remove a staff member (Admin)</li>
-          <li><code class="text-cyan-300">/setratingchannel</code> — restrict where ratings can happen (Admin)</li>
-          <li><code class="text-cyan-300">/setresultchannel</code> — channel for new-rating posts (Admin)</li>
-          <li><code class="text-cyan-300">/postratingui</code> — dropdown UI for rating (Admin)</li>
-          <li><code class="text-cyan-300">/rate</code>, <code class="text-cyan-300">/editrating</code>, <code class="text-cyan-300">/deleterating</code></li>
-          <li><code class="text-cyan-300">/profile</code>, <code class="text-cyan-300">/leaderboard</code>, <code class="text-cyan-300">/exportdata</code></li>
-          <li><code class="text-cyan-300">/banfromrating</code>, <code class="text-cyan-300">/unbanfromrating</code></li>
-        </ul>
-      </section>
+      <div class="panel pad reveal">
+        <div class="cmd-wrap">
+          <div>
+            <div class="panel-title inter">Filter</div>
+            <div style="margin-top:10px">
+              <input id="sr-search" class="input" placeholder="Search commands, e.g. rate, ticket, warn…" />
+            </div>
 
-      <section class="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <h2 class="font-semibold text-xl">Tickets</h2>
-        <ul class="mt-4 space-y-2 text-sm text-white/80">
-          <li><code class="text-cyan-300">/setticketconfig</code> — set category, staff role, log channel (Admin)</li>
-          <li><code class="text-cyan-300">/postticketbutton</code> — post an “Open Ticket” button (Admin)</li>
-        </ul>
-      </section>
+            <div class="hr"></div>
 
-      <section class="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <h2 class="font-semibold text-xl">Applications</h2>
-        <ul class="mt-4 space-y-2 text-sm text-white/80">
-          <li><code class="text-cyan-300">/pendingapps</code> — review the next pending application (Admin)</li>
-          <li><code class="text-cyan-300">/deleteapp</code> — soft-delete an application (Admin)</li>
-          <li><code class="text-cyan-300">/purgeapp</code> — permanently delete application data (Owner)</li>
-        </ul>
-      </section>
+            <div class="panel-title inter">Categories</div>
+            <div class="tabrow" id="sr-tabs" style="margin-top:10px"></div>
 
-      <section class="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <h2 class="font-semibold text-xl">Polls</h2>
-        <ul class="mt-4 space-y-2 text-sm text-white/80">
-          <li><code class="text-cyan-300">/createpoll</code> — options separated by <code class="text-cyan-300">|</code> (Manage Server)</li>
-          <li><code class="text-cyan-300">/pollresults</code> — results by message id</li>
-        </ul>
-      </section>
+            <div class="hr"></div>
 
-      <section class="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <h2 class="font-semibold text-xl">Moderation & Utilities</h2>
-        <ul class="mt-4 space-y-2 text-sm text-white/80">
-          <li><code class="text-cyan-300">/warn</code>, <code class="text-cyan-300">/warnings</code></li>
-          <li><code class="text-cyan-300">/setmuterole</code>, <code class="text-cyan-300">/mute</code>, <code class="text-cyan-300">/unmute</code></li>
-          <li><code class="text-cyan-300">/purge</code>, <code class="text-cyan-300">/kick</code>, <code class="text-cyan-300">/ban</code>, <code class="text-cyan-300">/unban</code></li>
-          <li><code class="text-cyan-300">/userinfo</code>, <code class="text-cyan-300">/serverinfo</code>, <code class="text-cyan-300">/avatar</code></li>
-          <li><code class="text-cyan-300">/remindme</code>, <code class="text-cyan-300">/todo_add</code>, <code class="text-cyan-300">/todo_list</code>, <code class="text-cyan-300">/todo_done</code>, <code class="text-cyan-300">/todo_del</code></li>
-          <li><code class="text-cyan-300">/addquote</code>, <code class="text-cyan-300">/quotes</code>, <code class="text-cyan-300">/quoteid</code></li>
-        </ul>
-      </section>
+            <div class="mini">
+              Showing <b><span id="sr-cmd-count">0</span></b> commands.
+              <div style="margin-top:10px">
+                <a class="btn small" href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noreferrer">Need help?</a>
+              </div>
+            </div>
+          </div>
 
-      <section class="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <h2 class="font-semibold text-xl">Owner</h2>
-        <ul class="mt-4 space-y-2 text-sm text-white/80">
-          <li><code class="text-cyan-300">/servers</code>, <code class="text-cyan-300">/botstats</code>, <code class="text-cyan-300">/sayas</code>, <code class="text-cyan-300">/restart</code></li>
-        </ul>
-      </section>
-    </div>
+          <div>
+            <div id="sr-cmd-list"></div>
+          </div>
+        </div>
+      </div>
 
-    <div class="mt-10 text-sm text-white/60">
-      Tip: You can keep setup minimal — most configuration is done in Discord with slash commands.
+      <div class="hr"></div>
+
+      <div class="panel pad reveal">
+        <div class="split">
+          <div>
+            <div class="panel-title inter">Pro tips</div>
+            <ul class="list">
+              <li>Use <span class="kbd">/postratingui</span> once; it restores automatically after restarts.</li>
+              <li>Keep ratings in one channel and results in another for a cleaner server layout.</li>
+              <li>Limit admin commands to staff roles only.</li>
+            </ul>
+          </div>
+          <div>
+            <div class="panel-title inter">Quick start</div>
+            <p class="muted" style="margin:8px 0 0; line-height:1.7">
+              <span class="kbd">/setratingchannel</span> → <span class="kbd">/postratingui</span> → <span class="kbd">/addadmin</span>.
+            </p>
+            <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap">
+              <a class="btn" href="/">Back to home</a>
+              <a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&scope=bot%20applications.commands" target="_blank" rel="noreferrer">Invite</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="brand" style="gap:10px">
+            <img src="/staff-rater-icon.png" alt="Staff Rater" />
+            <span class="inter">Staff Rater</span>
+          </div>
+          <p class="small" style="margin:10px 0 0; line-height:1.65;">
+            Built for clean operations: ratings, tickets, applications, moderation—no clutter.
+          </p>
+        </div>
+        <div>
+          <div class="panel-title inter">Pages</div>
+          <div class="small" style="margin-top:10px;display:grid;gap:8px">
+            <a href="/">Home</a>
+            <a href="/stats.html">Stats</a>
+            <a href="/privacy.html">Privacy</a>
+          </div>
+        </div>
+        <div>
+          <div class="panel-title inter">Support</div>
+          <div class="small" style="margin-top:10px;display:grid;gap:8px">
+            <a href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noreferrer">Discord</a>
+            <a href="/api/login">Sign in</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/assets/site.js"></script>
+  <script src="/assets/commands.js"></script>
 </body>
 </html>
