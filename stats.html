@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Rater — Live Stats</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="/staff-rater-icon.png" />
+</head>
+<body class="min-h-screen bg-slate-950 text-white">
+  <header class="border-b border-white/10 bg-slate-950/80 backdrop-blur">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <img src="/staff-rater-icon.png" class="w-9 h-9 rounded-lg" alt="">
+        <span class="font-semibold">Staff Rater</span>
+      </a>
+      <nav class="flex items-center gap-3 text-sm text-white/70">
+        <a class="hover:text-white" href="/commands.html">Commands</a>
+        <a class="hover:text-white" href="/stats.html">Stats</a>
+        <a class="hover:text-white" href="/dashboard/">Dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-10">
+    <h1 class="text-3xl font-extrabold">Live Stats</h1>
+    <p class="text-white/70 mt-2">Updated from the bot automatically.</p>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+        <div class="text-white/60 text-sm">Servers using the bot</div>
+        <div id="s_guilds" class="text-3xl font-extrabold mt-2">—</div>
+      </div>
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+        <div class="text-white/60 text-sm">Total ratings (all servers)</div>
+        <div id="s_ratings" class="text-3xl font-extrabold mt-2">—</div>
+      </div>
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+        <div class="text-white/60 text-sm">Average rating</div>
+        <div id="s_avg" class="text-3xl font-extrabold mt-2">—</div>
+      </div>
+      <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+        <div class="text-white/60 text-sm">Commands (last 24h)</div>
+        <div id="s_cmds" class="text-3xl font-extrabold mt-2">—</div>
+      </div>
+    </div>
+
+    <div class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
+      <div class="text-white/60 text-sm">Last update</div>
+      <div id="s_ts" class="mt-2 text-white/90">—</div>
+      <div id="s_err" class="mt-2 text-rose-300 text-sm"></div>
+    </div>
+  </main>
+
+  <script>
+    function setText(id, v){
+      document.getElementById(id).textContent = (v === null || v === undefined || v === '') ? '—' : String(v);
+    }
+
+    async function loadStats(){
+      try{
+        const r = await fetch('/api/stats-get', { cache: 'no-store' });
+        const j = await r.json();
+        if(!r.ok || !j.ok){
+          setText('s_err', 'Could not load stats.');
+          return;
+        }
+        const s = j.stats || {};
+        setText('s_guilds', s.guilds);
+        setText('s_ratings', s.total_ratings);
+        setText('s_avg', s.avg_rating);
+        setText('s_cmds', s.cmds_24h);
+        setText('s_ts', s.ts || '—');
+        setText('s_err', '');
+      }catch(e){
+        setText('s_err', 'Network error.');
+      }
+    }
+
+    loadStats();
+    setInterval(loadStats, 60000);
+  </script>
+</body>
+</html>
