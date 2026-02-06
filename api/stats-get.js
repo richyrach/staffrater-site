@@ -1,14 +1,24 @@
-import { kv } from "@vercel/kv";
+import { Redis } from '@upstash/redis';
+
+// Use the same keys as stats-set.js
+const redis = Redis.fromEnv();
+const KEY = 'sr:public:stats:latest';
+const KEY_TOP = 'sr:public:stats:top_guilds';
 
 export default async function handler(req, res) {
   try {
-    // The bot (via /api/stats-set) should write the latest snapshot here:
-    const latest = await kv.get("sr:stats:latest");
+    // Only allow GET requests
+    if (req.method !== 'GET') {
+      res.setHeader('Allow', 'GET');
+      return res.status(405).end('Method Not Allowed');
+    }
 
-    // Optional: top guild list (if you write it)
-    const topGuilds = (await kv.get("sr:stats:top_guilds")) || [];
+    // Read the latest stats snapshot
+    const latest = await redis.get(KEY);
+    const topGuilds = (await redis.get(KEY_TOP)) || [];
 
     if (!latest) {
+      // If nothing has been written yet, return zeros
       return res.status(200).json({
         ok: true,
         guilds: 0,
@@ -20,7 +30,7 @@ export default async function handler(req, res) {
         cmds_24h: 0,
         ts: null,
         top_guilds: [],
-        note: "No stats yet. Wait for the bot to push /api/stats-set.",
+        note: 'No stats yet. Wait for the bot to push /api/stats-set.',
       });
     }
 
@@ -30,6 +40,6 @@ export default async function handler(req, res) {
       top_guilds: topGuilds,
     });
   } catch (e) {
-    return res.status(500).json({ ok: false, error: "server_error" });
+    return res.status(500).json({ ok: false, error: 'server_error' });
   }
 }
