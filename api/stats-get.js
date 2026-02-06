@@ -1,49 +1,35 @@
-"use strict";
+import { kv } from "@vercel/kv";
 
-// /api/stats-get.js
-// Public read of latest stats snapshot.
-
-async function redisCall(cmd, ...args) {
-  const baseUrl = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
-  if (!baseUrl || !token) {
-    const err = new Error("Missing Redis REST env");
-    err.code = "missing_redis_env";
-    throw err;
-  }
-  const url = `${baseUrl.replace(/\/+$/,'')}/${cmd}/${args.map(a=>encodeURIComponent(String(a))).join('/')}`;
-  const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(`Upstash error: ${r.status}`);
-  if (j && typeof j === 'object' && 'error' in j && j.error) throw new Error(String(j.error));
-  return j.result;
-}
-
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   try {
-    res.setHeader("Content-Type", "application/json");
-    res.setHeader("Cache-Control", "no-store");
+    // The bot (via /api/stats-set) should write the latest snapshot here:
+    const latest = await kv.get("sr:stats:latest");
 
-    let latest = null;
-    try {
-      latest = await redisCall("get", "sr:stats:latest");
-    } catch (e) {
-      if (e && e.code === "missing_redis_env") {
-        res.statusCode = 500;
-        return res.end(JSON.stringify({ ok: false, error: "redis_not_configured" }));
-      }
-      throw e;
+    // Optional: top guild list (if you write it)
+    const topGuilds = (await kv.get("sr:stats:top_guilds")) || [];
+
+    if (!latest) {
+      return res.status(200).json({
+        ok: true,
+        guilds: 0,
+        total_ratings: 0,
+        avg_rating: 0,
+        tickets_open: 0,
+        tickets_closed: 0,
+        apps_total: 0,
+        cmds_24h: 0,
+        ts: null,
+        top_guilds: [],
+        note: "No stats yet. Wait for the bot to push /api/stats-set.",
+      });
     }
 
-    if (!latest) return res.end(JSON.stringify({ ok: true, stats: null }));
-    try {
-      return res.end(JSON.stringify({ ok: true, stats: JSON.parse(latest) }));
-    } catch {
-      return res.end(JSON.stringify({ ok: true, stats: null }));
-    }
+    return res.status(200).json({
+      ok: true,
+      ...latest,
+      top_guilds: topGuilds,
+    });
   } catch (e) {
-    console.error("stats-get error:", e);
-    res.statusCode = 500;
-    res.end(JSON.stringify({ ok: false, error: "server_error" }));
+    return res.status(500).json({ ok: false, error: "server_error" });
   }
-};
+}
