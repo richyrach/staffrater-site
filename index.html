@@ -19,6 +19,55 @@
     .inter { font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
     .h-title{font-family:Inter, ui-sans-serif, system-ui}
     .brand{font-family:Inter, ui-sans-serif, system-ui}
+
+    /* Fix huge icon everywhere (top nav + footer) */
+    .brand img { width: 28px; height: 28px; object-fit: contain; border-radius: 10px; }
+    .footer .brand img { width: 28px; height: 28px; object-fit: contain; border-radius: 10px; }
+
+    /* Partner block (blended into your site.css look) */
+    .partner-wrap{ margin-top: 22px; }
+    .partner-card{
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      padding:16px 16px;
+      border-radius:18px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: 0 10px 30px rgba(0,0,0,.22);
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+      text-decoration:none;
+    }
+    .partner-card:hover{
+      transform: translateY(-2px);
+      border-color: rgba(99,102,241,.45);
+      background: rgba(255,255,255,.06);
+    }
+    .partner-left{ display:flex; align-items:center; gap:14px; min-width:0; }
+    .partner-logo{
+      width:44px; height:44px;
+      border-radius:14px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.09);
+      display:flex; align-items:center; justify-content:center;
+      overflow:hidden;
+      flex: 0 0 auto;
+    }
+    .partner-logo img{ width:28px; height:28px; object-fit:contain; opacity:.95; }
+    .partner-meta{ min-width:0; }
+    .partner-title{ font-weight:700; }
+    .partner-sub{ color: rgba(226,232,240,.72); font-size:13px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .partner-tag{ margin-left:auto; }
+    .partner-arrow{
+      width:34px; height:34px; border-radius:12px;
+      display:flex; align-items:center; justify-content:center;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.09);
+      flex: 0 0 auto;
+    }
+    .partner-arrow svg{ width:18px; height:18px; opacity:.75; }
+
+    /* Small avatar in navbar */
+    .nav-avatar{ width:28px; height:28px; border-radius:999px; object-fit:cover; border:1px solid rgba(255,255,255,.14); }
+    .nav-user{ display:inline-flex; align-items:center; gap:10px; }
   </style>
 </head>
 <body>
@@ -40,8 +89,9 @@
           <a href="#support">Support</a>
         </nav>
 
-        <div class="nav-cta">
-          <a class="btn ghost" href="/api/login">Sign in</a>
+        <!-- AUTH AREA (this is where your "Sign in" swaps into profile + Dashboard when logged in) -->
+        <div class="nav-cta" id="nav-auth">
+          <a class="btn ghost" href="/api/login" id="nav-signin">Sign in</a>
           <a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8859859864780657&integration_type=0&scope=bot" target="_blank" rel="noreferrer">Invite to Discord</a>
         </div>
       </div>
@@ -292,6 +342,38 @@
           </div>
         </div>
 
+        <!-- PARTNER (blended, not Tailwind) -->
+        <div class="partner-wrap reveal">
+          <div class="panel pad">
+            <div class="panel-title inter">Official partner</div>
+            <p class="muted" style="margin:10px 0 0; line-height:1.7;">
+              Staff Rater proudly partners with <b>Forminator</b> for advanced application systems and form management across Discord communities.
+            </p>
+
+            <div style="margin-top:14px;">
+              <a class="partner-card" href="https://forminator.gg" target="_blank" rel="noopener noreferrer">
+                <div class="partner-left">
+                  <div class="partner-logo" aria-hidden="true">
+                    <img src="/assets/forminator-logo.png" alt="Forminator">
+                  </div>
+                  <div class="partner-meta">
+                    <div class="partner-title inter">Forminator</div>
+                    <div class="partner-sub">Advanced Discord Form Solutions</div>
+                  </div>
+                </div>
+
+                <span class="badge partner-tag">Partner</span>
+
+                <div class="partner-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M9 5l7 7-7 7" stroke="rgba(226,232,240,.85)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+
         <div class="hr"></div>
 
         <div class="panel pad reveal">
@@ -311,41 +393,6 @@
 
       </div>
     </section>
-    <!-- ===================== PARTNERS ===================== -->
-<section class="section" id="partners">
-  <div class="container">
-    <div class="panel pad reveal partner-wrap">
-      <div class="partner-top">
-        <div>
-          <div class="badge">Official partner</div>
-          <h2 class="inter partner-title">Built better together</h2>
-          <p class="lead partner-lead">
-            Staff Rater proudly partners with <b>Forminator</b> to support structured applications and form workflows
-            for Discord communities.
-          </p>
-        </div>
-
-        <a class="btn ghost" href="https://forminator.gg" target="_blank" rel="noreferrer">
-          Visit Forminator →
-        </a>
-      </div>
-
-      <div class="hr"></div>
-
-      <a class="partner-card" href="https://forminator.gg" target="_blank" rel="noreferrer" aria-label="Open Forminator website">
-        <img class="partner-logo" src="/assets/forminator-logo.png" alt="Forminator logo" />
-        <div class="partner-text">
-          <div class="partner-name inter">Forminator</div>
-          <div class="partner-desc muted">Advanced Discord forms & applications</div>
-        </div>
-        <div class="partner-arrow" aria-hidden="true">→</div>
-      </a>
-    </div>
-  </div>
-</section>
-<!-- ==================================================== -->
-
-
   </main>
 
 
@@ -383,5 +430,105 @@
   </footer>
 
   <script src="/assets/site.js"></script>
+
+  <!-- AUTH + MINI STATS (works like your dashboard logic: /api/me drives the header) -->
+  <script>
+  (function(){
+    // FAQ toggles (in case your site.js doesn't do it)
+    try{
+      document.querySelectorAll('.faq-q').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const item = btn.closest('.faq-item');
+          if(!item) return;
+          const open = item.classList.contains('open');
+          document.querySelectorAll('.faq-item').forEach(x=>x.classList.remove('open'));
+          if(!open) item.classList.add('open');
+        });
+      });
+    }catch(e){}
+
+    // Swap navbar Sign in -> profile/dashboard/logout if logged in
+    async function authSwap(){
+      const host = document.getElementById('nav-auth');
+      if(!host) return;
+
+      let me = null;
+      try{
+        const r = await fetch('/api/me', { cache:'no-store' });
+        me = r.ok ? await r.json() : null;
+      }catch(e){}
+
+      if(!me || !me.ok || !me.session || !me.session.user){
+        // not logged in, keep Sign in
+        return;
+      }
+
+      const u = me.session.user;
+      const avatar = u.avatar
+        ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64`
+        : 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+      host.innerHTML = `
+        <a class="btn ghost" href="/dashboard/">Dashboard</a>
+        <span class="nav-user">
+          <img class="nav-avatar" src="${avatar}" alt="">
+          <span class="small" style="max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85">${u.username}</span>
+        </span>
+        <a class="btn" href="/api/logout?redirect=/">Log out</a>
+      `;
+    }
+
+    // Live stats box (tries /api/stats-get; if missing it stays as placeholders)
+    async function hydrateMiniStats(){
+      const updatedEl = document.getElementById('sr-stats-updated');
+      const nodes = document.querySelectorAll('[data-stat-key]');
+      function setUpdated(txt){ if(updatedEl) updatedEl.textContent = txt; }
+
+      let payload=null;
+      try{
+        const r = await fetch('/api/stats-get', { cache:'no-store' });
+        if(r.ok) payload = await r.json();
+      }catch(e){}
+
+      if(!payload || payload.ok === false){
+        setUpdated('—');
+        return;
+      }
+
+      // Support both {guilds,...} and {stats:{...}}
+      const stats = payload.stats || payload;
+
+      nodes.forEach(el=>{
+        const key = el.getAttribute('data-stat-key');
+        if(!key) return;
+        let v = stats[key];
+        if(v === undefined || v === null) return;
+
+        const fmt = el.getAttribute('data-fmt');
+        if(fmt === 'float'){
+          const num = Number(v);
+          if(!Number.isNaN(num)) el.textContent = num.toFixed(2);
+          else el.textContent = String(v);
+        } else {
+          el.textContent = String(v);
+        }
+      });
+
+      if(stats.updated_at){
+        try{
+          const d = new Date(stats.updated_at);
+          setUpdated(d.toLocaleString());
+        }catch(e){
+          setUpdated(String(stats.updated_at));
+        }
+      } else {
+        setUpdated('just now');
+      }
+    }
+
+    authSwap();
+    hydrateMiniStats();
+  })();
+  </script>
 </body>
 </html>
