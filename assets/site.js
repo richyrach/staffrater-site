@@ -135,6 +135,34 @@
     const tsEl = $('#sr-stats-updated');
     if(tsEl) tsEl.textContent = new Date(data.ts).toLocaleString();
   }
+  
 
   hydrateCounters();
+})();
+(async function authSwap(){
+  try{
+    const r = await fetch("/api/me", { credentials: "include" });
+    if(!r.ok) return;
+
+    const me = await r.json();
+    if(!me || !me.user) return;
+
+    const nav = document.getElementById("nav-auth");
+    const signin = document.getElementById("nav-signin");
+    if(!nav || !signin) return;
+
+    // Remove sign in button
+    signin.remove();
+
+    // Add profile button
+    const a = document.createElement("a");
+    a.className = "btn ghost";
+    a.href = "/dashboard/";
+    a.title = "Open dashboard";
+    a.textContent = me.user.username ? `@${me.user.username}` : "Dashboard";
+
+    nav.insertBefore(a, nav.firstChild);
+  }catch(e){
+    // silent
+  }
 })();
