@@ -205,3 +205,48 @@ a{color:inherit;text-decoration:none}
 
 /* simple chart container */
 .chart-panel{padding:16px}
+
+/* ===== Partners section (no Tailwind) ===== */
+.partner-wrap { overflow: hidden; }
+
+.partner-top{
+  display:flex;
+  gap:14px;
+  justify-content:space-between;
+  align-items:flex-start;
+  flex-wrap:wrap;
+}
+.partner-title{ margin:10px 0 6px; font-size:28px; }
+.partner-lead{ margin:0; max-width:720px; }
+
+.partner-card{
+  margin-top:14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:16px 16px;
+  border-radius:16px;
+  border:1px solid rgba(148,163,184,.18);
+  background:rgba(15,23,42,.35);
+  transition:transform .15s ease, border-color .15s ease, background .15s ease;
+  text-decoration:none;
+}
+.partner-card:hover{
+  transform:translateY(-2px);
+  border-color:rgba(99,102,241,.55);
+  background:rgba(15,23,42,.55);
+}
+.partner-logo{
+  height:34px;        /* KEY FIX: prevents huge logo */
+  width:auto;
+  object-fit:contain;
+  opacity:.92;
+}
+.partner-text{ flex:1; min-width:190px; }
+.partner-name{ font-weight:800; color:#e5e7eb; }
+.partner-desc{ margin-top:2px; font-size:14px; }
+.partner-arrow{
+  font-size:22px;
+  color:rgba(148,163,184,.85);
+}
