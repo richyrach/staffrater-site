@@ -4,6 +4,8 @@
 // Bot pushes command log entries here.
 // Stores per-guild recent commands in Upstash Redis.
 
+const crypto = require("crypto");
+
 async function redisCall(cmd, ...args) {
   const baseUrl = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
@@ -22,10 +24,13 @@ async function redisCall(cmd, ...args) {
 
 function ingestAuthorized(req) {
   const expected = (process.env.INGEST_TOKEN || "").trim();
-  if (!expected) return true; // allow if no token configured
+  // Fail CLOSED. Previously a missing INGEST_TOKEN let anyone on the internet
+  // write fake entries into any guild's command log.
+  if (!expected) return false;
   const auth = (req.headers.authorization || "").trim();
   const tok = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7).trim() : "";
-  return tok && tok === expected;
+  if (!tok || tok.length !== expected.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(tok), Buffer.from(expected));
 }
 
 module.exports = async (req, res) => {
@@ -48,8 +53,8 @@ module.exports = async (req, res) => {
     req.on("end", async () => {
       try {
         const entry = body ? JSON.parse(body) : null;
-        const gid = (entry && entry.guild_id) ? String(entry.guild_id) : "";
-        if (!gid) {
+        const gid = (entry && entry.guild_id) ? String(entry.guild_id).trim() : "";
+        if (!gid || !/^\d{1,20}$/.test(gid)) {
           res.statusCode = 400;
           return res.end(JSON.stringify({ ok: false, error: "missing_guild_id" }));
         }

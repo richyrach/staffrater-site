@@ -110,7 +110,9 @@
 
     // normalize
     const data = {
-      guilds: stats.guilds ?? stats.servers ?? 90,
+      // Never invent a server count. This used to fall back to a hardcoded 90,
+      // so the homepage kept showing a fake number whenever the API was down.
+      guilds: stats.guilds ?? stats.servers ?? null,
       total_ratings: stats.total_ratings ?? stats.ratings ?? 0,
       avg_rating: stats.avg_rating ?? stats.avg ?? 0,
       tickets_open: stats.tickets_open ?? 0,
@@ -125,7 +127,7 @@
     nodes.forEach(n=>{
       const key=n.getAttribute('data-stat-key');
       const val=data[key];
-      if(val === undefined) return;
+      if(val === undefined || val === null) return;
       n.setAttribute('data-from', n.textContent.replace(/,/g,'') || '0');
       // float formatting for average
       if(key === 'avg_rating') n.setAttribute('data-fmt','float');
@@ -145,7 +147,10 @@
     if(!r.ok) return;
 
     const me = await r.json();
-    if(!me || !me.user) return;
+    // /api/me returns { ok, session: { user, guilds } } — the old code read
+    // me.user, which is always undefined, so this never ran for signed-in users.
+    const user = me && me.ok && me.session && me.session.user;
+    if(!user) return;
 
     const nav = document.getElementById("nav-auth");
     const signin = document.getElementById("nav-signin");
@@ -159,7 +164,7 @@
     a.className = "btn ghost";
     a.href = "/dashboard/";
     a.title = "Open dashboard";
-    a.textContent = me.user.username ? `@${me.user.username}` : "Dashboard";
+    a.textContent = user.username ? `@${user.username}` : "Dashboard";
 
     nav.insertBefore(a, nav.firstChild);
   }catch(e){

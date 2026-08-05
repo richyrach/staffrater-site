@@ -1,35 +1,58 @@
 import { Redis } from '@upstash/redis';
 
 // Use the same keys as stats-set.js
-const redis = Redis.fromEnv();
 const KEY = 'sr:public:stats:latest';
 const KEY_TOP = 'sr:public:stats:top_guilds';
 
-export default async function handler(req, res) {
-  try {
-    // Only allow GET requests
-    if (req.method !== 'GET') {
-      res.setHeader('Allow', 'GET');
-      return res.status(405).end('Method Not Allowed');
-    }
+// Redis.fromEnv() throws if the Upstash env vars are missing. Doing that at module
+// scope crashed the whole function with FUNCTION_INVOCATION_FAILED (a hard 500 on
+// every request). Build the client lazily and report the misconfiguration instead.
+let _redis = null;
+function getRedis() {
+  if (!_redis) _redis = Redis.fromEnv();
+  return _redis;
+}
 
-    // Read the latest stats snapshot
+const EMPTY = {
+  guilds: null,
+  total_ratings: null,
+  avg_rating: null,
+  tickets_open: null,
+  tickets_closed: null,
+  apps_total: null,
+  cmds_24h: null,
+  ts: null,
+  top_guilds: [],
+};
+
+export default async function handler(req, res) {
+  // Only allow GET requests
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).end('Method Not Allowed');
+  }
+
+  let redis;
+  try {
+    redis = getRedis();
+  } catch (e) {
+    // Not configured yet — say so plainly rather than 500-ing.
+    return res.status(200).json({
+      ok: false,
+      error: 'not_configured',
+      note: 'Upstash env vars are not set on this deployment.',
+      ...EMPTY,
+    });
+  }
+
+  try {
     const latest = await redis.get(KEY);
     const topGuilds = (await redis.get(KEY_TOP)) || [];
 
     if (!latest) {
-      // If nothing has been written yet, return zeros
       return res.status(200).json({
         ok: true,
-        guilds: 0,
-        total_ratings: 0,
-        avg_rating: 0,
-        tickets_open: 0,
-        tickets_closed: 0,
-        apps_total: 0,
-        cmds_24h: 0,
-        ts: null,
-        top_guilds: [],
+        ...EMPTY,
         note: 'No stats yet. Wait for the bot to push /api/stats-set.',
       });
     }
@@ -40,6 +63,7 @@ export default async function handler(req, res) {
       top_guilds: topGuilds,
     });
   } catch (e) {
-    return res.status(500).json({ ok: false, error: 'server_error' });
+    console.error('stats-get error:', e);
+    return res.status(500).json({ ok: false, error: 'server_error', ...EMPTY });
   }
 }

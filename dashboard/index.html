@@ -52,27 +52,8 @@
 
   <script>
   (function(){
-    // 1) Capture token from HASH/QUERY, save, clean
-    (function captureToken() {
-      try {
-        var t=null;
-        if (location.hash) {
-          var m = location.hash.match(/(?:^|[&#])token=([^&#]+)/);
-          if (m) t = decodeURIComponent(m[1]);
-        }
-        if (!t && location.search) {
-          var m2 = location.search.match(/(?:\?|&)token=([^&#]+)/);
-          if (m2) t = decodeURIComponent(m2[1]);
-        }
-        if (t) {
-          sessionStorage.setItem('sr_token', t);
-          var clean = location.origin + location.pathname + location.search.replace(/([?&])token=[^&#]+(&|$)/, function(_,a,b){return a==='?'&&b?'?':''}) + (location.hash.replace(/(#|&)token=[^&#]+/,'')||'');
-          history.replaceState(null,'', clean);
-        }
-      } catch(e){}
-    })();
-
-    // 2) Patch fetch for /api/*
+    // 1) Session now lives in an HttpOnly cookie set by /api/callback, so there is
+    //    no token for page scripts to capture, store or leak. Just send credentials.
     (function patchFetch(){
       var orig = window.fetch;
       window.fetch = function(input, init){
@@ -80,11 +61,7 @@
           var url = (typeof input==='string')?input:input.url;
           if (url && url.indexOf('http')!==0 && url.startsWith('/api/')){
             init = init || {};
-            var h = new Headers(init.headers || {});
-            var tok = sessionStorage.getItem('sr_token');
-            if (tok) h.set('Authorization','Bearer '+tok);
-            init.headers = h;
-            if (!('credentials' in init)) init.credentials='omit';
+            init.credentials = 'include';
             if (!('cache' in init)) init.cache='no-store';
             return orig(url, init);
           }
@@ -92,6 +69,14 @@
         return orig(input, init);
       };
     })();
+
+    // 2) Escape anything Discord-controlled before it touches innerHTML.
+    //    Server names and usernames are attacker-chosen strings.
+    function esc(s){
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+      });
+    }
 
     // 3) Hydrate header and server grid
     (async function hydrate(){
@@ -116,17 +101,23 @@
       auth.innerHTML = `
         <a href="/" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Home</a>
         <div class="flex items-center gap-3">
-          <img src="${avatar}" class="w-8 h-8 rounded-full ring-1 ring-white/10" alt="">
-          <span class="text-white/80 text-sm max-w-[140px] truncate">${u.username}</span>
+          <img src="${esc(avatar)}" class="w-8 h-8 rounded-full ring-1 ring-white/10" alt="">
+          <span class="text-white/80 text-sm max-w-[140px] truncate">${esc(u.username)}</span>
           <a href="/api/logout?redirect=/dashboard/index.html" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Log out</a>
         </div>`;
 
       // Servers
       let guilds = me.session.guilds || [];
       // show only guilds where user has MANAGE_GUILD or ADMINISTRATOR or is owner (for config)
-      const ADMIN = 0x00000008;
-      const MANAGE_GUILD = 0x00000020;
-      guilds = guilds.filter(g => g.owner || ((g.permissions & (ADMIN|MANAGE_GUILD)) !== 0));
+      // Discord sends `permissions` as a decimal string far larger than 2^31, so
+      // plain JS bitwise ops truncate it and misjudge who can manage a server.
+      const ADMIN = 1n << 3n;
+      const MANAGE_GUILD = 1n << 5n;
+      guilds = guilds.filter(g => {
+        if (g.owner) return true;
+        try { return (BigInt(g.permissions ?? 0) & (ADMIN | MANAGE_GUILD)) !== 0n; }
+        catch(e){ return false; }
+      });
 
       if (!guilds.length) {
         grid.innerHTML = `
@@ -142,9 +133,9 @@
         return `
           <a class="tile block rounded-2xl bg-white/5 ring-1 ring-white/10 p-5" href="/dashboard/guild.html?guild_id=${encodeURIComponent(g.id)}">
             <div class="flex items-center gap-4">
-              <img src="${icon}" class="w-12 h-12 rounded-xl ring-1 ring-white/10" alt="">
+              <img src="${esc(icon)}" class="w-12 h-12 rounded-xl ring-1 ring-white/10" alt="">
               <div>
-                <div class="font-semibold">${g.name}</div>
+                <div class="font-semibold">${esc(g.name)}</div>
                 <div class="text-white/60 text-sm">${g.owner ? 'Owner' : 'Staff'}</div>
               </div>
             </div>

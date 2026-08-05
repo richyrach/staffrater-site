@@ -80,13 +80,21 @@ module.exports = async (req, res) => {
 
     const token = issueSessionToken(session);
 
-    // Redirect back to the page with #token=... (hash keeps servers happy)
-    const destPath = returnTo; // path only (same host)
-    const sep = destPath.includes("#") ? "&" : "#";
-    const locationHeader = `${destPath}${sep}token=${encodeURIComponent(token)}`;
+    // Session goes in an HttpOnly cookie, NOT in the URL fragment + sessionStorage.
+    // The old flow meant any XSS on the site could read the token and, with it, the
+    // user's Discord OAuth token. HttpOnly puts it out of reach of page scripts.
+    const maxAge = Math.floor((session.exp - Date.now()) / 1000);
+    res.setHeader("Set-Cookie", [
+      `sr_session=${encodeURIComponent(token)}`,
+      "Path=/",
+      "HttpOnly",
+      "Secure",
+      "SameSite=Lax",
+      `Max-Age=${maxAge > 0 ? maxAge : 600}`,
+    ].join("; "));
 
     res.setHeader("Cache-Control", "no-store");
-    res.writeHead(302, { Location: locationHeader });
+    res.writeHead(302, { Location: returnTo }); // path only (same host)
     res.end();
   } catch (e) {
     console.error("Callback crash:", e);

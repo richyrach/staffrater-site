@@ -180,21 +180,8 @@
 
   <script>
     (function(){
-      // 1) Capture token sent back from /api/callback and clean the URL
-      (function captureToken(){
-        try{
-          var t=null;
-          if(location.hash){ var m=location.hash.match(/(?:^|[&#])token=([^&#]+)/); if(m) t=decodeURIComponent(m[1]); }
-          if(!t && location.search){ var m2=location.search.match(/(?:\?|&)token=([^&#]+)/); if(m2) t=decodeURIComponent(m2[1]); }
-          if(t){
-            sessionStorage.setItem('sr_token', t);
-            var clean = location.origin+location.pathname+location.search.replace(/([?&])token=[^&#]+(&|$)/,(_,a,b)=>a==='?'&&b?'?':'')+(location.hash.replace(/(#|&)token=[^&#]+/,'')||'');
-            history.replaceState(null,'',clean);
-          }
-        }catch(e){}
-      })();
-
-      // 2) Patch fetch: automatically attach Authorization for our /api/* calls
+      // 1) Session lives in an HttpOnly cookie set by /api/callback — nothing for
+      //    page scripts to capture or store. Just send credentials on /api/* calls.
       (function patchFetch(){
         var orig=window.fetch;
         window.fetch=function(input, init){
@@ -202,16 +189,20 @@
             var url=typeof input==='string'?input:input.url;
             if(url && url.indexOf('http')!==0 && url.startsWith('/api/')){
               init=init||{};
-              var h=new Headers(init.headers||{});
-              var tok=sessionStorage.getItem('sr_token');
-              if(tok) h.set('Authorization','Bearer '+tok);
-              init.headers=h; init.credentials='omit'; init.cache='no-store';
+              init.credentials='include'; init.cache='no-store';
               return orig(url, init);
             }
           }catch(e){}
           return orig(input, init);
         };
       })();
+
+      // 2) Escape Discord-controlled strings before they reach innerHTML.
+      function esc(s){
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+          return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+        });
+      }
 
       // Helpers
       const $ = id => document.getElementById(id);
@@ -237,8 +228,8 @@
           auth.innerHTML = `
             <a href="/dashboard/index.html" class="hidden sm:inline-flex btn">All servers</a>
             <div class="flex items-center gap-3">
-              <img src="${avatar}" class="w-8 h-8 rounded-full ring-1 ring-white/10" alt="">
-              <span class="text-white/80 text-sm max-w-[140px] truncate">${u.username}</span>
+              <img src="${esc(avatar)}" class="w-8 h-8 rounded-full ring-1 ring-white/10" alt="">
+              <span class="text-white/80 text-sm max-w-[140px] truncate">${esc(u.username)}</span>
               <a href="/api/logout?redirect=/dashboard/index.html" class="btn">Log out</a>
             </div>`;
 
@@ -291,8 +282,14 @@
                     return `[${t}] ${x.user||'someone'} used ${x.cmd||'a command'}`;
                   }).join('\n')
                 : 'No recent commands.';
+            } else if (r.status === 403) {
+              logEl.textContent = 'You do not manage this server.';
+              return; // stop polling — this will never succeed
+            } else if (r.status === 401) {
+              logEl.textContent = 'Session expired — please sign in again.';
+              return;
             } else {
-              logEl.textContent = 'Unable to read command log: '+ await r.text();
+              logEl.textContent = 'Unable to read command log.';
             }
           }catch(e){ /* ignore */ }
           setTimeout(pollLog, 4000);

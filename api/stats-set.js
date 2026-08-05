@@ -1,26 +1,40 @@
 import { Redis } from "@upstash/redis";
+import crypto from "crypto";
 
-const redis = Redis.fromEnv();
 const KEY = "sr:public:stats:latest";
 
-// Optional: protect POST with a secret (recommended)
+// Redis.fromEnv() throws when the Upstash vars are missing. At module scope that
+// takes the whole function down with FUNCTION_INVOCATION_FAILED, so build it lazily.
+let _redis = null;
+function getRedis() {
+  if (!_redis) _redis = Redis.fromEnv();
+  return _redis;
+}
+
 const PUSH_SECRET = process.env.STATS_PUSH_SECRET;
+
+function pushAuthorized(req) {
+  // Fail CLOSED: a missing secret used to leave this endpoint world-writable,
+  // letting anyone overwrite the numbers shown on the homepage.
+  if (!PUSH_SECRET) return false;
+  const auth = req.headers["authorization"] || "";
+  const expected = `Bearer ${PUSH_SECRET}`;
+  if (auth.length !== expected.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(auth), Buffer.from(expected));
+}
 
 export default async function handler(req, res) {
   try {
     // Public read
     if (req.method === "GET") {
-      const data = await redis.get(KEY);
+      const data = await getRedis().get(KEY);
       return res.status(200).json({ ok: true, data: data || null });
     }
 
     // Bot write
     if (req.method === "POST") {
-      if (PUSH_SECRET) {
-        const auth = req.headers["authorization"] || "";
-        if (auth !== `Bearer ${PUSH_SECRET}`) {
-          return res.status(401).json({ ok: false, error: "unauthorized" });
-        }
+      if (!pushAuthorized(req)) {
+        return res.status(401).json({ ok: false, error: "unauthorized" });
       }
 
       const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
@@ -36,6 +50,7 @@ export default async function handler(req, res) {
         ts: body.ts || new Date().toISOString(),
       };
 
+      const redis = getRedis();
       await redis.set(KEY, payload);
       await redis.expire(KEY, 60 * 60 * 6); // 6 hours TTL
       return res.status(200).json({ ok: true });

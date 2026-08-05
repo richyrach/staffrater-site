@@ -3,7 +3,7 @@
 // /api/command-log-get.js
 // Dashboard reads recent commands for a guild.
 
-const { getSessionFromReq } = require("../lib/auth");
+const { getSessionFromReq, userManagesGuild } = require("../lib/auth");
 
 async function redisCall(cmd, ...args) {
   const baseUrl = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
@@ -34,9 +34,16 @@ module.exports = async (req, res) => {
 
     const full = new URL(req.url, `https://${req.headers.host}`);
     const gid = (full.searchParams.get("guild_id") || "").trim();
-    if (!gid) {
+    if (!gid || !/^\d{1,20}$/.test(gid)) {
       res.statusCode = 400;
       return res.end(JSON.stringify({ ok: false, error: "missing_guild_id" }));
+    }
+
+    // A valid session is NOT enough — without this check any signed-in user
+    // could read the command log of any guild just by changing guild_id.
+    if (!(await userManagesGuild(session, gid))) {
+      res.statusCode = 403;
+      return res.end(JSON.stringify({ ok: false, error: "forbidden" }));
     }
 
     const key = `sr:cmdlog:${gid}`;
