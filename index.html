@@ -529,7 +529,8 @@
           setUpdated(String(stats.updated_at));
         }
       } else {
-        setUpdated('just now');
+        // Nothing pushed yet — "just now" implied the numbers were fresh.
+        setUpdated('—');
       }
     }
 

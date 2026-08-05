@@ -69,7 +69,10 @@
   function animateCounter(el, to){
     to = Number(to);
     if(!Number.isFinite(to)) return;
-    const from = Number(el.getAttribute('data-from') || '0');
+    // data-from is read back out of the element's own text, which may be a
+    // placeholder like "—". Number("—") is NaN, and NaN poisons every frame.
+    const fromRaw = Number(el.getAttribute('data-from'));
+    const from = Number.isFinite(fromRaw) ? fromRaw : 0;
     const dur = Number(el.getAttribute('data-dur') || '900');
     const start = performance.now();
     const fmt = el.getAttribute('data-fmt') || 'int';
@@ -98,7 +101,7 @@
         nodes.forEach(n=>{
           const key=n.getAttribute('data-stat-key');
           const val = cached[key];
-          if(val !== undefined) animateCounter(n, val);
+          if(val !== undefined && val !== null) animateCounter(n, val);
         });
         const tsEl = $('#sr-stats-updated');
         if(tsEl && cached.ts) tsEl.textContent = new Date(cached.ts).toLocaleString();
@@ -109,20 +112,25 @@
     if(!stats) return;
 
     // normalize
+    // Never invent numbers. Anything missing stays null so the placeholder is
+    // left alone — falling back to 0 here is what rendered "NaN", and a 0 would
+    // be a lie anyway (same reason the hardcoded 90 servers had to go).
     const data = {
-      // Never invent a server count. This used to fall back to a hardcoded 90,
-      // so the homepage kept showing a fake number whenever the API was down.
       guilds: stats.guilds ?? stats.servers ?? null,
-      total_ratings: stats.total_ratings ?? stats.ratings ?? 0,
-      avg_rating: stats.avg_rating ?? stats.avg ?? 0,
-      tickets_open: stats.tickets_open ?? 0,
-      tickets_closed: stats.tickets_closed ?? 0,
-      apps_total: stats.apps_total ?? 0,
-      cmds_24h: stats.cmds_24h ?? stats.commands_24h ?? 0,
-      ts: stats.ts ?? new Date().toISOString()
+      total_ratings: stats.total_ratings ?? stats.ratings ?? null,
+      avg_rating: stats.avg_rating ?? stats.avg ?? null,
+      tickets_open: stats.tickets_open ?? null,
+      tickets_closed: stats.tickets_closed ?? null,
+      apps_total: stats.apps_total ?? null,
+      cmds_24h: stats.cmds_24h ?? stats.commands_24h ?? null,
+      ts: stats.updated_at ?? stats.ts ?? null
     };
 
-    try{ localStorage.setItem('sr_public_stats', JSON.stringify(data)); }catch(_){}
+    // Don't cache an all-empty payload, or the page keeps replaying "no data".
+    const hasAny = Object.keys(data).some(k => k !== 'ts' && data[k] !== null);
+    if(hasAny){
+      try{ localStorage.setItem('sr_public_stats', JSON.stringify(data)); }catch(_){}
+    }
 
     nodes.forEach(n=>{
       const key=n.getAttribute('data-stat-key');
@@ -135,7 +143,8 @@
     });
 
     const tsEl = $('#sr-stats-updated');
-    if(tsEl) tsEl.textContent = new Date(data.ts).toLocaleString();
+    // No timestamp means the bot has not pushed yet — don't claim "just now".
+    if(tsEl) tsEl.textContent = data.ts ? new Date(data.ts).toLocaleString() : "—";
   }
   
 
