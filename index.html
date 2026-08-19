@@ -103,68 +103,119 @@
       <div class="container">
         <div class="hero-grid">
           <div class="reveal">
-            <span class="badge">Fair, fast, and reliable</span>
-            <h1 class="h-title">Staff ratings that build trust — not drama.</h1>
+            <span class="badge">Free · 41 documented commands</span>
+            <h1 class="h-title">Know which staff are actually doing the work.</h1>
             <p class="h-sub">
-              Staff Rater helps communities run smoother with <b>clean ratings</b>, <b>tickets</b>, <b>applications</b>, and <b>moderation tools</b>.
-              Setup takes minutes. Everything stays organized.
+              Members rate your staff in one click. StaffRater turns that into scores,
+              trends and shift records — so promotions come from evidence instead of
+              whoever happens to be loudest.
             </p>
 
             <div class="h-actions">
-              <a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8859859864780657&integration_type=0&scope=bot" target="_blank" rel="noreferrer">
-                <span>Invite</span> <span class="kbd">/</span>
-              </a>
-              <a class="btn" href="/commands.html">Explore commands</a>
+              <a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8859859864780657&integration_type=0&scope=bot" target="_blank" rel="noreferrer">Add to Discord</a>
               <a class="btn" href="/dashboard/">Open dashboard</a>
-              <a class="btn ghost" href="#how">How it works</a>
+              <a class="btn ghost" href="/commands.html">Browse commands →</a>
             </div>
 
-            <div class="hr"></div>
+            <div class="line"></div>
 
-            <div class="pill">
-              <span class="muted">Tip:</span>
-              <span>Use <span class="kbd">/postratingui</span> once and the UI persists after restarts.</span>
+            <div class="row small muted">
+              <span>Ratings</span><span>·</span>
+              <span>Tickets</span><span>·</span>
+              <span>Applications</span><span>·</span>
+              <span>Shifts</span><span>·</span>
+              <span>Moderation</span>
+            </div></div>
+
+          <!-- Faithful recreation of the /profile embed the bot actually sends.
+               Colours, field names and layout come straight from bot.py. -->
+          <aside class="reveal">
+            <div class="dc">
+              <div class="dc-head">
+                <div class="dc-avatar">SR</div>
+                <span class="dc-name">Staff Rater</span>
+                <span class="dc-bot">App</span>
+                <span class="dc-time">Today at 19:24</span>
+              </div>
+              <div class="dc-embed gold">
+                <div class="dc-author">maya &nbsp;•&nbsp; Staff Profile</div>
+                <div class="dc-desc">🟢 Currently on duty &nbsp;•&nbsp; 🟩 StaffRater Score: <b>86/100</b></div>
+                <div class="dc-fields">
+                  <div class="dc-field">
+                    <div class="dc-fname">⭐ Avg rating</div>
+                    <div class="dc-fval"><b>4.41</b> / 5</div>
+                  </div>
+                  <div class="dc-field">
+                    <div class="dc-fname">📝 Reviews</div>
+                    <div class="dc-fval"><b>34</b> total</div>
+                  </div>
+                  <div class="dc-field">
+                    <div class="dc-fname">📈 Trend</div>
+                    <div class="dc-fval">improving</div>
+                  </div>
+                  <div class="dc-field wide">
+                    <div class="dc-fname">Rating breakdown</div>
+                    <div class="dc-bars">
+                      ⭐⭐⭐⭐⭐ <code>████████</code> 21<br>
+                      ⭐⭐⭐⭐ <code>████▁▁▁▁</code> 9<br>
+                      ⭐⭐⭐ <code>█▁▁▁▁▁▁▁</code> 3<br>
+                      ⭐⭐ <code>▁▁▁▁▁▁▁▁</code> 1<br>
+                      ⭐ <code>▁▁▁▁▁▁▁▁</code> 0
+                    </div>
+                  </div>
+                  <div class="dc-field">
+                    <div class="dc-fname">⏱️ Shift (30d)</div>
+                    <div class="dc-fval"><b>41.5h</b> on duty<br>18 sessions</div>
+                  </div>
+                  <div class="dc-field">
+                    <div class="dc-fname">🔥 Check-in streak</div>
+                    <div class="dc-fval">Current: <b>12</b> days<br>Best: <b>27</b> days</div>
+                  </div>
+                </div>
+                <div class="dc-foot">StaffRater · /profile</div>
+              </div>
             </div>
-          </div>
 
-          <aside class="panel pad reveal" style="position:relative; overflow:hidden;">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
-              <div>
-                <div class="panel-title inter">Live overview</div>
-                <div class="mini">Auto-updates if your API exposes public stats.</div>
+            <div class="dc">
+              <div class="dc-head">
+                <div class="dc-avatar">SR</div>
+                <span class="dc-name">Staff Rater</span>
+                <span class="dc-bot">App</span>
+                <span class="dc-time">Today at 19:26</span>
               </div>
-              <span class="badge"><span style="width:7px;height:7px;border-radius:99px;background:rgba(34,197,94,.9);display:inline-block"></span> online</span>
-            </div>
-
-            <div class="grid-3" style="margin-top:14px;">
-              <div class="stat">
-                <div class="num" data-stat-key="guilds">—</div>
-                <div class="lbl">servers using Staff Rater</div>
+              <div class="dc-embed gold">
+                <div class="dc-author">New 5★ rating</div>
+                <div class="dc-fields">
+                  <div class="dc-field"><div class="dc-fname">Staff</div><div class="dc-fval">@maya</div></div>
+                  <div class="dc-field"><div class="dc-fname">Rating</div><div class="dc-fval">⭐⭐⭐⭐⭐</div></div>
+                  <div class="dc-field wide"><div class="dc-fname">Comment</div><div class="dc-fval"><i>sorted my ticket in under a minute</i></div></div>
+                </div>
+                <div class="dc-foot">ID: r-8f21c4 · StaffRater</div>
               </div>
-              <div class="stat">
-                <div class="num" data-stat-key="total_ratings">—</div>
-                <div class="lbl">ratings recorded</div>
-              </div>
-              <div class="stat">
-                <div class="num" data-stat-key="avg_rating" data-fmt="float">—</div>
-                <div class="lbl">average staff score</div>
-              </div>
-            </div>
-
-            <div class="hr"></div>
-
-            <div class="mini">Last updated: <span id="sr-stats-updated" class="mono">—</span></div>
-
-            <div class="hr"></div>
-
-            <div style="display:flex;gap:10px;flex-wrap:wrap">
-              <span class="badge">Ratings</span>
-              <span class="badge">Tickets</span>
-              <span class="badge">Applications</span>
-              <span class="badge">Moderation</span>
-              <span class="badge">Slash commands</span>
             </div>
           </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="live" style="padding-top:0;border-top:0">
+      <div class="container">
+        <div class="grid-3">
+          <div class="stat">
+            <div class="num" data-stat-key="guilds">—</div>
+            <div class="lbl">servers using StaffRater</div>
+          </div>
+          <div class="stat">
+            <div class="num" data-stat-key="total_ratings">—</div>
+            <div class="lbl">ratings recorded</div>
+          </div>
+          <div class="stat">
+            <div class="num" data-stat-key="avg_rating" data-fmt="float">—</div>
+            <div class="lbl">average staff score</div>
+          </div>
+        </div>
+        <div class="mini" style="margin-top:12px">
+          Live from the bot · last updated <span id="sr-stats-updated" class="mono">—</span>
         </div>
       </div>
     </section>

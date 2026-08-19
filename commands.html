@@ -63,7 +63,7 @@
             <div class="hr"></div>
 
             <div class="mini">
-              Showing <b><span id="sr-cmd-count">0</span></b> commands.
+              Showing <b><span id="sr-cmd-count">41</span></b> commands.
               <div style="margin-top:10px">
                 <a class="btn small" href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noreferrer">Need help?</a>
               </div>
@@ -71,7 +71,583 @@
           </div>
 
           <div>
-            <div id="sr-cmd-list"></div>
+            <div id="sr-cmd-list">
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/rate</div>
+              <div class="cmd-desc">Rate a staff member with an optional comment.</div>
+            </div>
+            <button class="btn small" data-copy="/rate @staff 1-5 [comment]">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Ratings</span>
+            
+            <span class="tag mono">/rate @staff 1-5 [comment]</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/profile</div>
+              <div class="cmd-desc">View a staff member’s rating summary and recent comments.</div>
+            </div>
+            <button class="btn small" data-copy="/profile @staff">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Ratings</span>
+            
+            <span class="tag mono">/profile @staff</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/leaderboard</div>
+              <div class="cmd-desc">Top-rated staff leaderboard for your server.</div>
+            </div>
+            <button class="btn small" data-copy="/leaderboard">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Ratings</span>
+            
+            <span class="tag mono">/leaderboard</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/editrating</div>
+              <div class="cmd-desc">Edit your existing rating for a staff member.</div>
+            </div>
+            <button class="btn small" data-copy="/editrating @staff 1-5 [comment]">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Ratings</span>
+            
+            <span class="tag mono">/editrating @staff 1-5 [comment]</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/deleterating</div>
+              <div class="cmd-desc">Delete your rating for a staff member.</div>
+            </div>
+            <button class="btn small" data-copy="/deleterating @staff">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Ratings</span>
+            
+            <span class="tag mono">/deleterating @staff</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/flag</div>
+              <div class="cmd-desc">Flag an abusive/invalid rating for staff review.</div>
+            </div>
+            <button class="btn small" data-copy="/flag rating_id [reason]">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Ratings</span>
+            
+            <span class="tag mono">/flag rating_id [reason]</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/exportdata</div>
+              <div class="cmd-desc">Export rating data (admins only).</div>
+            </div>
+            <button class="btn small" data-copy="/exportdata">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Ratings</span>
+            <span class="tag">Admin</span>
+            <span class="tag mono">/exportdata</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/addadmin</div>
+              <div class="cmd-desc">Add a staff member as rateable admin.</div>
+            </div>
+            <button class="btn small" data-copy="/addadmin @user">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Setup</span>
+            <span class="tag">Admin</span>
+            <span class="tag mono">/addadmin @user</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/removeadmin</div>
+              <div class="cmd-desc">Remove a staff member from the admins list.</div>
+            </div>
+            <button class="btn small" data-copy="/removeadmin @user">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Setup</span>
+            <span class="tag">Admin</span>
+            <span class="tag mono">/removeadmin @user</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/setratingchannel</div>
+              <div class="cmd-desc">Set where rating UI lives.</div>
+            </div>
+            <button class="btn small" data-copy="/setratingchannel #channel">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Setup</span>
+            <span class="tag">Admin</span>
+            <span class="tag mono">/setratingchannel #channel</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/setresultchannel</div>
+              <div class="cmd-desc">Set where results/leaderboards are posted.</div>
+            </div>
+            <button class="btn small" data-copy="/setresultchannel #channel">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Setup</span>
+            <span class="tag">Admin</span>
+            <span class="tag mono">/setresultchannel #channel</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/postratingui</div>
+              <div class="cmd-desc">Post the persistent rating UI (buttons/select).</div>
+            </div>
+            <button class="btn small" data-copy="/postratingui">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Setup</span>
+            <span class="tag">Admin</span>
+            <span class="tag mono">/postratingui</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/setticketconfig</div>
+              <div class="cmd-desc">Configure ticket category, staff role, and log channel.</div>
+            </div>
+            <button class="btn small" data-copy="/setticketconfig #category @staffrole #log">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Tickets</span>
+            <span class="tag">Admin</span>
+            <span class="tag mono">/setticketconfig #category @staffrole #log</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/postticketbutton</div>
+              <div class="cmd-desc">Post the ticket open button panel.</div>
+            </div>
+            <button class="btn small" data-copy="/postticketbutton">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Tickets</span>
+            <span class="tag">Admin</span>
+            <span class="tag mono">/postticketbutton</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/pendingapps</div>
+              <div class="cmd-desc">View and review pending applications.</div>
+            </div>
+            <button class="btn small" data-copy="/pendingapps">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Applications</span>
+            <span class="tag">Staff</span>
+            <span class="tag mono">/pendingapps</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/createapplication</div>
+              <div class="cmd-desc">Create an application form.</div>
+            </div>
+            <button class="btn small" data-copy="/createapplication name">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Applications</span>
+            <span class="tag">Admin</span>
+            <span class="tag mono">/createapplication name</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/deleteapp</div>
+              <div class="cmd-desc">Delete an application form.</div>
+            </div>
+            <button class="btn small" data-copy="/deleteapp name">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Applications</span>
+            <span class="tag">Admin</span>
+            <span class="tag mono">/deleteapp name</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/purgeapp</div>
+              <div class="cmd-desc">Purge application responses.</div>
+            </div>
+            <button class="btn small" data-copy="/purgeapp name">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Applications</span>
+            <span class="tag">Admin</span>
+            <span class="tag mono">/purgeapp name</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/warn</div>
+              <div class="cmd-desc">Warn a user and store the warning.</div>
+            </div>
+            <button class="btn small" data-copy="/warn @user reason">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Moderation</span>
+            <span class="tag">Mod</span>
+            <span class="tag mono">/warn @user reason</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/warnings</div>
+              <div class="cmd-desc">View warnings for a user.</div>
+            </div>
+            <button class="btn small" data-copy="/warnings @user">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Moderation</span>
+            <span class="tag">Mod</span>
+            <span class="tag mono">/warnings @user</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/mute</div>
+              <div class="cmd-desc">Temporarily mute a user.</div>
+            </div>
+            <button class="btn small" data-copy="/mute @user duration reason">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Moderation</span>
+            <span class="tag">Mod</span>
+            <span class="tag mono">/mute @user duration reason</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/unmute</div>
+              <div class="cmd-desc">Unmute a user.</div>
+            </div>
+            <button class="btn small" data-copy="/unmute @user">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Moderation</span>
+            <span class="tag">Mod</span>
+            <span class="tag mono">/unmute @user</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/kick</div>
+              <div class="cmd-desc">Kick a user.</div>
+            </div>
+            <button class="btn small" data-copy="/kick @user reason">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Moderation</span>
+            <span class="tag">Mod</span>
+            <span class="tag mono">/kick @user reason</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/ban</div>
+              <div class="cmd-desc">Ban a user.</div>
+            </div>
+            <button class="btn small" data-copy="/ban @user reason">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Moderation</span>
+            <span class="tag">Mod</span>
+            <span class="tag mono">/ban @user reason</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/unban</div>
+              <div class="cmd-desc">Unban a user.</div>
+            </div>
+            <button class="btn small" data-copy="/unban user_id">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Moderation</span>
+            <span class="tag">Mod</span>
+            <span class="tag mono">/unban user_id</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/purge</div>
+              <div class="cmd-desc">Bulk delete messages in a channel.</div>
+            </div>
+            <button class="btn small" data-copy="/purge amount">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Moderation</span>
+            <span class="tag">Mod</span>
+            <span class="tag mono">/purge amount</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/poll</div>
+              <div class="cmd-desc">Create a quick poll.</div>
+            </div>
+            <button class="btn small" data-copy="/poll question | option1 | option2 ...">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Utilities</span>
+            
+            <span class="tag mono">/poll question | option1 | option2 ...</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/pollresults</div>
+              <div class="cmd-desc">Show results for an existing poll.</div>
+            </div>
+            <button class="btn small" data-copy="/pollresults poll_id">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Utilities</span>
+            
+            <span class="tag mono">/pollresults poll_id</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/remindme</div>
+              <div class="cmd-desc">Set a personal reminder.</div>
+            </div>
+            <button class="btn small" data-copy="/remindme 10m take a break">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Utilities</span>
+            
+            <span class="tag mono">/remindme 10m take a break</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/todo_add</div>
+              <div class="cmd-desc">Add a todo item.</div>
+            </div>
+            <button class="btn small" data-copy="/todo_add text">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Utilities</span>
+            
+            <span class="tag mono">/todo_add text</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/todo_list</div>
+              <div class="cmd-desc">List your todos.</div>
+            </div>
+            <button class="btn small" data-copy="/todo_list">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Utilities</span>
+            
+            <span class="tag mono">/todo_list</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/todo_done</div>
+              <div class="cmd-desc">Mark a todo as done.</div>
+            </div>
+            <button class="btn small" data-copy="/todo_done id">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Utilities</span>
+            
+            <span class="tag mono">/todo_done id</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/todo_del</div>
+              <div class="cmd-desc">Delete a todo item.</div>
+            </div>
+            <button class="btn small" data-copy="/todo_del id">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Utilities</span>
+            
+            <span class="tag mono">/todo_del id</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/quotes</div>
+              <div class="cmd-desc">Browse saved quotes.</div>
+            </div>
+            <button class="btn small" data-copy="/quotes [user]">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Utilities</span>
+            
+            <span class="tag mono">/quotes [user]</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/addquote</div>
+              <div class="cmd-desc">Save a quote.</div>
+            </div>
+            <button class="btn small" data-copy="/addquote @user quote">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Utilities</span>
+            
+            <span class="tag mono">/addquote @user quote</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/quoteid</div>
+              <div class="cmd-desc">Fetch a quote by ID.</div>
+            </div>
+            <button class="btn small" data-copy="/quoteid id">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Utilities</span>
+            
+            <span class="tag mono">/quoteid id</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/botstats</div>
+              <div class="cmd-desc">Shows bot stats (servers, uptime, etc).</div>
+            </div>
+            <button class="btn small" data-copy="/botstats">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Info</span>
+            
+            <span class="tag mono">/botstats</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/serverinfo</div>
+              <div class="cmd-desc">Get server information.</div>
+            </div>
+            <button class="btn small" data-copy="/serverinfo">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Info</span>
+            
+            <span class="tag mono">/serverinfo</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/userinfo</div>
+              <div class="cmd-desc">Get user information.</div>
+            </div>
+            <button class="btn small" data-copy="/userinfo @user">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Info</span>
+            
+            <span class="tag mono">/userinfo @user</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/avatar</div>
+              <div class="cmd-desc">Show a user’s avatar.</div>
+            </div>
+            <button class="btn small" data-copy="/avatar @user">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Info</span>
+            
+            <span class="tag mono">/avatar @user</span>
+          </div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-top">
+            <div>
+              <div class="cmd-name">/ping</div>
+              <div class="cmd-desc">Latency check.</div>
+            </div>
+            <button class="btn small" data-copy="/ping">Copy</button>
+          </div>
+          <div class="cmd-meta">
+            <span class="tag">Info</span>
+            
+            <span class="tag mono">/ping</span>
+          </div>
+        </div>
+      </div>
+      <!-- /sr-cmd-list -->
           </div>
         </div>
       </div>
