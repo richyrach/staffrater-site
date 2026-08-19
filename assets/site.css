@@ -251,8 +251,8 @@ p:last-child{margin-bottom:0}
 .dc + .dc{margin-top:14px}
 .dc-head{display:flex;align-items:center;gap:9px;margin-bottom:11px}
 .dc-avatar{
-  width:30px;height:30px;border-radius:50%;background:var(--accent);flex:none;
-  display:grid;place-items:center;color:#fff;font-size:.78rem;font-weight:600;
+  width:30px;height:30px;border-radius:50%;flex:none;
+  object-fit:cover;background:var(--bg-sunk);
 }
 .dc-name{font-weight:600;font-size:.92rem}
 .dc-bot{
