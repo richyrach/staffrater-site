@@ -1,302 +1,411 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Staff Rater — Guild Settings</title>
-  <link rel="icon" href="/assets/bot-logo.png">
-
-  <!-- Force canonical host (optional but recommended) -->
-  <script>
-    (function(){
-      var wanted="www.staffrater.xyz";
-      if(location.host!==wanted){
-        location.replace("https://"+wanted+location.pathname+location.search+location.hash);
-      }
-    })();
-  </script>
-
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            bg: '#070b14',
-            panel: '#0c1322',
-            line: 'rgba(255,255,255,0.08)'
-          },
-          fontFamily: {
-            sans: ['Inter','ui-sans-serif','system-ui'],
-            mono: ['JetBrains Mono','ui-monospace']
-          },
-          keyframes: {
-            reveal: { '0%': { opacity: 0, transform: 'translateY(10px)'}, '100%': { opacity: 1, transform: 'none' } }
-          },
-          animation: { reveal: 'reveal .4s ease forwards' }
-        }
-      }
-    }
-  </script>
-
-  <style>
-    :root { color-scheme: dark; }
-    html, body { background: #070b14; }
-    .panel { background-color: rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius: 16px; }
-    .menu a { display:block; padding:.6rem .8rem; border-radius:.55rem; color: rgba(255,255,255,.75); transition: background .2s ease; }
-    .menu a:hover, .menu a.active { background: rgba(255,255,255,.08); color:#fff; }
-    .btn { display:inline-flex; align-items:center; gap:.5rem; padding:.6rem .9rem; border-radius:.8rem; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1); transition: background .2s ease, transform .05s ease; }
-    .btn:hover { background:rgba(255,255,255,.12); }
-    .btn:active { transform: translateY(1px); }
-    .sel, .inp {
-      width:100%; background:#0c1322; border:1px solid rgba(255,255,255,.12);
-      border-radius:.6rem; padding:.6rem .7rem; color:#fff; outline: none;
-    }
-    .note { font-size:.85rem; color:rgba(255,255,255,.70); }
-    .err { color:#ff9b9b; }
-    .ok { color:#90EE90; }
-    .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.12), rgba(255,255,255,0.06)); background-size:200% 100%; animation: sk 1.2s linear infinite; }
-    @keyframes sk { 100% { background-position: -200% 0; } }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Server settings — Staff Rater</title>
+<meta name="theme-color" content="#ffffff" />
+<meta name="robots" content="noindex" />
+<link rel="icon" href="/assets/bot-logo.png" />
+<link rel="stylesheet" href="/assets/site.css" />
+<link rel="stylesheet" href="/assets/dashboard.css" />
 </head>
-<body class="text-white font-sans antialiased">
-  <!-- Header -->
-  <header class="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-[#070b14]/50 bg-[#070b14]/80 border-b border-white/5">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="/dashboard/index.html" class="flex items-center gap-3">
-        <img src="/assets/bot-logo.png" class="w-8 h-8 rounded-xl ring-1 ring-white/10" alt="">
-        <span class="text-white/90 font-semibold">Staff Rater — Guild</span>
-      </a>
-      <div id="auth-area" class="flex items-center gap-3">
-        <!-- Filled by JS -->
-        <a href="/api/login?return=/dashboard/index.html" class="btn">Sign in</a>
-      </div>
+<body>
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a class="brand" href="/"><img src="/assets/bot-logo.png" alt="" /> Staff Rater</a>
+    <nav class="nav-links">
+      <a href="/">Home</a>
+      <a href="/commands.html">Commands</a>
+      <a href="/dashboard/">Servers</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn small" href="/api/logout?redirect=/">Log out</a>
     </div>
-  </header>
+  </div>
+</header>
 
-  <!-- Main -->
-  <main class="max-w-6xl mx-auto px-4 py-6 grid lg:grid-cols-[240px,1fr] gap-6">
-    <!-- Sidebar -->
-    <aside class="panel p-3 menu h-max">
-      <div class="text-white/70 text-sm mb-2">Sections</div>
-      <a href="#overview" class="active">Overview</a>
-      <a href="#setup">Setup</a>
-      <a href="#commandlog">Command Log</a>
-    </aside>
+<main class="dash-shell">
+  <div id="boot"><p class="muted"><span class="spinner"></span> Loading…</p></div>
 
-    <!-- Content -->
-    <section class="space-y-6">
-      <!-- Header card -->
-      <div class="panel p-5 animate-reveal">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <img id="gicon" src="https://cdn.discordapp.com/embed/avatars/1.png" class="w-10 h-10 rounded-lg ring-1 ring-white/10" alt="">
-            <div>
-              <h1 class="text-xl font-semibold" id="gtitle">Server</h1>
-              <div class="text-white/60 text-sm" id="gsubtitle">Loading…</div>
-            </div>
-          </div>
-          <a id="backBtn" href="/dashboard/index.html" class="text-white/70 hover:text-white">← All servers</a>
+  <div id="app" hidden>
+    <div class="dash-head">
+      <img class="dash-icon" id="g-icon" alt="" />
+      <div style="min-width:0">
+        <h1 class="dash-title" id="g-name">—</h1>
+        <div class="dash-sub" id="g-sub">—</div>
+      </div>
+      <a class="btn small" href="/dashboard/" style="margin-left:auto">← All servers</a>
+    </div>
+
+    <div class="tabrow" id="tabs">
+      <button class="tab active" data-tab="settings">Settings</button>
+      <button class="tab" data-tab="staff">Staff</button>
+      <button class="tab" data-tab="analytics">Analytics</button>
+      <button class="tab" data-tab="apps">Applications</button>
+    </div>
+
+    <section data-panel="settings"></section>
+    <section data-panel="staff" hidden></section>
+    <section data-panel="analytics" hidden></section>
+    <section data-panel="apps" hidden></section>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const api = (u,o={}) => fetch(u, Object.assign({credentials:"include", cache:"no-store"}, o));
+  const $  = s => document.querySelector(s);
+  const gid = new URLSearchParams(location.search).get("guild_id") || "";
+
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function toast(msg, bad){
+    const t = $("#toast");
+    t.textContent = msg;
+    t.style.background = bad ? "#c1352f" : "";
+    t.classList.add("show");
+    setTimeout(()=>t.classList.remove("show"), 2600);
+  }
+  function panel(name){ return document.querySelector(`[data-panel="${name}"]`); }
+
+  async function call(resource, opts){
+    const r = await api(`/api/bot?guild_id=${encodeURIComponent(gid)}&resource=${resource}`, opts);
+    const j = await r.json().catch(()=>({}));
+    return { status:r.status, j };
+  }
+
+  function failMessage(status, j){
+    if (status === 401) return `You're signed out. <a href="/api/login?returnTo=${encodeURIComponent(location.pathname+location.search)}">Sign in again</a>.`;
+    if (status === 403) return "You don't manage this server.";
+    if (status === 404) return "Staff Rater isn't in this server yet.";
+    if (status === 504) return "The bot isn't responding — it may be restarting. Try again in a moment.";
+    if (status === 503) return "The dashboard API isn't configured on the server yet.";
+    return `Something went wrong (${status}${j && j.error ? ": " + esc(j.error) : ""}).`;
+  }
+
+  /* ---------------- settings ---------------- */
+
+  // label, key, and which option list it draws from
+  const FIELDS = [
+    ["Ratings",      [["Rating panel channel","rating_channel","text","Where /postratingui posts the rating buttons."],
+                      ["Results channel","result_channel","text","New ratings get announced here."],
+                      ["Activity feed","feed_channel","text","Running log of staff activity."]]],
+    ["Tickets",      [["Ticket category","ticket_category","category","New ticket channels are created inside this category."],
+                      ["Ticket staff role","ticket_role","roles","Role that can see and claim tickets."],
+                      ["Ticket log","ticket_log","text","Transcripts and open/close events."]]],
+    ["Staff shifts", [["Shift channel","shift_channel","text","On-duty and off-duty announcements."],
+                      ["Check-in channel","checkin_channel","text","Daily staff check-ins and streaks."]]],
+    ["Community",    [["Suggestions channel","suggest_channel","text","Where /suggest posts."],
+                      ["Suggestion log","suggest_log","text","Staff responses to suggestions."],
+                      ["Complaints channel","complaint_channel","text","Anonymous complaints land here."]]],
+    ["Recognition",  [["Weekly report channel","report_channel","text","Automatic weekly staff summary."],
+                      ["Staff of the month channel","sotm_channel","text",""],
+                      ["Staff of the month role","sotm_role","roles","Awarded to the winner each month."]]],
+    ["Moderation",   [["Mute role","mute_role","roles","Applied by /mute."]]],
+  ];
+
+  let OPTIONS = {text:[],category:[],roles:[]};
+  let CURRENT = {};
+
+  function optionsHtml(kind, selected){
+    const list = OPTIONS[kind] || [];
+    const sel = selected == null ? "" : String(selected);
+    const prefix = kind === "roles" ? "@" : (kind === "category" ? "" : "#");
+    return `<option value="">— not set —</option>` + list.map(o =>
+      `<option value="${esc(o.id)}"${o.id === sel ? " selected" : ""}>${esc(prefix + o.name)}</option>`
+    ).join("");
+  }
+
+  function renderSettings(){
+    const groups = FIELDS.map(([title, fields]) => `
+      <div class="panel pad" style="margin-bottom:18px">
+        <div class="panel-title">${esc(title)}</div>
+        <div class="field-grid">
+          ${fields.map(([label,key,kind,hint]) => `
+            <div class="field">
+              <label for="f-${esc(key)}">${esc(label)}</label>
+              <select class="input" id="f-${esc(key)}" data-key="${esc(key)}">
+                ${optionsHtml(kind, CURRENT[key])}
+              </select>
+              ${hint ? `<div class="hint">${esc(hint)}</div>` : ""}
+            </div>`).join("")}
         </div>
-      </div>
+      </div>`).join("");
 
-      <!-- Overview -->
-      <div id="overview" class="panel p-5 animate-reveal">
-        <h2 class="font-semibold">Overview</h2>
-        <div id="info" class="text-white/70 mt-2 text-sm">Loading…</div>
-      </div>
+    panel("settings").innerHTML = groups + `
+      <div class="savebar">
+        <button class="btn primary" id="save">Save changes</button>
+        <button class="btn" id="revert">Revert</button>
+        <span class="status" id="save-status"></span>
+      </div>`;
 
-      <!-- Setup (read-only) -->
-      <div id="setup" class="panel p-5 animate-reveal">
-        <h2 class="font-semibold">Quick setup (run in Discord)</h2>
-        <p class="note mt-1">Server settings live in Discord. These commands are the recommended setup flow.</p>
-        <pre id="setupCommands" class="mt-4 p-4 rounded-xl border border-white/10 bg-white/5 font-mono text-sm text-white/80 overflow-auto"></pre>
-      </div>
+    $("#save").addEventListener("click", save);
+    $("#revert").addEventListener("click", () => { renderSettings(); toast("Reverted"); });
+  }
 
-      <!-- Ratings -->
-      <div id="ratings" data-legacy-config class="panel p-5 animate-reveal">
-        <h2 class="font-semibold">Ratings</h2>
-        <p class="note mt-1">Choose channels by name (no IDs needed).</p>
-        <div class="grid md:grid-cols-2 gap-4 mt-4">
-          <div>
-            <label class="block text-sm text-white/70 mb-1">Rating Channel</label>
-            <select id="ratingChannel" class="sel"></select>
+  function collect(){
+    const out = {};
+    document.querySelectorAll("[data-key]").forEach(el => {
+      const k = el.getAttribute("data-key");
+      const v = el.value;
+      const cur = CURRENT[k] == null ? "" : String(CURRENT[k]);
+      if (v !== cur) out[k] = v;      // only send what actually changed
+    });
+    return out;
+  }
+
+  async function save(){
+    const patch = collect();
+    const status = $("#save-status");
+    if (!Object.keys(patch).length) { status.textContent = "No changes."; status.className="status"; return; }
+
+    $("#save").disabled = true;
+    status.className = "status";
+    status.innerHTML = `<span class="spinner"></span> Saving…`;
+
+    const { status: code, j } = await call("settings", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ settings: patch }),
+    });
+    $("#save").disabled = false;
+
+    if (code === 200 && j.ok) {
+      CURRENT = j.settings || CURRENT;
+      OPTIONS = j.options || OPTIONS;
+      status.className = "status ok";
+      status.textContent = `Saved ${Object.keys(patch).length} change${Object.keys(patch).length>1?"s":""}.`;
+      toast("Settings saved");
+      renderSettings();
+    } else {
+      status.className = "status err";
+      status.innerHTML = failMessage(code, j);
+      toast("Save failed", true);
+    }
+  }
+
+  /* ---------------- staff ---------------- */
+
+  async function loadStaff(){
+    const p = panel("staff");
+    p.innerHTML = `<p class="muted"><span class="spinner"></span> Loading staff…</p>`;
+    const { status, j } = await call("staff");
+    if (status !== 200 || !j.ok) { p.innerHTML = `<div class="banner err">${failMessage(status,j)}</div>`; return; }
+
+    if (!j.staff.length) {
+      p.innerHTML = `<div class="empty">No staff registered yet.<br>
+        <span class="small">Add someone with <code>/addadmin</code> in Discord, or below.</span></div>` + addStaffForm();
+    } else {
+      p.innerHTML = `
+        <div class="panel pad" style="padding:16px 6px">
+          <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr>
+              <th>Staff</th><th class="num">Score</th><th class="num">Avg</th>
+              <th class="num">Reviews</th><th>Trend</th><th class="num">Shift 30d</th><th></th>
+            </tr></thead>
+            <tbody>${j.staff.map(rowFor).join("")}</tbody>
+          </table>
           </div>
-          <div>
-            <label class="block text-sm text-white/70 mb-1">Result Channel</label>
-            <select id="resultChannel" class="sel"></select>
-          </div>
-        </div>
-        <div class="mt-4">
-          <button id="saveRatings" class="btn">Save Ratings Settings</button>
-          <span id="saveRatingsMsg" class="ml-3 text-sm"></span>
-        </div>
+        </div>` + addStaffForm();
+    }
+    wireStaff();
+  }
+
+  function rowFor(s){
+    const av = s.avatar
+      ? `<img src="${esc(s.avatar)}" alt="">`
+      : `<div class="ph">${esc((s.name||"?").slice(0,2).toUpperCase())}</div>`;
+    const pct = Math.max(0, Math.min(100, Number(s.score)||0));
+    return `<tr>
+      <td><div class="who">${av}<span class="nm">${esc(s.name)}${s.in_guild ? "" : ' <span class="small muted">(left)</span>'}</span></div></td>
+      <td class="num"><span class="score"><span class="bar"><span style="width:${pct}%"></span></span>${pct}</span></td>
+      <td class="num">${Number(s.avg).toFixed(2)}</td>
+      <td class="num">${esc(s.count)}</td>
+      <td class="small">${esc(s.trend)}</td>
+      <td class="num">${esc((s.shift&&s.shift.hours)||0)}h</td>
+      <td style="text-align:right"><button class="btn small" data-remove="${esc(s.id)}">Remove</button></td>
+    </tr>`;
+  }
+
+  function addStaffForm(){
+    return `<div class="panel pad" style="margin-top:16px">
+      <div class="panel-title">Add staff</div>
+      <div class="row" style="gap:8px">
+        <input class="input" id="add-id" placeholder="Discord user ID, e.g. 123456789012345678" style="max-width:340px">
+        <button class="btn primary" id="add-btn">Add</button>
+      </div>
+      <div class="hint" style="margin-top:8px">
+        Right-click a member in Discord → Copy User ID (needs Developer Mode on).
+      </div>
+    </div>`;
+  }
+
+  function wireStaff(){
+    const p = panel("staff");
+    p.querySelectorAll("[data-remove]").forEach(b => b.addEventListener("click", async () => {
+      const id = b.getAttribute("data-remove");
+      b.disabled = true; b.textContent = "…";
+      const { status, j } = await call("staff", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({action:"remove", user_id:id}),
+      });
+      if (status === 200 && j.ok) { toast("Staff removed"); loadStaff(); }
+      else { toast(failMessage(status,j).replace(/<[^>]+>/g,""), true); b.disabled=false; b.textContent="Remove"; }
+    }));
+
+    const btn = p.querySelector("#add-btn");
+    if (btn) btn.addEventListener("click", async () => {
+      const el = p.querySelector("#add-id");
+      const id = (el.value||"").trim();
+      if (!/^\d{1,20}$/.test(id)) { toast("That doesn't look like a user ID", true); return; }
+      btn.disabled = true;
+      const { status, j } = await call("staff", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({action:"add", user_id:id}),
+      });
+      btn.disabled = false;
+      if (status === 200 && j.ok) { el.value=""; toast("Staff added"); loadStaff(); }
+      else if (j && j.error === "not_a_member") toast("That user isn't in this server", true);
+      else toast(failMessage(status,j).replace(/<[^>]+>/g,""), true);
+    });
+  }
+
+  /* ---------------- analytics ---------------- */
+
+  function sparkline(series){
+    if (!series.length) return `<div class="empty">No ratings yet.</div>`;
+    const w = 640, h = 150, pad = 6;
+    const max = Math.max(...series.map(d=>d.count), 1);
+    const step = series.length > 1 ? (w - pad*2) / (series.length - 1) : 0;
+    const pts = series.map((d,i) => [pad + i*step, h - pad - (d.count/max) * (h - pad*2)]);
+    const line = pts.map((p,i)=>`${i?"L":"M"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
+    const area = `${line} L${pts[pts.length-1][0].toFixed(1)},${h-pad} L${pts[0][0].toFixed(1)},${h-pad} Z`;
+    return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img"
+                 aria-label="Ratings per day, peak ${max}">
+      <path d="${area}" fill="var(--accent-soft)"/>
+      <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2"
+            stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>`;
+  }
+
+  async function loadAnalytics(){
+    const p = panel("analytics");
+    p.innerHTML = `<p class="muted"><span class="spinner"></span> Crunching numbers…</p>`;
+    const { status, j } = await call("analytics");
+    if (status !== 200 || !j.ok) { p.innerHTML = `<div class="banner err">${failMessage(status,j)}</div>`; return; }
+
+    const t = j.totals || {};
+    const bd = j.breakdown || {};
+    const bdMax = Math.max(...[1,2,3,4,5].map(n => bd[n]||0), 1);
+
+    p.innerHTML = `
+      <div class="kpis">
+        <div class="kpi"><div class="v">${esc(t.ratings??0)}</div><div class="k">ratings</div></div>
+        <div class="kpi"><div class="v">${Number(t.avg||0).toFixed(2)}</div><div class="k">average</div></div>
+        <div class="kpi"><div class="v">${esc(t.staff??0)}</div><div class="k">staff</div></div>
+        <div class="kpi"><div class="v">${esc(t.tickets_open??0)}</div><div class="k">open tickets</div></div>
+        <div class="kpi"><div class="v">${esc(t.tickets_closed??0)}</div><div class="k">closed tickets</div></div>
       </div>
 
-      <!-- Tickets -->
-      <div id="tickets" data-legacy-config class="panel p-5 animate-reveal">
-        <h2 class="font-semibold">Tickets</h2>
-        <p class="note mt-1">Pick your ticket category, staff role, and optional log channel.</p>
-        <div class="grid md:grid-cols-3 gap-4 mt-4">
-          <div>
-            <label class="block text-sm text-white/70 mb-1">Ticket Category</label>
-            <select id="ticketCategory" class="sel"></select>
-          </div>
-          <div>
-            <label class="block text-sm text-white/70 mb-1">Ticket Staff Role</label>
-            <select id="ticketStaffRole" class="sel"></select>
-          </div>
-          <div>
-            <label class="block text-sm text-white/70 mb-1">Ticket Log Channel (optional)</label>
-            <select id="ticketLogChannel" class="sel"></select>
-          </div>
-        </div>
-        <div class="mt-4">
-          <button id="saveTickets" class="btn">Save Ticket Settings</button>
-          <span id="saveTicketsMsg" class="ml-3 text-sm"></span>
-        </div>
+      <div class="panel pad" style="margin-bottom:18px">
+        <div class="panel-title">Ratings per day</div>
+        ${sparkline(j.series||[])}
       </div>
 
-      <!-- Applications -->
-      <div id="applications" data-legacy-config class="panel p-5 animate-reveal">
-        <h2 class="font-semibold">Applications</h2>
-        <p class="note mt-1">Create templates and add questions using your bot’s slash commands. This page will later show pending applications.</p>
-      </div>
-
-      <!-- Polls -->
-      <div id="polls" data-legacy-config class="panel p-5 animate-reveal">
-        <h2 class="font-semibold">Polls</h2>
-        <p class="note mt-1">Create and review polls via slash commands. Recent polls will appear here in a future update.</p>
-      </div>
-
-      <!-- Live Command Log -->
-      <div id="commandlog" class="panel p-5 animate-reveal">
-        <h2 class="font-semibold">Live Command Log</h2>
-        <pre id="log" class="text-white/70 mt-2 text-sm whitespace-pre-wrap">Waiting for events…</pre>
-      </div>
-    </section>
-  </main>
-
-  <script>
-    (function(){
-      // 1) Session lives in an HttpOnly cookie set by /api/callback — nothing for
-      //    page scripts to capture or store. Just send credentials on /api/* calls.
-      (function patchFetch(){
-        var orig=window.fetch;
-        window.fetch=function(input, init){
-          try{
-            var url=typeof input==='string'?input:input.url;
-            if(url && url.indexOf('http')!==0 && url.startsWith('/api/')){
-              init=init||{};
-              init.credentials='include'; init.cache='no-store';
-              return orig(url, init);
-            }
-          }catch(e){}
-          return orig(input, init);
-        };
-      })();
-
-      // 2) Escape Discord-controlled strings before they reach innerHTML.
-      function esc(s){
-        return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
-          return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-        });
-      }
-
-      // Helpers
-      const $ = id => document.getElementById(id);
-      const params = new URLSearchParams(location.search);
-      const guildId = params.get('guild_id') || '';
-      const info = $('info');
-      const logEl = $('log');
-
-      // 3) Header auth area
-      (async function hydrateHeader(){
-        const auth = $('auth-area');
-        try{
-          const r = await fetch('/api/me');
-          const d = r.ok ? await r.json() : null;
-          if(!d || !d.ok || !d.session || !d.session.user){
-            const ret = encodeURIComponent('/dashboard/guild.html'+(guildId?`?guild_id=${guildId}`:''));
-            auth.innerHTML = `<a href="/api/login?return=${ret}" class="btn">Sign in</a>`;
-            $('gsubtitle').textContent='Please sign in.';
-            return;
-          }
-          const u = d.session.user;
-          const avatar = u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64` : 'https://cdn.discordapp.com/embed/avatars/0.png';
-          auth.innerHTML = `
-            <a href="/dashboard/index.html" class="hidden sm:inline-flex btn">All servers</a>
-            <div class="flex items-center gap-3">
-              <img src="${esc(avatar)}" class="w-8 h-8 rounded-full ring-1 ring-white/10" alt="">
-              <span class="text-white/80 text-sm max-w-[140px] truncate">${esc(u.username)}</span>
-              <a href="/api/logout?redirect=/dashboard/index.html" class="btn">Log out</a>
+      <div class="panel pad">
+        <div class="panel-title">Star breakdown</div>
+        <div class="bars">
+          ${[5,4,3,2,1].map(n => {
+            const c = bd[n] || 0;
+            return `<div class="row5">
+              <span>${"★".repeat(n)}</span>
+              <span class="track"><span class="fill" style="width:${(c/bdMax*100).toFixed(1)}%"></span></span>
+              <span class="num muted" style="text-align:right">${c}</span>
             </div>`;
+          }).join("")}
+        </div>
+      </div>`;
+  }
 
-          // If the session has guilds, try to display this one
-          const g = (d.session.guilds||[]).find(x=>x.id===guildId);
-          if (g){
-            $('gtitle').textContent = g.name;
-            $('gicon').src = g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128` : 'https://cdn.discordapp.com/embed/avatars/1.png';
-            $('gsubtitle').textContent = 'Configure Staff Rater for this server.';
-          } else {
-            $('gtitle').textContent = guildId ? `Server — ${guildId}` : 'Server';
-            $('gsubtitle').textContent = 'Configure Staff Rater for this server.';
-          }
-        }catch(e){
-          $('gsubtitle').textContent='Could not load session.';
-        }
-      })();
+  /* ---------------- applications ---------------- */
 
-      // 4) Load guild (read-only portal)
-      (async function loadGuild(){
-        if(!guildId){ info.innerHTML='<span class="err">Missing guild_id.</span>'; return; }
-        info.innerHTML='<span class="ok">Guild loaded.</span> <span class="muted">•</span> <span class="muted">This site is read‑only — configure Staff Rater inside Discord.</span>';
+  async function loadApps(){
+    const p = panel("apps");
+    p.innerHTML = `<p class="muted"><span class="spinner"></span> Loading applications…</p>`;
+    const { status, j } = await call("applications");
+    if (status !== 200 || !j.ok) { p.innerHTML = `<div class="banner err">${failMessage(status,j)}</div>`; return; }
 
-        // Hide old config panels (kept in HTML for backwards compat)
-        const old = document.querySelectorAll('[data-legacy-config]');
-        old.forEach(el=>el.style.display='none');
+    const apps = j.applications || [];
+    const pending = j.pending || [];
 
-        // Show setup commands
-        const setup = document.getElementById('setupCommands');
-        if (setup) {
-          setup.textContent = [
-            '/addadmin @StaffMember',
-            '/setratingchannel #ratings',
-            '/setresultchannel #staff-ratings',
-            '/postratingui',
-            '/setticketconfig <Category> <StaffRole> <LogChannel?>',
-            '/postticketbutton'
-          ].join('\n');
-        }
+    p.innerHTML = `
+      ${pending.length ? `<div class="banner"><b>${pending.length}</b> application${pending.length>1?"s":""} waiting for review. Use <code>/pendingapps</code> in Discord to accept or deny.</div>` : ""}
+      ${apps.length ? apps.map(a => `
+        <div class="panel pad" style="margin-bottom:14px">
+          <div class="row" style="justify-content:space-between">
+            <b>${esc(a.name)}</b>
+            <span class="pill">${a.questions.length} question${a.questions.length===1?"":"s"}</span>
+          </div>
+          ${a.questions.length ? `<ol class="list" style="margin-top:12px">
+            ${a.questions.map(q => `<li>${esc(q.text)} <span class="small muted">(${esc(q.type)})</span></li>`).join("")}
+          </ol>` : `<div class="hint" style="margin-top:10px">No questions yet — add them with <code>/app_addq</code>.</div>`}
+        </div>`).join("")
+      : `<div class="empty">No application forms yet.<br>
+           <span class="small">Create one with <code>/app_create</code> in Discord.</span></div>`}`;
+  }
 
-        // Live command log poll (last 20 entries)
-        async function pollLog(){
-          try{
-            const r=await fetch('/api/command-log-get?guild_id='+encodeURIComponent(guildId));
-            if(r.ok){
-              const j=await r.json();
-              logEl.textContent = (j && j.items && j.items.length)
-                ? j.items.slice(-20).map(x => {
-                    const t = x.ts ? new Date(x.ts).toLocaleTimeString() : '';
-                    return `[${t}] ${x.user||'someone'} used ${x.cmd||'a command'}`;
-                  }).join('\n')
-                : 'No recent commands.';
-            } else if (r.status === 403) {
-              logEl.textContent = 'You do not manage this server.';
-              return; // stop polling — this will never succeed
-            } else if (r.status === 401) {
-              logEl.textContent = 'Session expired — please sign in again.';
-              return;
-            } else {
-              logEl.textContent = 'Unable to read command log.';
-            }
-          }catch(e){ /* ignore */ }
-          setTimeout(pollLog, 4000);
-        }
-        pollLog();
-      })();
-    })();
-  </script>
+  /* ---------------- boot ---------------- */
+
+  const LOADED = {};
+  function show(name){
+    document.querySelectorAll("#tabs .tab").forEach(t =>
+      t.classList.toggle("active", t.dataset.tab === name));
+    document.querySelectorAll("[data-panel]").forEach(s =>
+      s.hidden = s.dataset.panel !== name);
+    if (!LOADED[name]) {
+      LOADED[name] = true;
+      if (name === "staff")     loadStaff();
+      if (name === "analytics") loadAnalytics();
+      if (name === "apps")      loadApps();
+    }
+  }
+
+  async function main(){
+    if (!/^\d{1,20}$/.test(gid)) {
+      $("#boot").innerHTML = `<div class="banner err">No server selected. <a href="/dashboard/">Pick one</a>.</div>`;
+      return;
+    }
+    const { status, j } = await call("settings");
+    if (status !== 200 || !j.ok) {
+      $("#boot").innerHTML = `<div class="banner err">${failMessage(status,j)}</div>`;
+      return;
+    }
+
+    CURRENT = j.settings || {};
+    OPTIONS = j.options  || OPTIONS;
+    const g = j.guild || {};
+    $("#g-name").textContent = g.name || "Server";
+    $("#g-sub").textContent  = `${g.members ?? "?"} members · ${OPTIONS.text.length} channels`;
+    const icon = $("#g-icon");
+    if (g.icon) { icon.src = g.icon; } else { icon.remove(); }
+
+    renderSettings();
+    $("#boot").hidden = true;
+    $("#app").hidden = false;
+
+    document.querySelectorAll("#tabs .tab").forEach(t =>
+      t.addEventListener("click", () => show(t.dataset.tab)));
+  }
+
+  main();
+})();
+</script>
 </body>
 </html>

@@ -1,148 +1,114 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Staff Rater — Dashboard</title>
-  <link rel="icon" href="/assets/bot-logo.png">
-
-  <!-- Canonical host lock -->
-  <script>
-  (function(){
-    var wanted="www.staffrater.xyz";
-    if(location.host!==wanted){
-      location.replace("https://"+wanted+location.pathname+location.search+location.hash);
-    }
-  })();
-  </script>
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root { color-scheme: dark; }
-    html, body { background: #070b14; }
-    .tile { transition: transform .25s ease, box-shadow .25s ease; }
-    .tile:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,.35); }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Your servers — Staff Rater</title>
+<meta name="theme-color" content="#ffffff" />
+<meta name="robots" content="noindex" />
+<link rel="icon" href="/assets/bot-logo.png" />
+<link rel="stylesheet" href="/assets/site.css" />
+<link rel="stylesheet" href="/assets/dashboard.css" />
 </head>
-<body class="text-white font-sans antialiased">
-  <header class="sticky top-0 z-30 backdrop-blur supports-[backdrop-filter]:bg-[#070b14]/50 bg-[#070b14]/80 border-b border-white/5">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <a href="/" class="flex items-center gap-3">
-        <img src="/assets/bot-logo.png" class="w-8 h-8 rounded-xl ring-1 ring-white/10" alt="">
-        <span class="text-white/90 font-semibold">Staff Rater</span>
-      </a>
-      <div id="auth-area" class="flex items-center gap-3">
-        <a href="/api/login?return=/dashboard/index.html" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Sign in with Discord</a>
-      </div>
+<body>
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a class="brand" href="/"><img src="/assets/bot-logo.png" alt="" /> Staff Rater</a>
+    <nav class="nav-links">
+      <a href="/">Home</a>
+      <a href="/commands.html">Commands</a>
+      <a href="/dashboard/">Dashboard</a>
+    </nav>
+    <div class="nav-cta" id="nav-auth">
+      <a class="btn small" href="/api/logout?redirect=/">Log out</a>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main class="max-w-6xl mx-auto px-4 py-10">
-    <h1 class="text-2xl font-semibold">Pick a server</h1>
-
-    <!-- Signed-out notice -->
-    <div id="signed-out" class="mt-6 rounded-2xl bg-white/5 ring-1 ring-white/10 p-5 hidden">
-      <p class="text-white/80">Please sign in to see your servers.</p>
-      <a href="/api/login?return=/dashboard/index.html" class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600">Sign in with Discord</a>
+<main class="dash-shell">
+  <div class="dash-head">
+    <div>
+      <h1 class="dash-title">Your servers</h1>
+      <div class="dash-sub">Pick a server to configure Staff Rater.</div>
     </div>
+  </div>
 
-    <!-- Server tiles -->
-    <div id="grid" class="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
-  </main>
+  <div id="state"><p class="muted"><span class="spinner"></span> Loading your servers…</p></div>
+  <div class="server-grid" id="grid"></div>
+</main>
 
-  <script>
-  (function(){
-    // 1) Session now lives in an HttpOnly cookie set by /api/callback, so there is
-    //    no token for page scripts to capture, store or leak. Just send credentials.
-    (function patchFetch(){
-      var orig = window.fetch;
-      window.fetch = function(input, init){
-        try{
-          var url = (typeof input==='string')?input:input.url;
-          if (url && url.indexOf('http')!==0 && url.startsWith('/api/')){
-            init = init || {};
-            init.credentials = 'include';
-            if (!('cache' in init)) init.cache='no-store';
-            return orig(url, init);
-          }
-        }catch(e){}
-        return orig(input, init);
-      };
-    })();
+<script>
+(function(){
+  // Session is an HttpOnly cookie; just send credentials.
+  const api = (u, o={}) => fetch(u, Object.assign({credentials:"include", cache:"no-store"}, o));
 
-    // 2) Escape anything Discord-controlled before it touches innerHTML.
-    //    Server names and usernames are attacker-chosen strings.
-    function esc(s){
-      return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
-        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-      });
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // Discord sends permissions as a decimal STRING larger than 2^31 — 32-bit
+  // bitwise ops give wrong answers here, so use BigInt.
+  const ADMIN = 1n << 3n, MANAGE_GUILD = 1n << 5n;
+  function canManage(g){
+    if (g.owner) return true;
+    try { return (BigInt(g.permissions ?? 0) & (ADMIN | MANAGE_GUILD)) !== 0n; }
+    catch { return false; }
+  }
+
+  function iconFor(g){
+    if (g.icon) return `<img class="server-avatar" src="https://cdn.discordapp.com/icons/${encodeURIComponent(g.id)}/${encodeURIComponent(g.icon)}.png?size=64" alt="">`;
+    const initials = esc((g.name||"?").split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase());
+    return `<div class="server-avatar">${initials}</div>`;
+  }
+
+  async function main(){
+    const state = document.getElementById("state");
+    const grid  = document.getElementById("grid");
+    let me;
+    try {
+      const r = await api("/api/me");
+      if (r.status === 401) {
+        state.innerHTML = `<div class="banner">You're signed out. <a href="/api/login?returnTo=/dashboard/">Sign in with Discord</a> to continue.</div>`;
+        return;
+      }
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      me = await r.json();
+    } catch (e) {
+      state.innerHTML = `<div class="banner err">Couldn't load your servers (${esc(e.message)}). Try reloading.</div>`;
+      return;
     }
 
-    // 3) Hydrate header and server grid
-    (async function hydrate(){
-      const auth=document.getElementById('auth-area');
-      const grid=document.getElementById('grid');
-      const signedOut=document.getElementById('signed-out');
+    const user = me && me.ok && me.session && me.session.user;
+    if (user) {
+      document.getElementById("nav-auth").innerHTML =
+        `<span class="nav-user"><span class="small muted">@${esc(user.username)}</span></span>
+         <a class="btn small" href="/api/logout?redirect=/">Log out</a>`;
+    }
 
-      let me=null;
-      try {
-        const r=await fetch('/api/me');
-        me = r.ok ? await r.json() : null;
-      } catch(e){}
+    const guilds = ((me.session && me.session.guilds) || []).filter(canManage);
+    if (!guilds.length) {
+      state.innerHTML = `<div class="empty">
+        You don't manage any servers that Staff Rater can configure.<br>
+        <span class="small">You need <b>Manage Server</b> or <b>Administrator</b>.</span>
+      </div>`;
+      return;
+    }
 
-      if (!me || !me.ok) {
-        signedOut.classList.remove('hidden');
-        return;
-      }
+    state.innerHTML = "";
+    grid.innerHTML = guilds.map(g => `
+      <a class="server-card" href="/dashboard/guild.html?guild_id=${encodeURIComponent(g.id)}">
+        ${iconFor(g)}
+        <div style="min-width:0">
+          <div class="server-name">${esc(g.name)}</div>
+          <div class="server-role">${g.owner ? "Owner" : "Manages server"}</div>
+        </div>
+      </a>`).join("");
+  }
 
-      // Header
-      const u = me.session.user;
-      const avatar = u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64` : 'https://cdn.discordapp.com/embed/avatars/0.png';
-      auth.innerHTML = `
-        <a href="/" class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Home</a>
-        <div class="flex items-center gap-3">
-          <img src="${esc(avatar)}" class="w-8 h-8 rounded-full ring-1 ring-white/10" alt="">
-          <span class="text-white/80 text-sm max-w-[140px] truncate">${esc(u.username)}</span>
-          <a href="/api/logout?redirect=/dashboard/index.html" class="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 ring-1 ring-white/10">Log out</a>
-        </div>`;
-
-      // Servers
-      let guilds = me.session.guilds || [];
-      // show only guilds where user has MANAGE_GUILD or ADMINISTRATOR or is owner (for config)
-      // Discord sends `permissions` as a decimal string far larger than 2^31, so
-      // plain JS bitwise ops truncate it and misjudge who can manage a server.
-      const ADMIN = 1n << 3n;
-      const MANAGE_GUILD = 1n << 5n;
-      guilds = guilds.filter(g => {
-        if (g.owner) return true;
-        try { return (BigInt(g.permissions ?? 0) & (ADMIN | MANAGE_GUILD)) !== 0n; }
-        catch(e){ return false; }
-      });
-
-      if (!guilds.length) {
-        grid.innerHTML = `
-          <div class="rounded-2xl bg-white/5 ring-1 ring-white/10 p-5">
-            <p class="text-white/80">No manageable servers found.</p>
-            <a href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8&integration_type=0&scope=bot+applications.commands" class="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600">Invite the bot</a>
-          </div>`;
-        return;
-      }
-
-      grid.innerHTML = guilds.map(g=>{
-        const icon = g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128` : 'https://cdn.discordapp.com/embed/avatars/1.png';
-        return `
-          <a class="tile block rounded-2xl bg-white/5 ring-1 ring-white/10 p-5" href="/dashboard/guild.html?guild_id=${encodeURIComponent(g.id)}">
-            <div class="flex items-center gap-4">
-              <img src="${esc(icon)}" class="w-12 h-12 rounded-xl ring-1 ring-white/10" alt="">
-              <div>
-                <div class="font-semibold">${esc(g.name)}</div>
-                <div class="text-white/60 text-sm">${g.owner ? 'Owner' : 'Staff'}</div>
-              </div>
-            </div>
-          </a>`;
-      }).join('');
-    })();
-  })();
-  </script>
+  main();
+})();
+</script>
 </body>
 </html>
