@@ -10,33 +10,41 @@
 <link rel="stylesheet" href="/assets/site.css" />
 <link rel="stylesheet" href="/assets/dashboard.css" />
 </head>
-<body>
-
-<header class="nav">
-  <div class="container nav-inner">
-    <a class="brand" href="/"><img src="/assets/bot-logo.png" alt="" /> Staff Rater</a>
-    <nav class="nav-links">
-      <a href="/">Home</a>
-      <a href="/commands.html">Commands</a>
-      <a href="/dashboard/">Dashboard</a>
+<body class="dashboard-body">
+<div class="dashboard-layout">
+  <aside class="dash-sidebar">
+    <a class="dash-brand" href="/dashboard/">
+      <span class="dash-brand-mark"><img src="/assets/bot-logo.png" alt=""><span class="status-dot" aria-label="Bot online"></span></span>
+      <span><strong>Staff Rater</strong><small>Control center</small></span>
+    </a>
+    <nav class="dash-nav" aria-label="Dashboard">
+      <a class="dash-nav-item active" href="/dashboard/"><span class="nav-glyph">⌂</span> Servers</a>
+      <span class="dash-nav-item disabled"><span class="nav-glyph">⚙</span> Settings</span>
+      <span class="dash-nav-item disabled"><span class="nav-glyph">♙</span> Staff</span>
+      <span class="dash-nav-item disabled"><span class="nav-glyph">↗</span> Analytics</span>
+      <span class="dash-nav-item disabled"><span class="nav-glyph">▤</span> Applications</span>
     </nav>
-    <div class="nav-cta" id="nav-auth">
-      <a class="btn small" href="/api/logout?redirect=/">Log out</a>
+    <div class="dash-sidebar-note">Select a server to unlock its workspace.</div>
+    <div class="dash-sidebar-bottom" id="nav-auth">
+      <a class="dash-account" href="/api/logout?redirect=/">Log out</a>
     </div>
-  </div>
-</header>
+  </aside>
 
-<main class="dash-shell">
-  <div class="dash-head">
-    <div>
-      <h1 class="dash-title">Your servers</h1>
-      <div class="dash-sub">Pick a server to configure Staff Rater.</div>
+  <main class="dash-main">
+    <div class="dash-shell">
+      <div class="dash-head">
+        <div>
+          <div class="eyebrow">Workspace</div>
+          <h1 class="dash-title">Your servers</h1>
+          <div class="dash-sub">Choose a community to manage its staff systems.</div>
+        </div>
+      </div>
+
+      <div id="state"><p class="muted"><span class="spinner"></span> Loading your servers…</p></div>
+      <div class="server-grid" id="grid"></div>
     </div>
-  </div>
-
-  <div id="state"><p class="muted"><span class="spinner"></span> Loading your servers…</p></div>
-  <div class="server-grid" id="grid"></div>
-</main>
+  </main>
+</div>
 
 <script>
 (function(){
@@ -83,8 +91,8 @@
     const user = me && me.ok && me.session && me.session.user;
     if (user) {
       document.getElementById("nav-auth").innerHTML =
-        `<span class="nav-user"><span class="small muted">@${esc(user.username)}</span></span>
-         <a class="btn small" href="/api/logout?redirect=/">Log out</a>`;
+        `<div class="dash-user"><span class="user-dot"></span><span><b>@${esc(user.username)}</b><small>Signed in</small></span></div>
+         <a class="dash-account" href="/api/logout?redirect=/">Log out</a>`;
     }
 
     const guilds = ((me.session && me.session.guilds) || []).filter(canManage);

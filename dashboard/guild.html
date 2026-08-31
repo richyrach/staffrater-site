@@ -10,48 +10,49 @@
 <link rel="stylesheet" href="/assets/site.css" />
 <link rel="stylesheet" href="/assets/dashboard.css" />
 </head>
-<body>
-
-<header class="nav">
-  <div class="container nav-inner">
-    <a class="brand" href="/"><img src="/assets/bot-logo.png" alt="" /> Staff Rater</a>
-    <nav class="nav-links">
-      <a href="/">Home</a>
-      <a href="/commands.html">Commands</a>
-      <a href="/dashboard/">Servers</a>
+<body class="dashboard-body">
+<div class="dashboard-layout">
+  <aside class="dash-sidebar">
+    <a class="dash-brand" href="/dashboard/">
+      <span class="dash-brand-mark"><img src="/assets/bot-logo.png" alt=""><span class="status-dot" aria-label="Bot online"></span></span>
+      <span><strong>Staff Rater</strong><small>Control center</small></span>
+    </a>
+    <nav class="dash-nav" id="tabs" aria-label="Server workspace">
+      <a class="dash-nav-item" href="/dashboard/"><span class="nav-glyph">⌂</span> Servers</a>
+      <button class="tab dash-nav-item active" data-tab="settings"><span class="nav-glyph">⚙</span> Settings</button>
+      <button class="tab dash-nav-item" data-tab="staff"><span class="nav-glyph">♙</span> Staff</button>
+      <button class="tab dash-nav-item" data-tab="analytics"><span class="nav-glyph">↗</span> Analytics</button>
+      <button class="tab dash-nav-item" data-tab="apps"><span class="nav-glyph">▤</span> Applications</button>
     </nav>
-    <div class="nav-cta">
-      <a class="btn small" href="/api/logout?redirect=/">Log out</a>
+    <div class="dash-sidebar-bottom">
+      <a class="dash-account" href="/">Product site</a>
+      <a class="dash-account" href="/api/logout?redirect=/">Log out</a>
     </div>
-  </div>
-</header>
+  </aside>
 
-<main class="dash-shell">
-  <div id="boot"><p class="muted"><span class="spinner"></span> Loading…</p></div>
+  <main class="dash-main">
+    <div class="dash-shell">
+      <div id="boot"><p class="muted"><span class="spinner"></span> Loading workspace…</p></div>
 
-  <div id="app" hidden>
-    <div class="dash-head">
-      <img class="dash-icon" id="g-icon" alt="" />
-      <div style="min-width:0">
-        <h1 class="dash-title" id="g-name">—</h1>
-        <div class="dash-sub" id="g-sub">—</div>
+      <div id="app" hidden>
+        <div class="dash-head">
+          <img class="dash-icon" id="g-icon" alt="" />
+          <div style="min-width:0">
+            <div class="eyebrow">Server workspace</div>
+            <h1 class="dash-title" id="g-name">—</h1>
+            <div class="dash-sub" id="g-sub">—</div>
+          </div>
+          <a class="btn small" href="/dashboard/" style="margin-left:auto">Switch server</a>
+        </div>
+
+        <section data-panel="settings"></section>
+        <section data-panel="staff" hidden></section>
+        <section data-panel="analytics" hidden></section>
+        <section data-panel="apps" hidden></section>
       </div>
-      <a class="btn small" href="/dashboard/" style="margin-left:auto">← All servers</a>
     </div>
-
-    <div class="tabrow" id="tabs">
-      <button class="tab active" data-tab="settings">Settings</button>
-      <button class="tab" data-tab="staff">Staff</button>
-      <button class="tab" data-tab="analytics">Analytics</button>
-      <button class="tab" data-tab="apps">Applications</button>
-    </div>
-
-    <section data-panel="settings"></section>
-    <section data-panel="staff" hidden></section>
-    <section data-panel="analytics" hidden></section>
-    <section data-panel="apps" hidden></section>
-  </div>
-</main>
+  </main>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -308,7 +309,8 @@
     p.innerHTML = `
       <div class="kpis">
         <div class="kpi"><div class="v">${esc(t.ratings??0)}</div><div class="k">ratings</div></div>
-        <div class="kpi"><div class="v">${Number(t.avg||0).toFixed(2)}</div><div class="k">average</div></div>
+        <div class="kpi"><div class="v">${Number(t.avg||0).toFixed(2)}</div><div class="k">trusted score</div></div>
+        <div class="kpi"><div class="v">${esc(t.held??0)}</div><div class="k">held for review</div></div>
         <div class="kpi"><div class="v">${esc(t.staff??0)}</div><div class="k">staff</div></div>
         <div class="kpi"><div class="v">${esc(t.tickets_open??0)}</div><div class="k">open tickets</div></div>
         <div class="kpi"><div class="v">${esc(t.tickets_closed??0)}</div><div class="k">closed tickets</div></div>
