@@ -165,17 +165,27 @@
     const signin = document.getElementById("nav-signin");
     if(!nav || !signin) return;
 
-    // Remove sign in button
-    signin.remove();
+    const avatar = user.avatar
+      ? `https://cdn.discordapp.com/avatars/${encodeURIComponent(user.id)}/${encodeURIComponent(user.avatar)}.png?size=64`
+      : "/assets/bot-avatar.png";
+    nav.innerHTML = "";
 
-    // Add profile button
-    const a = document.createElement("a");
-    a.className = "btn ghost";
-    a.href = "/dashboard/";
-    a.title = "Open dashboard";
-    a.textContent = user.username ? `@${user.username}` : "Dashboard";
+    const profile = document.createElement("a");
+    profile.className = "btn ghost nav-profile";
+    profile.href = "/dashboard/";
+    profile.title = user.username ? `Open dashboard as ${user.username}` : "Open dashboard";
+    const img = document.createElement("img");
+    img.src = avatar;
+    img.alt = "";
+    const label = document.createElement("span");
+    label.textContent = "Dashboard";
+    profile.append(img, label);
 
-    nav.insertBefore(a, nav.firstChild);
+    const logout = document.createElement("a");
+    logout.className = "btn";
+    logout.href = "/api/logout?redirect=/";
+    logout.textContent = "Log out";
+    nav.append(profile, logout);
   }catch(e){
     // silent
   }

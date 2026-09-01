@@ -1,411 +1,160 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Server settings — Staff Rater</title>
-<meta name="theme-color" content="#ffffff" />
-<meta name="robots" content="noindex" />
-<link rel="icon" href="/assets/bot-logo.png" />
-<link rel="stylesheet" href="/assets/site.css" />
-<link rel="stylesheet" href="/assets/dashboard.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Server workspace — Staff Rater</title>
+<meta name="theme-color" content="#0b1020">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="/assets/bot-logo.png">
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/dashboard.css">
 </head>
-<body class="dashboard-body">
-<div class="dashboard-layout">
+<body class="dashboard-body auth-pending">
+<div class="auth-loader" id="auth-loader"><div class="workspace-skeleton"><span class="skeleton skeleton-block"></span><div><span class="skeleton skeleton-line wide"></span><span class="skeleton skeleton-line"></span></div></div></div>
+
+<div class="dashboard-layout" id="dashboard" hidden>
   <aside class="dash-sidebar">
-    <a class="dash-brand" href="/dashboard/">
-      <span class="dash-brand-mark"><img src="/assets/bot-logo.png" alt=""><span class="status-dot" aria-label="Bot online"></span></span>
-      <span><strong>Staff Rater</strong><small>Control center</small></span>
-    </a>
+    <a class="dash-brand" href="/dashboard/"><span class="dash-brand-mark"><img src="/assets/bot-logo.png" alt=""><span class="status-dot"></span></span><span><strong>Staff Rater</strong><small>Server operations</small></span></a>
+    <div class="sidebar-server"><img id="side-icon" alt=""><span><strong id="side-name">Server</strong><small>Owner workspace</small></span></div>
     <nav class="dash-nav" id="tabs" aria-label="Server workspace">
-      <a class="dash-nav-item" href="/dashboard/"><span class="nav-glyph">⌂</span> Servers</a>
-      <button class="tab dash-nav-item active" data-tab="settings"><span class="nav-glyph">⚙</span> Settings</button>
+      <button class="tab dash-nav-item active" data-tab="settings"><span class="nav-glyph">⚙</span> Setup</button>
       <button class="tab dash-nav-item" data-tab="staff"><span class="nav-glyph">♙</span> Staff</button>
       <button class="tab dash-nav-item" data-tab="analytics"><span class="nav-glyph">↗</span> Analytics</button>
       <button class="tab dash-nav-item" data-tab="apps"><span class="nav-glyph">▤</span> Applications</button>
     </nav>
-    <div class="dash-sidebar-bottom">
-      <a class="dash-account" href="/">Product site</a>
-      <a class="dash-account" href="/api/logout?redirect=/">Log out</a>
-    </div>
+    <div class="dash-sidebar-bottom"><a class="dash-account" href="/dashboard/">← Switch server</a><a class="dash-account" href="/">View product site</a><a class="dash-account" href="/api/logout?redirect=/">Log out</a></div>
   </aside>
 
   <main class="dash-main">
     <div class="dash-shell">
-      <div id="boot"><p class="muted"><span class="spinner"></span> Loading workspace…</p></div>
-
-      <div id="app" hidden>
-        <div class="dash-head">
-          <img class="dash-icon" id="g-icon" alt="" />
-          <div style="min-width:0">
-            <div class="eyebrow">Server workspace</div>
-            <h1 class="dash-title" id="g-name">—</h1>
-            <div class="dash-sub" id="g-sub">—</div>
-          </div>
-          <a class="btn small" href="/dashboard/" style="margin-left:auto">Switch server</a>
-        </div>
-
-        <section data-panel="settings"></section>
-        <section data-panel="staff" hidden></section>
-        <section data-panel="analytics" hidden></section>
-        <section data-panel="apps" hidden></section>
-      </div>
+      <header class="workspace-header compact">
+        <div class="server-heading"><img class="dash-icon" id="g-icon" alt=""><div><div class="eyebrow" id="page-eyebrow">Setup</div><h1 class="dash-title" id="g-name">Server</h1><p class="dash-sub" id="g-sub"></p></div></div>
+        <div class="workspace-actions"><span class="live-badge"><i></i> Bot connected</span><a class="btn" href="/dashboard/">Switch server</a></div>
+      </header>
+      <section data-panel="settings"></section>
+      <section data-panel="staff" hidden></section>
+      <section data-panel="analytics" hidden></section>
+      <section data-panel="apps" hidden></section>
     </div>
   </main>
 </div>
-
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status"></div>
 
 <script>
 (function(){
-  const api = (u,o={}) => fetch(u, Object.assign({credentials:"include", cache:"no-store"}, o));
-  const $  = s => document.querySelector(s);
-  const gid = new URLSearchParams(location.search).get("guild_id") || "";
-
-  function esc(s){
-    return String(s == null ? "" : s).replace(/[&<>"']/g, c =>
-      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const api=(url,options={})=>fetch(url,Object.assign({credentials:"include",cache:"no-store"},options));
+  const $=selector=>document.querySelector(selector);
+  const gid=new URLSearchParams(location.search).get("guild_id")||"";
+  const esc=value=>String(value==null?"":value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+  const panel=name=>document.querySelector(`[data-panel="${name}"]`);
+  const formatDate=value=>new Intl.DateTimeFormat(undefined,{month:"short",day:"numeric",year:"numeric"}).format(new Date(`${value}T12:00:00`));
+  let toastTimer;
+  function toast(message,bad=false){const node=$("#toast");node.textContent=message;node.classList.toggle("bad",bad);node.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>node.classList.remove("show"),3000)}
+  function skeletonCards(count=4){return `<div class="skeleton-grid">${Array.from({length:count},()=>`<div class="skeleton-card"><span class="skeleton skeleton-line wide"></span><span class="skeleton skeleton-line"></span><span class="skeleton skeleton-field"></span></div>`).join("")}</div>`}
+  async function call(resource,options={},params={}){
+    const query=new URLSearchParams({guild_id:gid,resource});Object.entries(params).forEach(([key,value])=>{if(value)query.set(key,value)});
+    const response=await api(`/api/bot?${query}`,options);const data=await response.json().catch(()=>({error:"invalid_response"}));return {status:response.status,j:data};
   }
-  function toast(msg, bad){
-    const t = $("#toast");
-    t.textContent = msg;
-    t.style.background = bad ? "#c1352f" : "";
-    t.classList.add("show");
-    setTimeout(()=>t.classList.remove("show"), 2600);
+  function failMessage(status,data){
+    if(status===401)return "Your session expired. Redirecting to Discord…";
+    if(status===403)return "You no longer have permission to manage this server.";
+    if(status===404)return "Staff Rater is no longer installed in this server.";
+    if(status===504)return "The bot is restarting or temporarily unavailable. Try again in a moment.";
+    if(data&&data.error==="member_search_failed")return "Discord member search is temporarily unavailable.";
+    return `We couldn’t load this section${data&&data.error?` (${esc(data.error)})`:""}.`;
   }
-  function panel(name){ return document.querySelector(`[data-panel="${name}"]`); }
+  function handleAuth(status){if(status===401){location.replace(`/api/login?return=${encodeURIComponent(location.pathname+location.search+location.hash)}`);return true}return false}
 
-  async function call(resource, opts){
-    const r = await api(`/api/bot?guild_id=${encodeURIComponent(gid)}&resource=${resource}`, opts);
-    const j = await r.json().catch(()=>({}));
-    return { status:r.status, j };
-  }
-
-  function failMessage(status, j){
-    if (status === 401) return `You're signed out. <a href="/api/login?returnTo=${encodeURIComponent(location.pathname+location.search)}">Sign in again</a>.`;
-    if (status === 403) return "You don't manage this server.";
-    if (status === 404) return "Staff Rater isn't in this server yet.";
-    if (status === 504) return "The bot isn't responding — it may be restarting. Try again in a moment.";
-    if (status === 503) return "The dashboard API isn't configured on the server yet.";
-    return `Something went wrong (${status}${j && j.error ? ": " + esc(j.error) : ""}).`;
-  }
-
-  /* ---------------- settings ---------------- */
-
-  // label, key, and which option list it draws from
-  const FIELDS = [
-    ["Ratings",      [["Rating panel channel","rating_channel","text","Where /postratingui posts the rating buttons."],
-                      ["Results channel","result_channel","text","New ratings get announced here."],
-                      ["Activity feed","feed_channel","text","Running log of staff activity."]]],
-    ["Tickets",      [["Ticket category","ticket_category","category","New ticket channels are created inside this category."],
-                      ["Ticket staff role","ticket_role","roles","Role that can see and claim tickets."],
-                      ["Ticket log","ticket_log","text","Transcripts and open/close events."]]],
-    ["Staff shifts", [["Shift channel","shift_channel","text","On-duty and off-duty announcements."],
-                      ["Check-in channel","checkin_channel","text","Daily staff check-ins and streaks."]]],
-    ["Community",    [["Suggestions channel","suggest_channel","text","Where /suggest posts."],
-                      ["Suggestion log","suggest_log","text","Staff responses to suggestions."],
-                      ["Complaints channel","complaint_channel","text","Anonymous complaints land here."]]],
-    ["Recognition",  [["Weekly report channel","report_channel","text","Automatic weekly staff summary."],
-                      ["Staff of the month channel","sotm_channel","text",""],
-                      ["Staff of the month role","sotm_role","roles","Awarded to the winner each month."]]],
-    ["Moderation",   [["Mute role","mute_role","roles","Applied by /mute."]]],
+  const GROUPS=[
+    {title:"Ratings",icon:"★",desc:"Where members rate staff and where results are published.",fields:[["Rating panel channel","rating_channel","text","The channel that contains the public rating panel."],["Results channel","result_channel","text","Approved ratings are announced here."],["Activity feed","feed_channel","text","Private operational activity for managers."]]},
+    {title:"Tickets",icon:"▢",desc:"Ticket placement, access, and audit history.",fields:[["Ticket category","ticket_category","category","New ticket channels are created here."],["Support team role","ticket_role","roles","Members with this role can view and claim tickets."],["Ticket log","ticket_log","text","Open, close, claim, and transcript events."]]},
+    {title:"Staff activity",icon:"◷",desc:"Shift and daily check-in reporting.",fields:[["Shift channel","shift_channel","text","On-duty and off-duty notices."],["Check-in channel","checkin_channel","text","Daily staff check-ins and streaks."],["Check-in hour (UTC)","checkin_hour","number","Hour from 0 to 23."]]},
+    {title:"Community",icon:"◇",desc:"Feedback channels for members.",fields:[["Suggestions channel","suggest_channel","text","Where suggestions are posted."],["Suggestion log","suggest_log","text","Manager responses and audit trail."],["Complaints channel","complaint_channel","text","Private anonymous complaints."]]},
+    {title:"Recognition & reports",icon:"⌁",desc:"Automated reports and staff recognition.",fields:[["Weekly report channel","report_channel","text","Weekly staff performance summary."],["Report day","report_day","weekday","Day the weekly report is sent."],["Report hour (UTC)","report_hour","number","Hour from 0 to 23."],["Staff of the month channel","sotm_channel","text","Monthly winner announcement."],["Staff of the month role","sotm_role","roles","Role awarded to the monthly winner."]]},
+    {title:"Moderation",icon:"△",desc:"Roles used by moderation commands.",fields:[["Mute role","mute_role","roles","Role applied by the mute command."]]}
   ];
-
-  let OPTIONS = {text:[],category:[],roles:[]};
-  let CURRENT = {};
-
-  function optionsHtml(kind, selected){
-    const list = OPTIONS[kind] || [];
-    const sel = selected == null ? "" : String(selected);
-    const prefix = kind === "roles" ? "@" : (kind === "category" ? "" : "#");
-    return `<option value="">— not set —</option>` + list.map(o =>
-      `<option value="${esc(o.id)}"${o.id === sel ? " selected" : ""}>${esc(prefix + o.name)}</option>`
-    ).join("");
+  let OPTIONS={text:[],category:[],roles:[]},CURRENT={};
+  function optionsHtml(kind,selected){const list=OPTIONS[kind]||[],value=selected==null?"":String(selected),prefix=kind==="roles"?"@":kind==="text"?"#":"";return `<option value="">Not configured</option>`+list.map(item=>`<option value="${esc(item.id)}"${String(item.id)===value?" selected":""}>${esc(prefix+item.name)}</option>`).join("")}
+  function fieldHtml([label,key,kind,hint]){
+    const input=kind==="number"?`<input class="input" id="f-${key}" data-key="${key}" type="number" min="0" max="23" value="${esc(CURRENT[key]??"")}">`:kind==="weekday"?`<select class="input" id="f-${key}" data-key="${key}">${["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map((day,index)=>`<option value="${index}"${Number(CURRENT[key])===index?" selected":""}>${day}</option>`).join("")}</select>`:`<select class="input" id="f-${key}" data-key="${key}">${optionsHtml(kind,CURRENT[key])}</select>`;
+    return `<div class="field"><label for="f-${key}">${esc(label)}</label>${input}<div class="hint">${esc(hint)}</div></div>`;
   }
-
+  function setupProgress(){const keys=GROUPS.flatMap(group=>group.fields.map(field=>field[1])).filter(key=>!key.includes("hour")&&!key.includes("day")),configured=keys.filter(key=>CURRENT[key]).length;return {configured,total:keys.length,pct:Math.round(configured/keys.length*100)}}
   function renderSettings(){
-    const groups = FIELDS.map(([title, fields]) => `
-      <div class="panel pad" style="margin-bottom:18px">
-        <div class="panel-title">${esc(title)}</div>
-        <div class="field-grid">
-          ${fields.map(([label,key,kind,hint]) => `
-            <div class="field">
-              <label for="f-${esc(key)}">${esc(label)}</label>
-              <select class="input" id="f-${esc(key)}" data-key="${esc(key)}">
-                ${optionsHtml(kind, CURRENT[key])}
-              </select>
-              ${hint ? `<div class="hint">${esc(hint)}</div>` : ""}
-            </div>`).join("")}
-        </div>
-      </div>`).join("");
-
-    panel("settings").innerHTML = groups + `
-      <div class="savebar">
-        <button class="btn primary" id="save">Save changes</button>
-        <button class="btn" id="revert">Revert</button>
-        <span class="status" id="save-status"></span>
-      </div>`;
-
-    $("#save").addEventListener("click", save);
-    $("#revert").addEventListener("click", () => { renderSettings(); toast("Reverted"); });
+    const progress=setupProgress();
+    panel("settings").innerHTML=`<div class="section-intro"><div><h2>Configure your workflows</h2><p>Connect each feature to the Discord channels and roles it should use.</p></div><div class="setup-progress"><strong>${progress.pct}%</strong><span><b>${progress.configured} of ${progress.total}</b> destinations connected</span></div></div>
+      <div class="progress-track"><span style="width:${progress.pct}%"></span></div>
+      <div class="settings-grid">${GROUPS.map(group=>`<article class="config-card"><header><span class="config-icon">${group.icon}</span><div><h3>${esc(group.title)}</h3><p>${esc(group.desc)}</p></div></header><div class="config-fields">${group.fields.map(fieldHtml).join("")}</div></article>`).join("")}</div>
+      <div class="savebar"><span class="save-copy"><b>Unsaved changes are kept on this page.</b><small id="save-status">Nothing changed yet.</small></span><button class="btn" id="revert">Reset</button><button class="btn primary" id="save">Save changes</button></div>`;
+    $("#save").addEventListener("click",saveSettings);$("#revert").addEventListener("click",()=>{renderSettings();toast("Changes reset")});
+    document.querySelectorAll("[data-key]").forEach(input=>input.addEventListener("change",()=>{$("#save-status").textContent="Ready to save."}));
+  }
+  function collectSettings(){const output={};document.querySelectorAll("[data-key]").forEach(input=>{const key=input.dataset.key,current=CURRENT[key]==null?"":String(CURRENT[key]);if(input.value!==current)output[key]=input.value});return output}
+  async function saveSettings(){
+    const patch=collectSettings(),button=$("#save"),status=$("#save-status");if(!Object.keys(patch).length){status.textContent="No changes to save.";return}
+    button.disabled=true;button.textContent="Saving…";
+    const result=await call("settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({settings:patch})});button.disabled=false;button.textContent="Save changes";
+    if(result.status===200&&result.j.ok){CURRENT=result.j.settings||CURRENT;OPTIONS=result.j.options||OPTIONS;renderSettings();toast("Settings saved")}
+    else{status.textContent=failMessage(result.status,result.j);toast("Settings were not saved",true)}
   }
 
-  function collect(){
-    const out = {};
-    document.querySelectorAll("[data-key]").forEach(el => {
-      const k = el.getAttribute("data-key");
-      const v = el.value;
-      const cur = CURRENT[k] == null ? "" : String(CURRENT[k]);
-      if (v !== cur) out[k] = v;      // only send what actually changed
-    });
-    return out;
-  }
-
-  async function save(){
-    const patch = collect();
-    const status = $("#save-status");
-    if (!Object.keys(patch).length) { status.textContent = "No changes."; status.className="status"; return; }
-
-    $("#save").disabled = true;
-    status.className = "status";
-    status.innerHTML = `<span class="spinner"></span> Saving…`;
-
-    const { status: code, j } = await call("settings", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ settings: patch }),
-    });
-    $("#save").disabled = false;
-
-    if (code === 200 && j.ok) {
-      CURRENT = j.settings || CURRENT;
-      OPTIONS = j.options || OPTIONS;
-      status.className = "status ok";
-      status.textContent = `Saved ${Object.keys(patch).length} change${Object.keys(patch).length>1?"s":""}.`;
-      toast("Settings saved");
-      renderSettings();
-    } else {
-      status.className = "status err";
-      status.innerHTML = failMessage(code, j);
-      toast("Save failed", true);
-    }
-  }
-
-  /* ---------------- staff ---------------- */
-
+  let STAFF=[];
+  function roleChips(roles=[]){return roles.length?`<span class="role-list">${roles.slice(0,4).map(role=>`<span class="role-chip"><i style="background:#${Number(role.color||0).toString(16).padStart(6,"0")}"></i>${esc(role.name)}</span>`).join("")}${roles.length>4?`<span class="role-more">+${roles.length-4}</span>`:""}</span>`:`<span class="muted small">No assigned roles</span>`}
+  function staffRow(member){const score=Math.max(0,Math.min(100,Number(member.score)||0)),avatar=member.avatar?`<img src="${esc(member.avatar)}" alt="">`:`<span class="ph">${esc((member.name||"?").slice(0,2).toUpperCase())}</span>`;return `<tr><td><div class="member-cell">${avatar}<span><b>${esc(member.name)}</b>${roleChips(member.roles)}</span></div></td><td><div class="score-cell"><b>${score}</b><span><i style="width:${score}%"></i></span></div></td><td><b>${Number(member.avg||0).toFixed(2)}</b><small>${Number(member.count||0)} approved</small></td><td><b>${esc((member.shift&&member.shift.hours)||0)}h</b><small>last 30 days</small></td><td><button class="btn small danger" data-remove="${esc(member.id)}">Remove</button></td></tr>`}
   async function loadStaff(){
-    const p = panel("staff");
-    p.innerHTML = `<p class="muted"><span class="spinner"></span> Loading staff…</p>`;
-    const { status, j } = await call("staff");
-    if (status !== 200 || !j.ok) { p.innerHTML = `<div class="banner err">${failMessage(status,j)}</div>`; return; }
-
-    if (!j.staff.length) {
-      p.innerHTML = `<div class="empty">No staff registered yet.<br>
-        <span class="small">Add someone with <code>/addadmin</code> in Discord, or below.</span></div>` + addStaffForm();
-    } else {
-      p.innerHTML = `
-        <div class="panel pad" style="padding:16px 6px">
-          <div class="tbl-wrap">
-          <table class="tbl">
-            <thead><tr>
-              <th>Staff</th><th class="num">Score</th><th class="num">Avg</th>
-              <th class="num">Reviews</th><th>Trend</th><th class="num">Shift 30d</th><th></th>
-            </tr></thead>
-            <tbody>${j.staff.map(rowFor).join("")}</tbody>
-          </table>
-          </div>
-        </div>` + addStaffForm();
-    }
+    const target=panel("staff");target.innerHTML=skeletonCards(3);const result=await call("staff");if(handleAuth(result.status))return;if(result.status!==200||!result.j.ok){target.innerHTML=`<div class="error-state"><h2>Staff couldn’t load</h2><p>${failMessage(result.status,result.j)}</p><button class="btn" id="retry-staff">Try again</button></div>`;$("#retry-staff").onclick=loadStaff;return}
+    STAFF=result.j.staff||[];renderStaff();
+  }
+  function renderStaff(){
+    const target=panel("staff");target.innerHTML=`<div class="section-intro"><div><h2>Staff roster</h2><p>Registered staff, trusted scores, roles, and recent activity.</p></div><span class="count-badge">${STAFF.length} staff member${STAFF.length===1?"":"s"}</span></div>
+      <article class="member-picker"><div class="picker-copy"><span class="config-icon">＋</span><div><h3>Add a staff member</h3><p>Search the server by display name or username. Roles are shown before you add anyone.</p></div></div><label class="search-control member-search"><span>⌕</span><input id="member-search" type="search" placeholder="Start typing a member name…" autocomplete="off"></label><div class="member-results" id="member-results"><div class="picker-hint">Search results will appear here.</div></div></article>
+      ${STAFF.length?`<div class="data-panel"><div class="table-toolbar"><strong>Registered staff</strong><label class="search-control compact-search"><span>⌕</span><input id="staff-filter" type="search" placeholder="Filter staff"></label></div><div class="tbl-wrap"><table class="staff-table"><thead><tr><th>Member</th><th>Trust score</th><th>Rating</th><th>Shift activity</th><th></th></tr></thead><tbody id="staff-rows">${STAFF.map(staffRow).join("")}</tbody></table></div></div>`:`<div class="empty-state"><div class="empty-icon">♙</div><h2>No registered staff</h2><p>Use the member search above to build your roster.</p></div>`}`;
     wireStaff();
   }
-
-  function rowFor(s){
-    const av = s.avatar
-      ? `<img src="${esc(s.avatar)}" alt="">`
-      : `<div class="ph">${esc((s.name||"?").slice(0,2).toUpperCase())}</div>`;
-    const pct = Math.max(0, Math.min(100, Number(s.score)||0));
-    return `<tr>
-      <td><div class="who">${av}<span class="nm">${esc(s.name)}${s.in_guild ? "" : ' <span class="small muted">(left)</span>'}</span></div></td>
-      <td class="num"><span class="score"><span class="bar"><span style="width:${pct}%"></span></span>${pct}</span></td>
-      <td class="num">${Number(s.avg).toFixed(2)}</td>
-      <td class="num">${esc(s.count)}</td>
-      <td class="small">${esc(s.trend)}</td>
-      <td class="num">${esc((s.shift&&s.shift.hours)||0)}h</td>
-      <td style="text-align:right"><button class="btn small" data-remove="${esc(s.id)}">Remove</button></td>
-    </tr>`;
-  }
-
-  function addStaffForm(){
-    return `<div class="panel pad" style="margin-top:16px">
-      <div class="panel-title">Add staff</div>
-      <div class="row" style="gap:8px">
-        <input class="input" id="add-id" placeholder="Discord user ID, e.g. 123456789012345678" style="max-width:340px">
-        <button class="btn primary" id="add-btn">Add</button>
-      </div>
-      <div class="hint" style="margin-top:8px">
-        Right-click a member in Discord → Copy User ID (needs Developer Mode on).
-      </div>
-    </div>`;
-  }
-
   function wireStaff(){
-    const p = panel("staff");
-    p.querySelectorAll("[data-remove]").forEach(b => b.addEventListener("click", async () => {
-      const id = b.getAttribute("data-remove");
-      b.disabled = true; b.textContent = "…";
-      const { status, j } = await call("staff", {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({action:"remove", user_id:id}),
-      });
-      if (status === 200 && j.ok) { toast("Staff removed"); loadStaff(); }
-      else { toast(failMessage(status,j).replace(/<[^>]+>/g,""), true); b.disabled=false; b.textContent="Remove"; }
-    }));
-
-    const btn = p.querySelector("#add-btn");
-    if (btn) btn.addEventListener("click", async () => {
-      const el = p.querySelector("#add-id");
-      const id = (el.value||"").trim();
-      if (!/^\d{1,20}$/.test(id)) { toast("That doesn't look like a user ID", true); return; }
-      btn.disabled = true;
-      const { status, j } = await call("staff", {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({action:"add", user_id:id}),
-      });
-      btn.disabled = false;
-      if (status === 200 && j.ok) { el.value=""; toast("Staff added"); loadStaff(); }
-      else if (j && j.error === "not_a_member") toast("That user isn't in this server", true);
-      else toast(failMessage(status,j).replace(/<[^>]+>/g,""), true);
-    });
+    wireRemoveButtons();
+    const filter=$("#staff-filter");if(filter)filter.addEventListener("input",()=>{const query=filter.value.trim().toLowerCase();$("#staff-rows").innerHTML=STAFF.filter(item=>item.name.toLowerCase().includes(query)||(item.roles||[]).some(role=>role.name.toLowerCase().includes(query))).map(staffRow).join("");wireRemoveButtons()});
+    let timer,sequence=0;const search=$("#member-search");search.addEventListener("input",()=>{clearTimeout(timer);const query=search.value.trim();if(!query){$("#member-results").innerHTML=`<div class="picker-hint">Search results will appear here.</div>`;return}timer=setTimeout(()=>searchMembers(query,++sequence),280)});
   }
+  function wireRemoveButtons(){document.querySelectorAll("[data-remove]").forEach(button=>button.addEventListener("click",async()=>{const member=STAFF.find(item=>String(item.id)===button.dataset.remove);if(!confirm(`Remove ${member?member.name:"this member"} from the Staff Rater roster?`))return;button.disabled=true;const result=await call("staff",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"remove",user_id:button.dataset.remove})});if(result.status===200&&result.j.ok){toast("Staff member removed");loadStaff()}else{button.disabled=false;toast(failMessage(result.status,result.j),true)}}))}
+  async function searchMembers(query,sequence){const box=$("#member-results");box.innerHTML=`<div class="picker-hint"><span class="spinner"></span> Searching Discord…</div>`;const result=await call("members",{}, {q:query});if(sequence!==undefined&&query!==$("#member-search").value.trim())return;if(result.status!==200||!result.j.ok){box.innerHTML=`<div class="picker-hint error-text">${failMessage(result.status,result.j)}</div>`;return}const existing=new Set(STAFF.map(item=>String(item.id))),members=result.j.members||[];box.innerHTML=members.length?members.map(member=>`<div class="member-result"><div class="member-cell">${member.avatar?`<img src="${esc(member.avatar)}" alt="">`:`<span class="ph">${esc(member.name.slice(0,2).toUpperCase())}</span>`}<span><b>${esc(member.name)}</b><small>${esc(member.username)}</small>${roleChips(member.roles)}</span></div><button class="btn small ${existing.has(String(member.id))?"":"primary"}" data-add="${esc(member.id)}" ${existing.has(String(member.id))?"disabled":""}>${existing.has(String(member.id))?"Added":"Add staff"}</button></div>`).join(""):`<div class="picker-hint">No members matched “${esc(query)}”.</div>`;box.querySelectorAll("[data-add]").forEach(button=>button.addEventListener("click",async()=>{button.disabled=true;button.textContent="Adding…";const add=await call("staff",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"add",user_id:button.dataset.add})});if(add.status===200&&add.j.ok){toast("Staff member added");loadStaff()}else{button.disabled=false;button.textContent="Add staff";toast(failMessage(add.status,add.j),true)}}))}
 
-  /* ---------------- analytics ---------------- */
-
-  function sparkline(series){
-    if (!series.length) return `<div class="empty">No ratings yet.</div>`;
-    const w = 640, h = 150, pad = 6;
-    const max = Math.max(...series.map(d=>d.count), 1);
-    const step = series.length > 1 ? (w - pad*2) / (series.length - 1) : 0;
-    const pts = series.map((d,i) => [pad + i*step, h - pad - (d.count/max) * (h - pad*2)]);
-    const line = pts.map((p,i)=>`${i?"L":"M"}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(" ");
-    const area = `${line} L${pts[pts.length-1][0].toFixed(1)},${h-pad} L${pts[0][0].toFixed(1)},${h-pad} Z`;
-    return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img"
-                 aria-label="Ratings per day, peak ${max}">
-      <path d="${area}" fill="var(--accent-soft)"/>
-      <path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2"
-            stroke-linejoin="round" stroke-linecap="round"/>
-    </svg>`;
+  const isoDate=date=>{const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,"0"),d=String(date.getDate()).padStart(2,"0");return `${y}-${m}-${d}`};
+  let RANGE={from:"",to:""};
+  function setPreset(days){const end=new Date(),start=new Date();start.setDate(end.getDate()-(days-1));RANGE={from:isoDate(start),to:isoDate(end)}}
+  function deltaText(current,previous){if(!previous)return "No prior comparison";const difference=Number(current)-Number(previous);if(!difference)return "No change vs previous period";return `${difference>0?"+":""}${difference} vs previous period`}
+  function chart(series){
+    if(!series.length||!series.some(item=>item.count))return `<div class="chart-empty"><b>No approved ratings in this period</b><span>Choose a longer date range or check the moderation queue.</span></div>`;
+    const width=920,height=300,left=48,right=18,top=22,bottom=42,plotW=width-left-right,plotH=height-top-bottom,max=Math.max(1,...series.map(item=>Number(item.count)||0)),step=series.length>1?plotW/(series.length-1):plotW/2;
+    const y=value=>top+plotH-(value/max)*plotH,x=index=>left+(series.length>1?index*step:plotW/2),points=series.map((item,index)=>[x(index),y(Number(item.count)||0)]),line=points.map((point,index)=>`${index?"L":"M"}${point[0].toFixed(1)},${point[1].toFixed(1)}`).join(" "),area=`${line} L${points[points.length-1][0]},${top+plotH} L${points[0][0]},${top+plotH} Z`,ticks=[0,.25,.5,.75,1],labelIndexes=[0,Math.floor((series.length-1)/4),Math.floor((series.length-1)/2),Math.floor((series.length-1)*.75),series.length-1].filter((value,index,array)=>array.indexOf(value)===index);
+    return `<div class="chart-wrap"><svg class="analytics-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Approved ratings per day">${ticks.map(tick=>`<line x1="${left}" y1="${y(max*tick)}" x2="${width-right}" y2="${y(max*tick)}" class="chart-gridline"/><text x="${left-10}" y="${y(max*tick)+4}" class="chart-y" text-anchor="end">${Math.round(max*tick)}</text>`).join("")}<path d="${area}" class="chart-area"/><path d="${line}" class="chart-line"/>${points.map((point,index)=>`<circle cx="${point[0]}" cy="${point[1]}" r="4" class="chart-point" data-point="${index}" tabindex="0"/>`).join("")}${labelIndexes.map(index=>`<text x="${x(index)}" y="${height-12}" class="chart-x" text-anchor="middle">${esc(new Intl.DateTimeFormat(undefined,{month:"short",day:"numeric"}).format(new Date(`${series[index].date}T12:00:00`)))}</text>`).join("")}</svg><div class="chart-tooltip" id="chart-tooltip"></div></div>`;
   }
-
+  function wireChart(series){const tooltip=$("#chart-tooltip");document.querySelectorAll("[data-point]").forEach(point=>{const show=()=>{const item=series[Number(point.dataset.point)],rect=point.getBoundingClientRect(),wrap=point.closest(".chart-wrap").getBoundingClientRect();tooltip.innerHTML=`<b>${formatDate(item.date)}</b><span>${item.count} approved rating${item.count===1?"":"s"}</span><span>${item.avg==null?"No daily average":`${Number(item.avg).toFixed(2)} average score`}</span>`;tooltip.style.left=`${rect.left-wrap.left}px`;tooltip.style.top=`${rect.top-wrap.top-10}px`;tooltip.classList.add("show")},hide=()=>tooltip.classList.remove("show");point.addEventListener("mouseenter",show);point.addEventListener("mouseleave",hide);point.addEventListener("focus",show);point.addEventListener("blur",hide)})}
   async function loadAnalytics(){
-    const p = panel("analytics");
-    p.innerHTML = `<p class="muted"><span class="spinner"></span> Crunching numbers…</p>`;
-    const { status, j } = await call("analytics");
-    if (status !== 200 || !j.ok) { p.innerHTML = `<div class="banner err">${failMessage(status,j)}</div>`; return; }
-
-    const t = j.totals || {};
-    const bd = j.breakdown || {};
-    const bdMax = Math.max(...[1,2,3,4,5].map(n => bd[n]||0), 1);
-
-    p.innerHTML = `
-      <div class="kpis">
-        <div class="kpi"><div class="v">${esc(t.ratings??0)}</div><div class="k">ratings</div></div>
-        <div class="kpi"><div class="v">${Number(t.avg||0).toFixed(2)}</div><div class="k">trusted score</div></div>
-        <div class="kpi"><div class="v">${esc(t.held??0)}</div><div class="k">held for review</div></div>
-        <div class="kpi"><div class="v">${esc(t.staff??0)}</div><div class="k">staff</div></div>
-        <div class="kpi"><div class="v">${esc(t.tickets_open??0)}</div><div class="k">open tickets</div></div>
-        <div class="kpi"><div class="v">${esc(t.tickets_closed??0)}</div><div class="k">closed tickets</div></div>
-      </div>
-
-      <div class="panel pad" style="margin-bottom:18px">
-        <div class="panel-title">Ratings per day</div>
-        ${sparkline(j.series||[])}
-      </div>
-
-      <div class="panel pad">
-        <div class="panel-title">Star breakdown</div>
-        <div class="bars">
-          ${[5,4,3,2,1].map(n => {
-            const c = bd[n] || 0;
-            return `<div class="row5">
-              <span>${"★".repeat(n)}</span>
-              <span class="track"><span class="fill" style="width:${(c/bdMax*100).toFixed(1)}%"></span></span>
-              <span class="num muted" style="text-align:right">${c}</span>
-            </div>`;
-          }).join("")}
-        </div>
-      </div>`;
+    const target=panel("analytics");if(!RANGE.from)setPreset(30);target.innerHTML=`<div class="analytics-loading">${skeletonCards(4)}</div>`;const result=await call("analytics",{},RANGE);if(handleAuth(result.status))return;if(result.status!==200||!result.j.ok){target.innerHTML=`<div class="error-state"><h2>Analytics couldn’t load</h2><p>${failMessage(result.status,result.j)}</p><button class="btn" id="retry-analytics">Try again</button></div>`;$("#retry-analytics").onclick=loadAnalytics;return}
+    const data=result.j,totals=data.totals||{},previous=data.previous||{},breakdown=data.breakdown||{},maximum=Math.max(1,...[1,2,3,4,5].map(star=>Number(breakdown[star])||0));
+    target.innerHTML=`<div class="section-intro analytics-intro"><div><h2>Performance overview</h2><p>Approved ratings, review quality, and support activity for the selected period.</p></div><div class="date-presets"><button class="chip" data-days="7">7 days</button><button class="chip active" data-days="30">30 days</button><button class="chip" data-days="90">90 days</button></div></div>
+      <div class="date-range"><label>From<input type="date" id="date-from" value="${esc(RANGE.from)}"></label><span>to</span><label>Through<input type="date" id="date-to" value="${esc(RANGE.to)}"></label><button class="btn" id="apply-range">Apply range</button></div>
+      <div class="metric-grid"><article class="metric-card"><span>Approved ratings</span><strong>${Number(totals.ratings||0).toLocaleString()}</strong><small>${esc(deltaText(totals.ratings,previous.ratings))}</small></article><article class="metric-card"><span>Trusted score</span><strong>${Number(totals.avg||0).toFixed(2)}<i>/ 5</i></strong><small>${previous.avg?`${(Number(totals.avg)-Number(previous.avg)>=0?"+":"")}${(Number(totals.avg)-Number(previous.avg)).toFixed(2)} vs previous period`:"Bayesian weighted score"}</small></article><article class="metric-card"><span>Held for review</span><strong>${Number(totals.held||0).toLocaleString()}</strong><small>Excluded from public scores</small></article><article class="metric-card"><span>Open tickets</span><strong>${Number(totals.tickets_open||0).toLocaleString()}</strong><small>${Number(totals.tickets_closed||0).toLocaleString()} closed overall</small></article></div>
+      <article class="analytics-panel chart-panel-v2"><header><div><span class="panel-kicker">Rating activity</span><h3>Ratings received each day</h3><p>Daily count of approved staff ratings from ${formatDate(RANGE.from)} through ${formatDate(RANGE.to)}.</p></div><span class="chart-legend"><i></i> Approved ratings</span></header>${chart(data.series||[])}<footer>Hover or focus a point for its date, rating count, and daily average. Flagged ratings are excluded.</footer></article>
+      <div class="analytics-split"><article class="analytics-panel"><header><div><span class="panel-kicker">Distribution</span><h3>Rating breakdown</h3><p>How approved ratings are distributed from one to five stars.</p></div></header><div class="rating-bars">${[5,4,3,2,1].map(star=>{const count=Number(breakdown[star])||0,percent=totals.ratings?Math.round(count/Number(totals.ratings)*100):0;return `<div class="rating-bar"><span>${star} star</span><div><i style="width:${count/maximum*100}%"></i></div><b>${count}</b><small>${percent}%</small></div>`}).join("")}</div></article><article class="analytics-panel"><header><div><span class="panel-kicker">Most reviewed</span><h3>Staff activity</h3><p>Staff with the most approved ratings in this period.</p></div></header><div class="rank-list">${(data.top_staff||[]).length?(data.top_staff||[]).map((staff,index)=>`<div class="rank-row"><span class="rank">${index+1}</span>${staff.avatar?`<img src="${esc(staff.avatar)}" alt="">`:`<span class="ph">${esc(staff.name.slice(0,2).toUpperCase())}</span>`}<span><b>${esc(staff.name)}</b><small>${staff.ratings} rating${staff.ratings===1?"":"s"}</small></span><strong>${Number(staff.avg).toFixed(2)}</strong></div>`).join(""):`<div class="picker-hint">No staff ratings in this period.</div>`}</div></article></div>`;
+    document.querySelectorAll("[data-days]").forEach(button=>button.addEventListener("click",()=>{setPreset(Number(button.dataset.days));loadAnalytics()}));$("#apply-range").onclick=()=>{const from=$("#date-from").value,to=$("#date-to").value;if(!from||!to||from>to){toast("Choose a valid date range",true);return}RANGE={from,to};loadAnalytics()};wireChart(data.series||[]);
   }
-
-  /* ---------------- applications ---------------- */
 
   async function loadApps(){
-    const p = panel("apps");
-    p.innerHTML = `<p class="muted"><span class="spinner"></span> Loading applications…</p>`;
-    const { status, j } = await call("applications");
-    if (status !== 200 || !j.ok) { p.innerHTML = `<div class="banner err">${failMessage(status,j)}</div>`; return; }
-
-    const apps = j.applications || [];
-    const pending = j.pending || [];
-
-    p.innerHTML = `
-      ${pending.length ? `<div class="banner"><b>${pending.length}</b> application${pending.length>1?"s":""} waiting for review. Use <code>/pendingapps</code> in Discord to accept or deny.</div>` : ""}
-      ${apps.length ? apps.map(a => `
-        <div class="panel pad" style="margin-bottom:14px">
-          <div class="row" style="justify-content:space-between">
-            <b>${esc(a.name)}</b>
-            <span class="pill">${a.questions.length} question${a.questions.length===1?"":"s"}</span>
-          </div>
-          ${a.questions.length ? `<ol class="list" style="margin-top:12px">
-            ${a.questions.map(q => `<li>${esc(q.text)} <span class="small muted">(${esc(q.type)})</span></li>`).join("")}
-          </ol>` : `<div class="hint" style="margin-top:10px">No questions yet — add them with <code>/app_addq</code>.</div>`}
-        </div>`).join("")
-      : `<div class="empty">No application forms yet.<br>
-           <span class="small">Create one with <code>/app_create</code> in Discord.</span></div>`}`;
+    const target=panel("apps");target.innerHTML=skeletonCards(3);const result=await call("applications");if(handleAuth(result.status))return;if(result.status!==200||!result.j.ok){target.innerHTML=`<div class="error-state"><h2>Applications couldn’t load</h2><p>${failMessage(result.status,result.j)}</p><button class="btn" id="retry-apps">Try again</button></div>`;$("#retry-apps").onclick=loadApps;return}
+    const applications=result.j.applications||[],pending=result.j.pending||[];
+    target.innerHTML=`<div class="section-intro"><div><h2>Applications</h2><p>Form structure and the current review queue from Discord.</p></div><span class="count-badge ${pending.length?"attention":""}">${pending.length} awaiting review</span></div>${pending.length?`<div class="queue-notice"><span><b>${pending.length} response${pending.length===1?" is":"s are"} waiting</b><small>Review responses with <code>/pendingapps</code> in Discord.</small></span><span class="queue-pulse"></span></div>`:""}<div class="application-grid">${applications.length?applications.map(app=>`<article class="application-card"><header><span class="application-icon">▤</span><div><h3>${esc(app.name)}</h3><p>${app.questions.length} question${app.questions.length===1?"":"s"}</p></div><span class="status-pill">Active</span></header><ol>${app.questions.length?app.questions.map(question=>`<li><span>${esc(question.text)}</span><small>${esc(question.type)}</small></li>`).join(""):`<li class="empty-question">No questions have been added yet.</li>`}</ol><footer>Manage questions with <code>/app_addq</code> and <code>/app_removeq</code>.</footer></article>`).join(""):`<div class="empty-state large"><div class="empty-icon">▤</div><h2>No application forms</h2><p>Create the first form with <code>/app_create</code> in Discord.</p></div>`}</div>`;
   }
 
-  /* ---------------- boot ---------------- */
-
-  const LOADED = {};
-  function show(name){
-    document.querySelectorAll("#tabs .tab").forEach(t =>
-      t.classList.toggle("active", t.dataset.tab === name));
-    document.querySelectorAll("[data-panel]").forEach(s =>
-      s.hidden = s.dataset.panel !== name);
-    if (!LOADED[name]) {
-      LOADED[name] = true;
-      if (name === "staff")     loadStaff();
-      if (name === "analytics") loadAnalytics();
-      if (name === "apps")      loadApps();
-    }
-  }
-
+  const LOADED={settings:true};
+  function show(name){const valid=["settings","staff","analytics","apps"].includes(name)?name:"settings";document.querySelectorAll("#tabs .tab").forEach(button=>button.classList.toggle("active",button.dataset.tab===valid));document.querySelectorAll("[data-panel]").forEach(section=>section.hidden=section.dataset.panel!==valid);$("#page-eyebrow").textContent={settings:"Setup",staff:"Staff",analytics:"Analytics",apps:"Applications"}[valid];history.replaceState(null,"",`${location.pathname}${location.search}#${valid}`);if(!LOADED[valid]){LOADED[valid]=true;if(valid==="staff")loadStaff();if(valid==="analytics")loadAnalytics();if(valid==="apps")loadApps()}}
   async function main(){
-    if (!/^\d{1,20}$/.test(gid)) {
-      $("#boot").innerHTML = `<div class="banner err">No server selected. <a href="/dashboard/">Pick one</a>.</div>`;
-      return;
-    }
-    const { status, j } = await call("settings");
-    if (status !== 200 || !j.ok) {
-      $("#boot").innerHTML = `<div class="banner err">${failMessage(status,j)}</div>`;
-      return;
-    }
-
-    CURRENT = j.settings || {};
-    OPTIONS = j.options  || OPTIONS;
-    const g = j.guild || {};
-    $("#g-name").textContent = g.name || "Server";
-    $("#g-sub").textContent  = `${g.members ?? "?"} members · ${OPTIONS.text.length} channels`;
-    const icon = $("#g-icon");
-    if (g.icon) { icon.src = g.icon; } else { icon.remove(); }
-
-    renderSettings();
-    $("#boot").hidden = true;
-    $("#app").hidden = false;
-
-    document.querySelectorAll("#tabs .tab").forEach(t =>
-      t.addEventListener("click", () => show(t.dataset.tab)));
+    if(!/^\d{1,20}$/.test(gid)){location.replace("/dashboard/");return}
+    const result=await call("settings");if(handleAuth(result.status))return;if(result.status!==200||!result.j.ok){$("#auth-loader").innerHTML=`<div class="error-state"><h2>Workspace unavailable</h2><p>${failMessage(result.status,result.j)}</p><a class="btn" href="/dashboard/">Back to servers</a></div>`;return}
+    CURRENT=result.j.settings||{};OPTIONS=result.j.options||OPTIONS;const guild=result.j.guild||{};$("#g-name").textContent=guild.name||"Server";$("#side-name").textContent=guild.name||"Server";$("#g-sub").textContent=`${Number(guild.members||0).toLocaleString()} members · ${OPTIONS.text.length} text channels`;const icon=guild.icon||"/assets/bot-logo.png";$("#g-icon").src=icon;$("#side-icon").src=icon;renderSettings();$("#auth-loader").remove();$("#dashboard").hidden=false;document.body.classList.remove("auth-pending");document.querySelectorAll("#tabs .tab").forEach(button=>button.addEventListener("click",()=>show(button.dataset.tab)));show(location.hash.slice(1)||"settings")
   }
-
   main();
 })();
 </script>

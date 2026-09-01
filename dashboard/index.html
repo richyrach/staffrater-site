@@ -1,120 +1,97 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Your servers — Staff Rater</title>
-<meta name="theme-color" content="#ffffff" />
-<meta name="robots" content="noindex" />
-<link rel="icon" href="/assets/bot-logo.png" />
-<link rel="stylesheet" href="/assets/site.css" />
-<link rel="stylesheet" href="/assets/dashboard.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Choose a server — Staff Rater</title>
+<meta name="theme-color" content="#0b1020">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="/assets/bot-logo.png">
+<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/dashboard.css">
 </head>
-<body class="dashboard-body">
-<div class="dashboard-layout">
+<body class="dashboard-body auth-pending">
+<div class="auth-loader" id="auth-loader" aria-live="polite">
+  <div class="auth-loader-card"><img src="/assets/bot-logo.png" alt=""><span class="skeleton skeleton-line wide"></span><span class="skeleton skeleton-line"></span></div>
+</div>
+
+<div class="dashboard-layout" id="dashboard" hidden>
   <aside class="dash-sidebar">
     <a class="dash-brand" href="/dashboard/">
-      <span class="dash-brand-mark"><img src="/assets/bot-logo.png" alt=""><span class="status-dot" aria-label="Bot online"></span></span>
-      <span><strong>Staff Rater</strong><small>Control center</small></span>
+      <span class="dash-brand-mark"><img src="/assets/bot-logo.png" alt=""><span class="status-dot"></span></span>
+      <span><strong>Staff Rater</strong><small>Server operations</small></span>
     </a>
     <nav class="dash-nav" aria-label="Dashboard">
       <a class="dash-nav-item active" href="/dashboard/"><span class="nav-glyph">⌂</span> Servers</a>
-      <span class="dash-nav-item disabled"><span class="nav-glyph">⚙</span> Settings</span>
-      <span class="dash-nav-item disabled"><span class="nav-glyph">♙</span> Staff</span>
-      <span class="dash-nav-item disabled"><span class="nav-glyph">↗</span> Analytics</span>
-      <span class="dash-nav-item disabled"><span class="nav-glyph">▤</span> Applications</span>
     </nav>
-    <div class="dash-sidebar-note">Select a server to unlock its workspace.</div>
-    <div class="dash-sidebar-bottom" id="nav-auth">
+    <div class="dash-sidebar-bottom">
+      <div class="dash-user" id="dash-user"></div>
+      <a class="dash-account" href="/">View product site</a>
       <a class="dash-account" href="/api/logout?redirect=/">Log out</a>
     </div>
   </aside>
 
   <main class="dash-main">
     <div class="dash-shell">
-      <div class="dash-head">
-        <div>
-          <div class="eyebrow">Workspace</div>
-          <h1 class="dash-title">Your servers</h1>
-          <div class="dash-sub">Choose a community to manage its staff systems.</div>
-        </div>
-      </div>
+      <header class="workspace-header">
+        <div><div class="eyebrow">Owner workspace</div><h1 class="dash-title">Choose a server</h1><p class="dash-sub">Only servers you own where Staff Rater is installed appear here.</p></div>
+        <a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8859859864780657&integration_type=0&scope=bot" target="_blank" rel="noreferrer">Add Staff Rater</a>
+      </header>
 
-      <div id="state"><p class="muted"><span class="spinner"></span> Loading your servers…</p></div>
-      <div class="server-grid" id="grid"></div>
+      <div class="server-toolbar" id="server-toolbar" hidden>
+        <label class="search-control"><span aria-hidden="true">⌕</span><input id="server-search" type="search" placeholder="Search your servers" autocomplete="off"></label>
+        <span class="result-count" id="result-count"></span>
+      </div>
+      <div id="state" aria-live="polite"></div>
+      <div class="server-grid" id="grid" aria-label="Your Staff Rater servers"></div>
     </div>
   </main>
 </div>
 
 <script>
 (function(){
-  // Session is an HttpOnly cookie; just send credentials.
-  const api = (u, o={}) => fetch(u, Object.assign({credentials:"include", cache:"no-store"}, o));
-
-  function esc(s){
-    return String(s == null ? "" : s).replace(/[&<>"']/g, c =>
-      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const api=(url,options={})=>fetch(url,Object.assign({credentials:"include",cache:"no-store"},options));
+  const esc=value=>String(value==null?"":value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+  let guilds=[];
+  function avatarUrl(user){return user.avatar?`https://cdn.discordapp.com/avatars/${encodeURIComponent(user.id)}/${encodeURIComponent(user.avatar)}.png?size=80`:"/assets/bot-avatar.png"}
+  function guildIcon(g){
+    if(g.icon)return `<img class="server-avatar" src="https://cdn.discordapp.com/icons/${encodeURIComponent(g.id)}/${encodeURIComponent(g.icon)}.png?size=128" alt="">`;
+    const initials=esc((g.name||"?").split(/\s+/).slice(0,2).map(word=>word[0]||"").join("").toUpperCase());
+    return `<span class="server-avatar server-initials">${initials}</span>`;
   }
-
-  // Discord sends permissions as a decimal STRING larger than 2^31 — 32-bit
-  // bitwise ops give wrong answers here, so use BigInt.
-  const ADMIN = 1n << 3n, MANAGE_GUILD = 1n << 5n;
-  function canManage(g){
-    if (g.owner) return true;
-    try { return (BigInt(g.permissions ?? 0) & (ADMIN | MANAGE_GUILD)) !== 0n; }
-    catch { return false; }
+  function memberText(value){return Number.isFinite(Number(value))?`${Number(value).toLocaleString()} member${Number(value)===1?"":"s"}`:"Staff Rater installed"}
+  function render(items){
+    const grid=document.getElementById("grid");
+    document.getElementById("result-count").textContent=`${items.length} server${items.length===1?"":"s"}`;
+    if(!items.length){grid.innerHTML="";document.getElementById("state").innerHTML=`<div class="empty-state"><div class="empty-icon">⌕</div><h2>No matching servers</h2><p>Try another search.</p></div>`;return}
+    document.getElementById("state").innerHTML="";
+    grid.innerHTML=items.map(g=>`<a class="server-card" href="/dashboard/guild.html?guild_id=${encodeURIComponent(g.id)}">
+      <span class="server-art">${guildIcon(g)}<span class="server-online" title="Staff Rater is installed"></span></span>
+      <span class="server-card-copy"><strong>${esc(g.name)}</strong><small>${esc(memberText(g.members))}</small></span>
+      <span class="server-open">Open <span aria-hidden="true">→</span></span>
+    </a>`).join("");
   }
-
-  function iconFor(g){
-    if (g.icon) return `<img class="server-avatar" src="https://cdn.discordapp.com/icons/${encodeURIComponent(g.id)}/${encodeURIComponent(g.icon)}.png?size=64" alt="">`;
-    const initials = esc((g.name||"?").split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase());
-    return `<div class="server-avatar">${initials}</div>`;
+  function showEmpty(){document.getElementById("state").innerHTML=`<div class="empty-state large"><div class="empty-icon">＋</div><h2>No shared owner servers yet</h2><p>Staff Rater only lists servers that you own and where the bot is already installed.</p><a class="btn primary" target="_blank" rel="noreferrer" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8859859864780657&integration_type=0&scope=bot">Add it to a server</a></div>`}
+  function reveal(data){
+    const user=data.user||{};
+    document.getElementById("dash-user").innerHTML=`<img src="${esc(avatarUrl(user))}" alt=""><span><b>${esc(user.username||"Discord user")}</b><small>Signed in with Discord</small></span>`;
+    document.getElementById("auth-loader").remove();document.getElementById("dashboard").hidden=false;document.body.classList.remove("auth-pending");
   }
-
   async function main(){
-    const state = document.getElementById("state");
-    const grid  = document.getElementById("grid");
-    let me;
-    try {
-      const r = await api("/api/me");
-      if (r.status === 401) {
-        state.innerHTML = `<div class="banner">You're signed out. <a href="/api/login?returnTo=/dashboard/">Sign in with Discord</a> to continue.</div>`;
-        return;
-      }
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      me = await r.json();
-    } catch (e) {
-      state.innerHTML = `<div class="banner err">Couldn't load your servers (${esc(e.message)}). Try reloading.</div>`;
-      return;
+    try{
+      const response=await api("/api/servers");
+      if(response.status===401){location.replace(`/api/login?return=${encodeURIComponent("/dashboard/")}`);return}
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||!data.ok)throw new Error(data.error||`HTTP ${response.status}`);
+      reveal(data);guilds=data.guilds||[];
+      if(!guilds.length){showEmpty();return}
+      document.getElementById("server-toolbar").hidden=false;render(guilds);
+      document.getElementById("server-search").addEventListener("input",event=>{const query=event.target.value.trim().toLocaleLowerCase();render(guilds.filter(g=>g.name.toLocaleLowerCase().includes(query)))})
+    }catch(error){
+      document.getElementById("auth-loader").remove();document.getElementById("dashboard").hidden=false;document.body.classList.remove("auth-pending");
+      document.getElementById("state").innerHTML=`<div class="error-state"><h2>Couldn’t load your servers</h2><p>${esc(error.message)}</p><button class="btn" onclick="location.reload()">Try again</button></div>`;
     }
-
-    const user = me && me.ok && me.session && me.session.user;
-    if (user) {
-      document.getElementById("nav-auth").innerHTML =
-        `<div class="dash-user"><span class="user-dot"></span><span><b>@${esc(user.username)}</b><small>Signed in</small></span></div>
-         <a class="dash-account" href="/api/logout?redirect=/">Log out</a>`;
-    }
-
-    const guilds = ((me.session && me.session.guilds) || []).filter(canManage);
-    if (!guilds.length) {
-      state.innerHTML = `<div class="empty">
-        You don't manage any servers that Staff Rater can configure.<br>
-        <span class="small">You need <b>Manage Server</b> or <b>Administrator</b>.</span>
-      </div>`;
-      return;
-    }
-
-    state.innerHTML = "";
-    grid.innerHTML = guilds.map(g => `
-      <a class="server-card" href="/dashboard/guild.html?guild_id=${encodeURIComponent(g.id)}">
-        ${iconFor(g)}
-        <div style="min-width:0">
-          <div class="server-name">${esc(g.name)}</div>
-          <div class="server-role">${g.owner ? "Owner" : "Manages server"}</div>
-        </div>
-      </a>`).join("");
   }
-
   main();
 })();
 </script>

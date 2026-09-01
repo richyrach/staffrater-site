@@ -15,6 +15,7 @@ const RESOURCES = {
   staff:        { path: "staff",        write: true  },
   analytics:    { path: "analytics",    write: false },
   applications: { path: "applications", write: false },
+  members:      { path: "members",      write: false },
 };
 
 function send(res, status, payload) {
@@ -70,7 +71,19 @@ module.exports = async (req, res) => {
     }
 
     const body = method === "POST" ? await readBody(req) : null;
-    const { status, json } = await botFetch(`/api/guild/${gid}/${spec.path}`, { method, body });
+    const upstream = new URLSearchParams();
+    if (key === "members") {
+      const q = (url.searchParams.get("q") || "").trim();
+      if (q) upstream.set("q", q.slice(0, 64));
+    }
+    if (key === "analytics") {
+      const from = (url.searchParams.get("from") || "").trim();
+      const to = (url.searchParams.get("to") || "").trim();
+      if (from) upstream.set("from", from);
+      if (to) upstream.set("to", to);
+    }
+    const suffix = upstream.toString() ? `?${upstream.toString()}` : "";
+    const { status, json } = await botFetch(`/api/guild/${gid}/${spec.path}${suffix}`, { method, body });
     return send(res, status, json);
   } catch (e) {
     if (e.code === "bot_timeout") {

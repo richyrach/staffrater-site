@@ -1,510 +1,111 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Staff Rater — Ratings, tickets, applications & moderation for Discord</title>
-  <meta name="description" content="Staff Rater is a Discord bot that helps communities run smoother: staff ratings, tickets, applications, leaderboards, and moderation—fast setup, clean UI." />
-  <meta property="og:title" content="Staff Rater — Staff ratings that actually work" />
-  <meta property="og:description" content="Ratings, tickets, applications, leaderboards, and moderation—built for real servers." />
-  <meta property="og:image" content="/staff-rater-icon.png" />
-  <meta property="og:type" content="website" />
-  <meta name="theme-color" content="#ffffff" />
-  <link rel="icon" href="/assets/bot-logo.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/site.css" />
-  
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Staff Rater — Staff operations for Discord</title>
+<meta name="description" content="Staff ratings, tickets, applications, shifts, and accountability tools for Discord communities.">
+<meta name="theme-color" content="#ffffff">
+<link rel="canonical" href="https://staffrater.xyz/">
+<link rel="icon" href="/assets/bot-logo.png">
+<link rel="stylesheet" href="/assets/site.css">
 </head>
-<body>
-  <div class="toast" id="sr-toast">Copied</div>
+<body class="product-home">
+<header class="nav home-nav">
+  <div class="container nav-inner">
+    <a class="brand" href="/" aria-label="Staff Rater home"><img src="/assets/bot-logo.png" alt=""><span>Staff Rater</span></a>
+    <nav class="nav-links" aria-label="Main navigation"><a href="#product">Product</a><a href="#integrity">Rating integrity</a><a href="#operations">Operations</a><a href="/commands.html">Commands</a><a href="#support">Support</a></nav>
+    <div class="nav-cta" id="nav-auth"><a class="btn ghost" href="/dashboard/">Dashboard</a><a class="btn primary" id="nav-signin" href="/api/login?return=/dashboard/">Sign in with Discord</a></div>
+  </div>
+</header>
 
-  <header class="nav">
-    <div class="container">
-      <div class="nav-inner">
-        <a class="brand" href="/">
-          <img src="/assets/bot-logo.png" alt="Staff Rater" />
-          <span class="inter">Staff Rater</span>
-          <span class="badge">Discord bot</span>
-        </a>
+<main>
+  <section class="home-hero" id="product">
+    <div class="container home-hero-grid">
+      <div class="hero-copy">
+        <div class="home-eyebrow"><span></span> Discord staff operations</div>
+        <h1>Know how your staff team is actually performing.</h1>
+        <p>Run ratings, support tickets, applications, shifts, and staff reviews from one Discord-native system—with controls that protect the score from spam and manipulation.</p>
+        <div class="h-actions"><a class="btn primary home-primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8859859864780657&integration_type=0&scope=bot" target="_blank" rel="noreferrer">Add to Discord</a><a class="btn" href="/dashboard/">Open dashboard</a></div>
+        <p class="hero-note">Configure it from Discord or the web dashboard. Existing panels return automatically after restarts.</p>
+      </div>
 
-        <nav class="nav-links" aria-label="Primary navigation">
-          <a href="#features">Features</a>
-          <a href="/commands.html">Commands</a>
-          <a href="/stats.html">Stats</a>
-          <a href="#support">Support</a>
-        </nav>
-
-        <!-- AUTH AREA (this is where your "Sign in" swaps into profile + Dashboard when logged in) -->
-        <div class="nav-cta" id="nav-auth">
-          <a class="btn ghost" href="/api/login" id="nav-signin">Sign in</a>
-          <a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8859859864780657&integration_type=0&scope=bot" target="_blank" rel="noreferrer">Invite to Discord</a>
+      <div class="product-preview" aria-label="How Staff Rater processes a rating">
+        <div class="preview-top"><div><span class="preview-dot"></span><b>Rating review</b></div><span class="preview-id">SR-2048</span></div>
+        <div class="review-person"><span class="person-avatar">JM</span><span><b>Jordan M.</b><small>Support team · 18 approved reviews</small></span><strong>4.31</strong></div>
+        <div class="review-flow">
+          <div class="flow-row complete"><i>✓</i><span><b>Member verified</b><small>Rater belongs to this server</small></span><em>Passed</em></div>
+          <div class="flow-row complete"><i>✓</i><span><b>Edit rules checked</b><small>One quick correction, then a 24-hour cooldown</small></span><em>Passed</em></div>
+          <div class="flow-row held"><i>!</i><span><b>Pattern review</b><small>Repeated extreme ratings are held for a manager</small></span><em>Protected</em></div>
+          <div class="flow-row complete"><i>✓</i><span><b>Trusted score updated</b><small>Weighted score avoids misleading perfect averages</small></span><em>Published</em></div>
         </div>
+        <div class="preview-foot"><span>Every change is recorded</span><span>Manager review available</span></div>
       </div>
     </div>
-  </header>
+  </section>
 
-  <main>
-    <section class="hero">
-      <div class="container">
-        <div class="hero-grid">
-          <div class="reveal">
-            <span class="badge">Built for accountable staff teams</span>
-            <h1 class="h-title">Know which staff are actually doing the work.</h1>
-            <p class="h-sub">
-              Members rate your staff in one click. StaffRater turns that into scores,
-              trends and shift records — so promotions come from evidence instead of
-              whoever happens to be loudest.
-            </p>
+  <section class="live-proof" aria-label="Live Staff Rater usage">
+    <div class="container proof-grid">
+      <div><strong data-stat-key="guilds">—</strong><span>connected servers</span></div>
+      <div><strong data-stat-key="total_ratings">—</strong><span>ratings recorded</span></div>
+      <div><strong data-stat-key="avg_rating" data-fmt="float">—</strong><span>average approved rating</span></div>
+      <p>Live bot totals<br><small>Last update <span id="sr-stats-updated">—</span></small></p>
+    </div>
+  </section>
 
-            <div class="h-actions">
-              <a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8859859864780657&integration_type=0&scope=bot" target="_blank" rel="noreferrer">Add to Discord</a>
-              <a class="btn" href="/dashboard/">Open dashboard</a>
-              <a class="btn ghost" href="/commands.html">Browse commands →</a>
-            </div>
-
-            <div class="line"></div>
-
-            <div class="row small muted">
-              <span>Ratings</span><span>·</span>
-              <span>Tickets</span><span>·</span>
-              <span>Applications</span><span>·</span>
-              <span>Shifts</span><span>·</span>
-              <span>Moderation</span>
-            </div></div>
-
-          <!-- Faithful recreation of the /profile embed the bot actually sends.
-               Colours, field names and layout come straight from bot.py. -->
-          <aside class="reveal">
-            <div class="dc">
-              <div class="dc-head">
-                <img class="dc-avatar" src="/assets/bot-avatar.png" alt="Staff Rater">
-                <span class="dc-name">Staff Rater</span>
-                <span class="dc-bot">App</span>
-                <span class="dc-time">Today at 19:24</span>
-              </div>
-              <div class="dc-embed gold">
-                <div class="dc-author">maya &nbsp;•&nbsp; Staff Profile</div>
-                <div class="dc-desc">🟢 Currently on duty &nbsp;•&nbsp; 🟩 StaffRater Score: <b>86/100</b></div>
-                <div class="dc-fields">
-                  <div class="dc-field">
-                    <div class="dc-fname">⭐ Avg rating</div>
-                    <div class="dc-fval"><b>4.41</b> / 5</div>
-                  </div>
-                  <div class="dc-field">
-                    <div class="dc-fname">📝 Reviews</div>
-                    <div class="dc-fval"><b>34</b> total</div>
-                  </div>
-                  <div class="dc-field">
-                    <div class="dc-fname">📈 Trend</div>
-                    <div class="dc-fval">improving</div>
-                  </div>
-                  <div class="dc-field wide">
-                    <div class="dc-fname">Rating breakdown</div>
-                    <div class="dc-bars">
-                      ⭐⭐⭐⭐⭐ <code>████████</code> 21<br>
-                      ⭐⭐⭐⭐ <code>████▁▁▁▁</code> 9<br>
-                      ⭐⭐⭐ <code>█▁▁▁▁▁▁▁</code> 3<br>
-                      ⭐⭐ <code>▁▁▁▁▁▁▁▁</code> 1<br>
-                      ⭐ <code>▁▁▁▁▁▁▁▁</code> 0
-                    </div>
-                  </div>
-                  <div class="dc-field">
-                    <div class="dc-fname">⏱️ Shift (30d)</div>
-                    <div class="dc-fval"><b>41.5h</b> on duty<br>18 sessions</div>
-                  </div>
-                  <div class="dc-field">
-                    <div class="dc-fname">🔥 Check-in streak</div>
-                    <div class="dc-fval">Current: <b>12</b> days<br>Best: <b>27</b> days</div>
-                  </div>
-                </div>
-                <div class="dc-foot">StaffRater · /profile</div>
-              </div>
-            </div>
-
-            <div class="dc">
-              <div class="dc-head">
-                <img class="dc-avatar" src="/assets/bot-avatar.png" alt="Staff Rater">
-                <span class="dc-name">Staff Rater</span>
-                <span class="dc-bot">App</span>
-                <span class="dc-time">Today at 19:26</span>
-              </div>
-              <div class="dc-embed gold">
-                <div class="dc-author">New 5★ rating</div>
-                <div class="dc-fields">
-                  <div class="dc-field"><div class="dc-fname">Staff</div><div class="dc-fval">@maya</div></div>
-                  <div class="dc-field"><div class="dc-fname">Rating</div><div class="dc-fval">⭐⭐⭐⭐⭐</div></div>
-                  <div class="dc-field wide"><div class="dc-fname">Comment</div><div class="dc-fval"><i>sorted my ticket in under a minute</i></div></div>
-                </div>
-                <div class="dc-foot">ID: r-8f21c4 · StaffRater</div>
-              </div>
-            </div>
-          </aside>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="live" style="padding-top:0;border-top:0">
-      <div class="container">
-        <div class="grid-3">
-          <div class="stat">
-            <div class="num" data-stat-key="guilds">—</div>
-            <div class="lbl">servers using StaffRater</div>
-          </div>
-          <div class="stat">
-            <div class="num" data-stat-key="total_ratings">—</div>
-            <div class="lbl">ratings recorded</div>
-          </div>
-          <div class="stat">
-            <div class="num" data-stat-key="avg_rating" data-fmt="float">—</div>
-            <div class="lbl">average staff score</div>
-          </div>
-        </div>
-        <div class="mini" style="margin-top:12px">
-          Live from the bot · last updated <span id="sr-stats-updated" class="mono">—</span>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="features">
-      <div class="container">
-        <h2 class="reveal inter">Everything a staff team needs, without the clutter.</h2>
-        <p class="lead reveal">
-          Designed for real communities: clear flows, predictable permissions, and UI that doesn't break when the bot restarts.
-        </p>
-
-        <div class="cards">
-          <div class="card reveal">
-            <div class="icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2l3 7h7l-5.6 4.1 2.2 7L12 16.9 5.4 20.1l2.2-7L2 9h7l3-7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <h3 class="inter">Staff ratings & profiles</h3>
-            <p>Collect consistent 1–5 ratings with optional comments. View profiles, trends, and leaderboards when needed.</p>
-          </div>
-
-          <div class="card reveal">
-            <div class="icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M4 4h16v12H7l-3 3V4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <h3 class="inter">Tickets done right</h3>
-            <p>Open, claim, log, and close tickets with a simple button panel. Keeps support organized for staff.</p>
-          </div>
-
-          <div class="card reveal">
-            <div class="icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M6 3h12v18H6V3z" stroke="currentColor" stroke-width="1.6"/>
-                <path d="M8 7h8M8 11h8M8 15h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <h3 class="inter">Applications</h3>
-            <p>Collect structured applications with questions and review queues. Faster onboarding with less chaos.</p>
-          </div>
-
-          <div class="card reveal">
-            <div class="icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2a7 7 0 0 1 7 7v3l2 2v2H3v-2l2-2V9a7 7 0 0 1 7-7z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-                <path d="M9.5 20a2.5 2.5 0 0 0 5 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <h3 class="inter">Moderation toolbox</h3>
-            <p>Warns, mutes, bans, purge, and basic utilities—so you don't need 5 different bots for basics.</p>
-          </div>
-
-          <div class="card reveal">
-            <div class="icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M4 12h16M12 4v16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <h3 class="inter">Persistent UI</h3>
-            <p>Your button panels and menus are restored after restarts. Less maintenance, fewer broken messages.</p>
-          </div>
-
-          <div class="card reveal">
-            <div class="icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M7 12l3 3 7-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="1.6"/>
-              </svg>
-            </div>
-            <h3 class="inter">Clean permissions</h3>
-            <p>Commands follow Discord permissions and server roles—so staff can manage, members can rate, and everything stays safe.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section" id="how">
-      <div class="container">
-        <div class="split">
-          <div class="panel pad reveal">
-            <h2 class="inter" style="margin-top:0">Setup in 3 steps</h2>
-            <ol class="list">
-              <li><b>Invite</b> the bot with Administrator permissions (or customize if you prefer).</li>
-              <li>Run <span class="kbd">/setratingchannel</span> and <span class="kbd">/postratingui</span> to create the rating panel.</li>
-              <li>Add staff with <span class="kbd">/addadmin</span> and you're live.</li>
-            </ol>
-            <div class="hr"></div>
-            <div class="mini">Want tickets too? Add <span class="kbd">/setticketconfig</span> then <span class="kbd">/postticketbutton</span>.</div>
-          </div>
-
-          <div class="panel pad reveal">
-            <h2 class="inter" style="margin-top:0">What your members see</h2>
-            <p class="lead" style="margin:0 0 12px;">
-              A simple rating flow: select staff, choose 1–5, optional comment. No messy forms.
-            </p>
-            <div class="card" style="margin-top:10px;">
-              <div class="panel-title inter">Example flow</div>
-              <p class="muted" style="margin:10px 0 0;">
-                <span class="kbd">/rate</span> → choose staff → choose score → (optional) comment → done.
-              </p>
-              <div class="hr"></div>
-              <div class="mini">Staff can view <span class="kbd">/profile</span> and <span class="kbd">/leaderboard</span> as needed.</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="hr"></div>
-
-        <div class="panel pad reveal">
-          <div class="split">
-            <div>
-              <h2 class="inter" style="margin-top:0">Built to scale past “small server” problems</h2>
-              <p class="lead" style="margin:0">
-                When communities grow, trust and consistency matter. Staff Rater adds structure without making your server feel corporate.
-              </p>
-            </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-content:flex-start;justify-content:flex-end;">
-              <span class="badge">No more anonymous drama</span>
-              <span class="badge">Clear review history</span>
-              <span class="badge">Simple staff accountability</span>
-              <span class="badge">Support workflows</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <section class="section" id="support">
-      <div class="container">
-        <h2 class="reveal inter">Help center</h2>
-        <p class="lead reveal">Quick answers for the most common setup questions.</p>
-
-        <div class="faq reveal">
-          <div class="faq-item open">
-            <button class="faq-q" type="button">
-              How do I set up ratings?
-              <span class="chev">▾</span>
-            </button>
-            <div class="faq-a">
-              Invite the bot → set a channel with <span class="kbd">/setratingchannel</span> → post the UI with <span class="kbd">/postratingui</span> → add staff with <span class="kbd">/addadmin</span>.
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <button class="faq-q" type="button">
-              Can I move channels later?
-              <span class="chev">▾</span>
-            </button>
-            <div class="faq-a">
-              Yes. Re-run <span class="kbd">/setratingchannel</span> or <span class="kbd">/setresultchannel</span> and then post the UI again.
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <button class="faq-q" type="button">
-              Does Staff Rater read message content?
-              <span class="chev">▾</span>
-            </button>
-            <div class="faq-a">
-              Staff Rater is built around slash commands, buttons, and structured inputs. It focuses on rating data you intentionally submit.
-            </div>
-          </div>
-
-          <div class="faq-item">
-            <button class="faq-q" type="button">
-              Where can I get support?
-              <span class="chev">▾</span>
-            </button>
-            <div class="faq-a">
-              Join the support server: <a class="btn small" style="margin-left:10px" href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noreferrer">Discord Support</a>
-            </div>
-          </div>
-        </div>
-
-
-
-        <div class="hr"></div>
-
-        <div class="panel pad reveal">
-          <div class="split">
-            <div>
-              <div class="panel-title inter">Ready to try it?</div>
-              <p class="muted" style="margin:8px 0 0; line-height:1.6;">
-                Add Staff Rater to your server and set up the rating UI in a couple minutes.
-              </p>
-            </div>
-            <div style="display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-wrap:wrap;">
-              <a class="btn" href="/privacy.html">Privacy</a>
-              <a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8859859864780657&integration_type=0&scope=bot" target="_blank" rel="noreferrer">Invite to Discord</a>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-  </main>
-
-
-  <footer class="footer">
+  <section class="home-section" id="operations">
     <div class="container">
-      <div class="footer-grid">
-        <div>
-          <div class="brand" style="gap:10px">
-            <img src="/assets/bot-logo.png" alt="Staff Rater" />
-            <span class="inter">Staff Rater</span>
-          </div>
-          <p class="small" style="margin:10px 0 0; line-height:1.65;">
-            A practical Discord bot for staff accountability and smoother operations:
-            ratings, tickets, applications, and moderation.
-          </p>
-          <p class="small muted" style="margin:10px 0 0;">© 2026 Staff Rater</p>
-        </div>
-        <div>
-          <div class="panel-title inter">Product</div>
-          <div class="small" style="margin-top:10px;display:grid;gap:8px">
-            <a href="/commands.html">Commands</a>
-            <a href="/stats.html">Public stats</a>
-            <a href="/dashboard/">Dashboard</a>
-          </div>
-        </div>
-        <div>
-          <div class="panel-title inter">Support</div>
-          <div class="small" style="margin-top:10px;display:grid;gap:8px">
-            <a href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noreferrer">Discord server</a>
-            <a href="/privacy.html">Privacy policy</a>
-          </div>
-        </div>
+      <div class="section-heading"><span>One operational system</span><h2>Built around the work staff teams do every day.</h2><p>Each workflow has a clear owner, audit trail, and place in Discord. You can start with ratings and enable the rest when your server needs it.</p></div>
+      <div class="workflow-list">
+        <article><span class="workflow-number">01</span><div><h3>Staff ratings</h3><p>Members choose a registered staff member, submit a 1–5 rating, and optionally explain what happened.</p></div><ul><li>Searchable staff picker</li><li>Review history</li><li>Weighted scores</li></ul></article>
+        <article><span class="workflow-number">02</span><div><h3>Support tickets</h3><p>Open, claim, and close private tickets with logs that keep the support team accountable.</p></div><ul><li>Persistent controls</li><li>Claim ownership</li><li>Close reasons and logs</li></ul></article>
+        <article><span class="workflow-number">03</span><div><h3>Applications</h3><p>Create structured forms, collect responses, and keep pending decisions in one review queue.</p></div><ul><li>Custom questions</li><li>Pending queue</li><li>Accept or deny</li></ul></article>
+        <article><span class="workflow-number">04</span><div><h3>Staff activity</h3><p>Track shifts, daily check-ins, warnings, recognition, and recurring team reports.</p></div><ul><li>Shift totals</li><li>Check-in streaks</li><li>Weekly reporting</li></ul></article>
       </div>
     </div>
-  </footer>
+  </section>
 
-  <script src="/assets/site.js"></script>
+  <section class="home-section integrity-section" id="integrity">
+    <div class="container integrity-grid">
+      <div class="section-heading"><span>Rating integrity</span><h2>A five-star average should mean something.</h2><p>Raw averages are easy to manipulate. Staff Rater controls edits, detects repeated extreme behavior, and separates held reviews from the public score.</p><a class="text-link" href="/commands.html">See rating and moderation commands →</a></div>
+      <div class="policy-table">
+        <div><span>Quick correction</span><strong>10 minutes</strong><small>A rater can fix an honest mistake once.</small></div>
+        <div><span>Further changes</span><strong>24-hour cooldown</strong><small>Stops repeatedly changing one person’s score.</small></div>
+        <div><span>Extreme patterns</span><strong>Manager review</strong><small>Repeated all-1 or all-5 behavior is held automatically.</small></div>
+        <div><span>Public score</span><strong>Weighted</strong><small>Small samples do not appear as instantly perfect or terrible.</small></div>
+      </div>
+    </div>
+  </section>
 
-  <!-- AUTH + MINI STATS (works like your dashboard logic: /api/me drives the header) -->
-  <script>
-  (function(){
-    // FAQ toggles (in case your site.js doesn't do it)
-    try{
-      document.querySelectorAll('.faq-q').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          const item = btn.closest('.faq-item');
-          if(!item) return;
-          const open = item.classList.contains('open');
-          document.querySelectorAll('.faq-item').forEach(x=>x.classList.remove('open'));
-          if(!open) item.classList.add('open');
-        });
-      });
-    }catch(e){}
+  <section class="home-section dashboard-section">
+    <div class="container dashboard-showcase">
+      <div class="section-heading"><span>Web dashboard</span><h2>Configure the server without memorizing commands.</h2><p>The dashboard only lists servers you own where Staff Rater is installed. Search members, inspect their roles, connect channels, and filter performance data by date.</p><a class="btn primary" href="/dashboard/">Open your dashboard</a></div>
+      <div class="dashboard-mini">
+        <div class="mini-nav"><img src="/assets/bot-logo.png" alt=""><i></i><i></i><i></i><i></i></div>
+        <div class="mini-content"><div class="mini-title"><span></span><span></span></div><div class="mini-metrics"><i></i><i></i><i></i></div><div class="mini-chart"><span class="axis-y"></span><svg viewBox="0 0 520 150" preserveAspectRatio="none"><path d="M0 125 C60 110,90 82,145 91 S240 52,300 68 S400 106,520 28" fill="none" stroke="currentColor" stroke-width="3"/><path d="M0 125 C60 110,90 82,145 91 S240 52,300 68 S400 106,520 28 L520 150 L0 150Z" fill="currentColor" opacity=".08"/></svg></div><div class="mini-caption"><span></span><span></span><span></span></div></div>
+      </div>
+    </div>
+  </section>
 
-    // Escape Discord-controlled strings before they reach innerHTML.
-    function esc(s){
-      return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
-        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-      });
-    }
+  <section class="home-section trust-section">
+    <div class="container">
+      <div class="section-heading center-heading"><span>Trust and reliability</span><h2>Clear rules, visible state, recoverable controls.</h2></div>
+      <div class="trust-grid">
+        <article><b>Persistent interfaces</b><p>Rating panels, ticket controls, and check-in buttons are restored after bot restarts.</p></article>
+        <article><b>Server-scoped data</b><p>Ratings, applications, tickets, and settings stay separated by Discord server.</p></article>
+        <article><b>Signed dashboard requests</b><p>The dashboard verifies Discord access and signs every request sent to the bot.</p></article>
+        <article><b>Operational logs</b><p>Rotating logs record startup, restored panels, rating moderation, and unexpected failures.</p></article>
+      </div>
+    </div>
+  </section>
 
-    // Swap navbar Sign in -> profile/dashboard/logout if logged in
-    async function authSwap(){
-      const host = document.getElementById('nav-auth');
-      if(!host) return;
+  <section class="home-cta" id="support">
+    <div class="container cta-inner"><div><span>Ready to set up your server?</span><h2>Start with ratings. Add the rest when you need it.</h2></div><div><a class="btn primary home-primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8859859864780657&integration_type=0&scope=bot" target="_blank" rel="noreferrer">Add Staff Rater</a><a class="btn" href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noreferrer">Get support</a></div></div>
+  </section>
+</main>
 
-      let me = null;
-      try{
-        const r = await fetch('/api/me', { cache:'no-store' });
-        me = r.ok ? await r.json() : null;
-      }catch(e){}
-
-      if(!me || !me.ok || !me.session || !me.session.user){
-        // not logged in, keep Sign in
-        return;
-      }
-
-      const u = me.session.user;
-      const avatar = u.avatar
-        ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64`
-        : 'https://cdn.discordapp.com/embed/avatars/0.png';
-
-      host.innerHTML = `
-        <a class="btn ghost" href="/dashboard/">Dashboard</a>
-        <span class="nav-user">
-          <img class="nav-avatar" src="${esc(avatar)}" alt="">
-          <span class="small" style="max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85">${esc(u.username)}</span>
-        </span>
-        <a class="btn" href="/api/logout?redirect=/">Log out</a>
-      `;
-    }
-
-    // Live stats box (tries /api/stats-get; if missing it stays as placeholders)
-    async function hydrateMiniStats(){
-      const updatedEl = document.getElementById('sr-stats-updated');
-      const nodes = document.querySelectorAll('[data-stat-key]');
-      function setUpdated(txt){ if(updatedEl) updatedEl.textContent = txt; }
-
-      let payload=null;
-      try{
-        const r = await fetch('/api/stats-get', { cache:'no-store' });
-        if(r.ok) payload = await r.json();
-      }catch(e){}
-
-      if(!payload || payload.ok === false){
-        setUpdated('—');
-        return;
-      }
-
-      // Support both {guilds,...} and {stats:{...}}
-      const stats = payload.stats || payload;
-
-      nodes.forEach(el=>{
-        const key = el.getAttribute('data-stat-key');
-        if(!key) return;
-        let v = stats[key];
-        if(v === undefined || v === null) return;
-
-        const fmt = el.getAttribute('data-fmt');
-        if(fmt === 'float'){
-          const num = Number(v);
-          if(!Number.isNaN(num)) el.textContent = num.toFixed(2);
-          else el.textContent = String(v);
-        } else {
-          el.textContent = String(v);
-        }
-      });
-
-      if(stats.updated_at){
-        try{
-          const d = new Date(stats.updated_at);
-          setUpdated(d.toLocaleString());
-        }catch(e){
-          setUpdated(String(stats.updated_at));
-        }
-      } else {
-        // Nothing pushed yet — "just now" implied the numbers were fresh.
-        setUpdated('—');
-      }
-    }
-
-    authSwap();
-    hydrateMiniStats();
-  })();
-  </script>
+<footer class="home-footer"><div class="container"><div class="footer-brand"><img src="/assets/bot-logo.png" alt=""><span><b>Staff Rater</b><small>Staff operations for Discord</small></span></div><nav><a href="/commands.html">Commands</a><a href="/stats.html">Public stats</a><a href="/privacy.html">Privacy</a><a href="https://discord.gg/BR7zmffNFC">Support</a></nav><small>© 2026 Staff Rater</small></div></footer>
+<div class="toast" id="sr-toast"></div>
+<script src="/assets/site.js" defer></script>
 </body>
 </html>
