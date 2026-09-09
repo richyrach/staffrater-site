@@ -2,6 +2,7 @@
   "redirects": [
     {"source":"/","has":[{"type":"host","value":"www.staffrater.xyz"}],"destination":"https://staffrater.xyz/","permanent":true},
     {"source":"/commands.html","has":[{"type":"host","value":"www.staffrater.xyz"}],"destination":"https://staffrater.xyz/commands.html","permanent":true},
+    {"source":"/setup.html","has":[{"type":"host","value":"www.staffrater.xyz"}],"destination":"https://staffrater.xyz/setup.html","permanent":true},
     {"source":"/stats.html","has":[{"type":"host","value":"www.staffrater.xyz"}],"destination":"https://staffrater.xyz/stats.html","permanent":true},
     {"source":"/privacy.html","has":[{"type":"host","value":"www.staffrater.xyz"}],"destination":"https://staffrater.xyz/privacy.html","permanent":true},
     {"source":"/index.html","destination":"https://staffrater.xyz/","permanent":true}
