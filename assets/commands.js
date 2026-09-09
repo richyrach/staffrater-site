@@ -25,7 +25,7 @@
 
     // Applications
     {name:"/pendingapps", desc:"View and review pending applications.", usage:"/pendingapps", cat:"Applications", tags:["Staff"]},
-    {name:"/createapplication", desc:"Create an application form.", usage:"/createapplication name", cat:"Applications", tags:["Admin"]},
+    {name:"/app_create", desc:"Create an application form.", usage:"/app_create name", cat:"Applications", tags:["Admin"]},
     {name:"/deleteapp", desc:"Delete an application form.", usage:"/deleteapp name", cat:"Applications", tags:["Admin"]},
     {name:"/purgeapp", desc:"Purge application responses.", usage:"/purgeapp name", cat:"Applications", tags:["Admin"]},
 
@@ -40,7 +40,7 @@
     {name:"/purge", desc:"Bulk delete messages in a channel.", usage:"/purge amount", cat:"Moderation", tags:["Mod"]},
 
     // Utilities
-    {name:"/poll", desc:"Create a quick poll.", usage:"/poll question | option1 | option2 ...", cat:"Utilities"},
+    {name:"/createpoll", desc:"Create a quick poll.", usage:"/createpoll question | option1 | option2 ...", cat:"Utilities"},
     {name:"/pollresults", desc:"Show results for an existing poll.", usage:"/pollresults poll_id", cat:"Utilities"},
     {name:"/remindme", desc:"Set a personal reminder.", usage:"/remindme 10m take a break", cat:"Utilities"},
     {name:"/todo_add", desc:"Add a todo item.", usage:"/todo_add text", cat:"Utilities"},
@@ -52,7 +52,6 @@
     {name:"/quoteid", desc:"Fetch a quote by ID.", usage:"/quoteid id", cat:"Utilities"},
 
     // Info
-    {name:"/botstats", desc:"Shows bot stats (servers, uptime, etc).", usage:"/botstats", cat:"Info"},
     {name:"/serverinfo", desc:"Get server information.", usage:"/serverinfo", cat:"Info"},
     {name:"/userinfo", desc:"Get user information.", usage:"/userinfo @user", cat:"Info"},
     {name:"/avatar", desc:"Show a user’s avatar.", usage:"/avatar @user", cat:"Info"},

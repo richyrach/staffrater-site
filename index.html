@@ -1,111 +1,27 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Staff Rater — Staff operations for Discord</title>
-<meta name="description" content="Staff ratings, tickets, applications, shifts, and accountability tools for Discord communities.">
-<meta name="theme-color" content="#ffffff">
-<link rel="canonical" href="https://staffrater.xyz/">
-<link rel="icon" href="/assets/bot-logo.png">
-<link rel="stylesheet" href="/assets/site.css">
-</head>
-<body class="product-home">
-<header class="nav home-nav">
-  <div class="container nav-inner">
-    <a class="brand" href="/" aria-label="Staff Rater home"><img src="/assets/bot-logo.png" alt=""><span>Staff Rater</span></a>
-    <nav class="nav-links" aria-label="Main navigation"><a href="#product">Product</a><a href="#integrity">Rating integrity</a><a href="#operations">Operations</a><a href="/commands.html">Commands</a><a href="#support">Support</a></nav>
-    <div class="nav-cta" id="nav-auth"><a class="btn ghost" href="/dashboard/">Dashboard</a><a class="btn primary" id="nav-signin" href="/api/login?return=/dashboard/">Sign in with Discord</a></div>
-  </div>
-</header>
-
-<main>
-  <section class="home-hero" id="product">
-    <div class="container home-hero-grid">
-      <div class="hero-copy">
-        <div class="home-eyebrow"><span></span> Discord staff operations</div>
-        <h1>Know how your staff team is actually performing.</h1>
-        <p>Run ratings, support tickets, applications, shifts, and staff reviews from one Discord-native system—with controls that protect the score from spam and manipulation.</p>
-        <div class="h-actions"><a class="btn primary home-primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8859859864780657&integration_type=0&scope=bot" target="_blank" rel="noreferrer">Add to Discord</a><a class="btn" href="/dashboard/">Open dashboard</a></div>
-        <p class="hero-note">Configure it from Discord or the web dashboard. Existing panels return automatically after restarts.</p>
-      </div>
-
-      <div class="product-preview" aria-label="How Staff Rater processes a rating">
-        <div class="preview-top"><div><span class="preview-dot"></span><b>Rating review</b></div><span class="preview-id">Example data</span></div>
-        <div class="review-person"><span class="person-avatar">JM</span><span><b>Jordan M.</b><small>Example staff profile · 18 approved reviews</small></span><strong>4.31</strong></div>
-        <div class="review-flow">
-          <div class="flow-row complete"><i>✓</i><span><b>Member verified</b><small>Rater belongs to this server</small></span><em>Passed</em></div>
-          <div class="flow-row complete"><i>✓</i><span><b>Edit rules checked</b><small>One quick correction, then a 24-hour cooldown</small></span><em>Passed</em></div>
-          <div class="flow-row held"><i>!</i><span><b>Pattern review</b><small>Repeated extreme ratings are held for a manager</small></span><em>Protected</em></div>
-          <div class="flow-row complete"><i>✓</i><span><b>Trusted score updated</b><small>Weighted score avoids misleading perfect averages</small></span><em>Published</em></div>
-        </div>
-        <div class="preview-foot"><span>Every change is recorded</span><span>Manager review available</span></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="live-proof" aria-label="Live Staff Rater usage">
-    <div class="container proof-grid">
-      <div><strong data-stat-key="guilds">—</strong><span>connected servers</span></div>
-      <div><strong data-stat-key="total_ratings">—</strong><span>ratings recorded</span></div>
-      <div><strong data-stat-key="avg_rating" data-fmt="float">—</strong><span>average approved rating</span></div>
-      <p>Live bot totals<br><small>Last update <span id="sr-stats-updated">—</span></small></p>
-    </div>
-  </section>
-
-  <section class="home-section" id="operations">
-    <div class="container">
-      <div class="section-heading"><span>One operational system</span><h2>Built around the work staff teams do every day.</h2><p>Each workflow has a clear owner, audit trail, and place in Discord. You can start with ratings and enable the rest when your server needs it.</p></div>
-      <div class="workflow-list">
-        <article><span class="workflow-number">01</span><div><h3>Staff ratings</h3><p>Members choose a registered staff member, submit a 1–5 rating, and optionally explain what happened.</p></div><ul><li>Searchable staff picker</li><li>Review history</li><li>Weighted scores</li></ul></article>
-        <article><span class="workflow-number">02</span><div><h3>Support tickets</h3><p>Open, claim, and close private tickets with logs that keep the support team accountable.</p></div><ul><li>Persistent controls</li><li>Claim ownership</li><li>Close reasons and logs</li></ul></article>
-        <article><span class="workflow-number">03</span><div><h3>Applications</h3><p>Create structured forms, collect responses, and keep pending decisions in one review queue.</p></div><ul><li>Custom questions</li><li>Pending queue</li><li>Accept or deny</li></ul></article>
-        <article><span class="workflow-number">04</span><div><h3>Staff activity</h3><p>Track shifts, daily check-ins, warnings, recognition, and recurring team reports.</p></div><ul><li>Shift totals</li><li>Check-in streaks</li><li>Weekly reporting</li></ul></article>
-      </div>
-    </div>
-  </section>
-
-  <section class="home-section integrity-section" id="integrity">
-    <div class="container integrity-grid">
-      <div class="section-heading"><span>Rating integrity</span><h2>A five-star average should mean something.</h2><p>Raw averages are easy to manipulate. Staff Rater controls edits, detects repeated extreme behavior, and separates held reviews from the public score.</p><a class="text-link" href="/commands.html">See rating and moderation commands →</a></div>
-      <div class="policy-table">
-        <div><span>Quick correction</span><strong>10 minutes</strong><small>A rater can fix an honest mistake once.</small></div>
-        <div><span>Further changes</span><strong>24-hour cooldown</strong><small>Stops repeatedly changing one person’s score.</small></div>
-        <div><span>Extreme patterns</span><strong>Manager review</strong><small>Repeated all-1 or all-5 behavior is held automatically.</small></div>
-        <div><span>Public score</span><strong>Weighted</strong><small>Small samples do not appear as instantly perfect or terrible.</small></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="home-section dashboard-section">
-    <div class="container dashboard-showcase">
-      <div class="section-heading"><span>Web dashboard</span><h2>Configure the server without memorizing commands.</h2><p>The dashboard only lists servers you own where Staff Rater is installed. Search members, inspect their roles, connect channels, and filter performance data by date.</p><a class="btn primary" href="/dashboard/">Open your dashboard</a></div>
-      <div class="dashboard-mini">
-        <div class="mini-nav"><img src="/assets/bot-logo.png" alt=""><i></i><i></i><i></i><i></i></div>
-        <div class="mini-content"><div class="mini-title"><span></span><span></span></div><div class="mini-metrics"><i></i><i></i><i></i></div><div class="mini-chart"><span class="axis-y"></span><svg viewBox="0 0 520 150" preserveAspectRatio="none"><path d="M0 125 C60 110,90 82,145 91 S240 52,300 68 S400 106,520 28" fill="none" stroke="currentColor" stroke-width="3"/><path d="M0 125 C60 110,90 82,145 91 S240 52,300 68 S400 106,520 28 L520 150 L0 150Z" fill="currentColor" opacity=".08"/></svg></div><div class="mini-caption"><span></span><span></span><span></span></div></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="home-section trust-section">
-    <div class="container">
-      <div class="section-heading center-heading"><span>Trust and reliability</span><h2>Clear rules, visible state, recoverable controls.</h2></div>
-      <div class="trust-grid">
-        <article><b>Persistent interfaces</b><p>Rating panels, ticket controls, and check-in buttons are restored after bot restarts.</p></article>
-        <article><b>Server-scoped data</b><p>Ratings, applications, tickets, and settings stay separated by Discord server.</p></article>
-        <article><b>Signed dashboard requests</b><p>The dashboard verifies Discord access and signs every request sent to the bot.</p></article>
-        <article><b>Operational logs</b><p>Rotating logs record startup, restored panels, rating moderation, and unexpected failures.</p></article>
-      </div>
-    </div>
-  </section>
-
-  <section class="home-cta" id="support">
-    <div class="container cta-inner"><div><span>Ready to set up your server?</span><h2>Start with ratings. Add the rest when you need it.</h2></div><div><a class="btn primary home-primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8859859864780657&integration_type=0&scope=bot" target="_blank" rel="noreferrer">Add Staff Rater</a><a class="btn" href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noreferrer">Get support</a></div></div>
-  </section>
-</main>
-
-<footer class="home-footer"><div class="container"><div class="footer-brand"><img src="/assets/bot-logo.png" alt=""><span><b>Staff Rater</b><small>Staff operations for Discord</small></span></div><nav><a href="/commands.html">Commands</a><a href="/stats.html">Public stats</a><a href="/privacy.html">Privacy</a><a href="https://discord.gg/BR7zmffNFC">Support</a></nav><small>© 2026 Staff Rater</small></div></footer>
-<div class="toast" id="sr-toast"></div>
-<script src="/assets/site.js" defer></script>
-</body>
-</html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Staff Rater — Discord Staff Ratings, Tickets & Applications</title>
+<meta name="description" content="Let your Discord community rate staff. Manage staff ratings, support tickets and applications with Staff Rater, plus a dashboard for server owners.">
+<meta name="theme-color" content="#101522"><link rel="canonical" href="https://staffrater.xyz/"><link rel="icon" href="/assets/bot-logo.png">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Staff Rater"><meta property="og:title" content="Staff Rater — Good staff deserve good feedback."><meta property="og:description" content="Staff ratings, tickets and applications for your Discord community."><meta property="og:url" content="https://staffrater.xyz/">
+<link rel="stylesheet" href="/assets/home.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Staff Rater","url":"https://staffrater.xyz/","applicationCategory":"CommunicationApplication","operatingSystem":"Discord","description":"Discord bot for staff ratings, support tickets, applications and staff activity.","sameAs":["https://top.gg/bot/1410293903630012508"]}</script>
+</head><body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><div class="wrap header-inner"><a class="brand" href="/"><img src="/assets/bot-logo.png" width="36" height="36" alt=""><span>Staff Rater</span></a><nav class="desktop-nav" aria-label="Main navigation"><a href="#workflows">Features</a><a href="/commands.html">Commands</a><a href="/stats.html">Public stats</a><a href="https://discord.gg/BR7zmffNFC">Support ↗</a></nav><div id="nav-auth"><a class="btn header-login" id="nav-signin" href="/api/login?return=/dashboard/">Open dashboard ↗</a></div></div></header>
+<main id="main">
+<section class="hero wrap"><div><p class="eyebrow">A better view of your Discord team</p><h1>Good staff deserve<br><em>good feedback.</em></h1><p class="hero-description">Give members a voice. Understand your team’s work.<br> Keep ratings, tickets and applications in one place.</p><div class="hero-actions"><a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&amp;permissions=8859859864780657&amp;integration_type=0&amp;scope=bot" target="_blank" rel="noreferrer">Add to Discord ↗</a><a class="btn secondary" href="#workflows">Explore the features ↓</a></div><p class="hero-footnote">Built for Discord communities. Managed by the people who know them.</p></div>
+<aside class="hero-directory" aria-label="Explore Staff Rater"><span class="directory-label">YOUR TEAM, FROM EVERY ANGLE</span><a href="#ratings"><span class="directory-number">01</span><div><strong>Listen to members</strong><p>Staff ratings & review history</p></div><span>↗</span></a><a href="#tickets"><span class="directory-number">02</span><div><strong>Keep support moving</strong><p>Tickets, ownership & close reasons</p></div><span>↗</span></a><a href="#applications"><span class="directory-number">03</span><div><strong>Build your team</strong><p>Applications & staff activity</p></div><span>↗</span></a><div class="directory-footer"><img src="/assets/bot-logo.png" width="28" height="28" alt=""><span>Works where your community already is.</span></div></aside></section>
+<div class="feature-strip"><div class="wrap"><span>Staff ratings</span><span>Support tickets</span><span>Applications</span><span>Shift tracking</span><span>Server dashboard</span></div></div>
+<section class="section wrap" id="workflows"><div class="section-heading"><p class="eyebrow">Less scattered. More useful.</p><h2>From a member’s first review<br>to your team’s next decision.</h2><p>Start with staff ratings. Connect the other workflows as your community needs them.</p></div><div class="workflow-grid">
+<article class="workflow featured" id="ratings"><div class="card-top"><span>01 / FEEDBACK</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/></svg></div><h3>A rating with context.</h3><p>Members rate a registered staff member from one to five and can explain their experience. Profiles bring the score and recent feedback together.</p><ul><li>Staff profiles and leaderboards</li><li>One current rating per member and staff pair</li><li>Controls for repeated edits and suspicious patterns</li></ul><a href="/commands.html">Explore rating commands ↗</a></article>
+<article class="workflow" id="tickets"><div class="card-top"><span>02 / SUPPORT</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v4a3 3 0 0 0 0 6v4H4v-4a3 3 0 0 0 0-6ZM12 8v2m0 4v2"/></svg></div><h3>Know who’s handling it.</h3><p>Give members a private place to ask for help. Staff can claim a ticket, resolve it and record why it was closed.</p><ul><li>Private ticket channels</li><li>Claim and close controls</li><li>Configurable support roles and logs</li></ul><a href="/commands.html">Set up support tickets ↗</a></article>
+<article class="workflow" id="applications"><div class="card-top"><span>03 / YOUR TEAM</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18H6ZM9 8h6M9 12h6M9 16h3"/></svg></div><h3>Give recruitment a structure.</h3><p>Create application questions, collect responses and review applicants in Discord. Keep staff shifts and check-ins alongside the team’s other work.</p><ul><li>Custom application forms</li><li>Accept and reject decisions in Discord</li><li>Shifts and daily check-ins</li></ul><a href="/commands.html">Explore team tools ↗</a></article>
+</div></section>
+<section class="integrity"><div class="wrap integrity-grid"><div><p class="eyebrow">Fairer feedback</p><h2>One angry rating<br>isn’t the whole story.</h2><p>Ratings are a signal, not a verdict. Staff Rater adds safeguards to the score, while your server’s managers keep the final judgment.</p></div><dl><div><dt>Room to correct a mistake</dt><dd>A quick correction window, followed by a cooldown on further changes.</dd></div><div><dt>Suspicious patterns get reviewed</dt><dd>Repeated extreme ratings can be held for a manager instead of immediately affecting the public score.</dd></div><div><dt>Small samples stay in perspective</dt><dd>Weighted scores reduce the impact of having only a handful of reviews.</dd></div></dl></div></section>
+<section class="section wrap dashboard-section"><div class="section-heading"><p class="eyebrow">Your server workspace</p><h2>More control.<br>Fewer commands to remember.</h2><p>Sign in with Discord to manage servers you own where Staff Rater is installed.</p><a class="btn primary" href="/dashboard/">Open your dashboard ↗</a></div><div class="dashboard-tasks"><a href="/dashboard/"><span>01</span><div><h3>Connect channels and roles</h3><p>Configure ratings, tickets, reports and community features from one workspace.</p></div><span>↗</span></a><a href="/dashboard/"><span>02</span><div><h3>Manage your staff roster</h3><p>Search members, see their current roles and choose who can receive ratings.</p></div><span>↗</span></a><a href="/dashboard/"><span>03</span><div><h3>Understand rating activity</h3><p>Filter by date and inspect daily counts, score distribution and review activity.</p></div><span>↗</span></a></div></section>
+<section class="faq-section wrap"><div><p class="eyebrow">Before you start</p><h2>A few useful answers.</h2></div><div class="faq-list"><details><summary>Who can use the dashboard?</summary><p>Sign in with Discord. The server picker shows servers you own that already have Staff Rater installed. Members submit ratings and use public panels inside Discord.</p></details><details><summary>Do I need to enable every feature?</summary><p>No. Start with ratings, add the staff members you want to make rateable, and connect the relevant channels. Configure tickets, applications or activity tools when you need them.</p></details><details><summary>What does “owner only” mean on a command?</summary><p>Some older messages mean the developer of Staff Rater, not the owner of your Discord server. Global bot diagnostics are restricted to the developers. Server-management commands use Discord permissions such as Manage Server.</p></details><details><summary>Where can I report a problem?</summary><p>Join the <a href="https://discord.gg/BR7zmffNFC">support server</a>. Include the command or dashboard section, what you expected and what happened. Never share your bot token or account credentials.</p></details></div></section>
+<section class="closing wrap"><div><p class="eyebrow">Make feedback part of your community.</p><h2>Meet your team’s<br>new second opinion.</h2></div><a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&amp;permissions=8859859864780657&amp;integration_type=0&amp;scope=bot" target="_blank" rel="noreferrer">Add Staff Rater ↗</a></section>
+</main><footer><div class="wrap footer-inner"><a class="brand" href="/"><img src="/assets/bot-logo.png" width="30" height="30" alt=""><span>Staff Rater</span></a><nav aria-label="Footer"><a href="/commands.html">Commands</a><a href="/stats.html">Public stats</a><a href="/privacy.html">Privacy</a><a href="https://discord.gg/BR7zmffNFC">Support</a></nav><span>© 2026 Staff Rater</span></div></footer><script src="/assets/site.js" defer></script>
+</body></html>

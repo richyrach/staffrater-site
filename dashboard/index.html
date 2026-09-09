@@ -18,7 +18,7 @@
 <div class="dashboard-layout" id="dashboard" hidden>
   <aside class="dash-sidebar">
     <a class="dash-brand" href="/dashboard/">
-      <span class="dash-brand-mark"><img src="/assets/bot-logo.png" alt=""><span class="status-dot"></span></span>
+      <span class="dash-brand-mark"><img src="/assets/bot-logo.png" alt=""></span>
       <span><strong>Staff Rater</strong><small>Server operations</small></span>
     </a>
     <nav class="dash-nav" aria-label="Dashboard">
@@ -66,7 +66,7 @@
     if(!items.length){grid.innerHTML="";document.getElementById("state").innerHTML=`<div class="empty-state"><div class="empty-icon">⌕</div><h2>No matching servers</h2><p>Try another search.</p></div>`;return}
     document.getElementById("state").innerHTML="";
     grid.innerHTML=items.map(g=>`<a class="server-card" href="/dashboard/guild.html?guild_id=${encodeURIComponent(g.id)}">
-      <span class="server-art">${guildIcon(g)}<span class="server-online" title="Staff Rater is installed"></span></span>
+      <span class="server-art">${guildIcon(g)}</span>
       <span class="server-card-copy"><strong>${esc(g.name)}</strong><small>${esc(memberText(g.members))}</small></span>
       <span class="server-open">Open <span aria-hidden="true">→</span></span>
     </a>`).join("");

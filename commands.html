@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Commands — Staff Rater</title>
+  <title>Staff Rater Commands — Discord Staff Ratings & Server Tools</title>
+  <link rel="canonical" href="https://staffrater.xyz/commands.html">
   <meta name="description" content="Explore Staff Rater commands by category. Search, filter, and copy examples." />
   <link rel="icon" href="/assets/bot-logo.png" />
   <link rel="stylesheet" href="/assets/site.css" />
@@ -44,7 +45,7 @@
     <div class="container">
       <h1 class="h-title inter" style="font-size:38px;margin:0 0 10px">Command Explorer</h1>
       <p class="lead" style="margin-top:0">
-        Search by keyword, filter by category, and click <b>Copy</b> to paste examples directly in Discord.
+        Search public commands by workflow and copy their usage. “Admin” means a server manager; private developer diagnostics are intentionally not listed.
       </p>
 
       <div class="panel pad reveal">
@@ -63,7 +64,7 @@
             <div class="hr"></div>
 
             <div class="mini">
-              Showing <b><span id="sr-cmd-count">41</span></b> commands.
+              Showing <b><span id="sr-cmd-count">40</span></b> commands.
               <div style="margin-top:10px">
                 <a class="btn small" href="https://discord.gg/BR7zmffNFC" target="_blank" rel="noreferrer">Need help?</a>
               </div>
@@ -285,15 +286,15 @@
         <div class="cmd-card">
           <div class="cmd-top">
             <div>
-              <div class="cmd-name">/createapplication</div>
+              <div class="cmd-name">/app_create</div>
               <div class="cmd-desc">Create an application form.</div>
             </div>
-            <button class="btn small" data-copy="/createapplication name">Copy</button>
+            <button class="btn small" data-copy="/app_create name">Copy</button>
           </div>
           <div class="cmd-meta">
             <span class="tag">Applications</span>
             <span class="tag">Admin</span>
-            <span class="tag mono">/createapplication name</span>
+            <span class="tag mono">/app_create name</span>
           </div>
         </div>
         <div class="cmd-card">
@@ -439,15 +440,15 @@
         <div class="cmd-card">
           <div class="cmd-top">
             <div>
-              <div class="cmd-name">/poll</div>
+              <div class="cmd-name">/createpoll</div>
               <div class="cmd-desc">Create a quick poll.</div>
             </div>
-            <button class="btn small" data-copy="/poll question | option1 | option2 ...">Copy</button>
+            <button class="btn small" data-copy="/createpoll question | option1 | option2 ...">Copy</button>
           </div>
           <div class="cmd-meta">
             <span class="tag">Utilities</span>
             
-            <span class="tag mono">/poll question | option1 | option2 ...</span>
+            <span class="tag mono">/createpoll question | option1 | option2 ...</span>
           </div>
         </div>
         <div class="cmd-card">
@@ -574,20 +575,6 @@
             <span class="tag">Utilities</span>
             
             <span class="tag mono">/quoteid id</span>
-          </div>
-        </div>
-        <div class="cmd-card">
-          <div class="cmd-top">
-            <div>
-              <div class="cmd-name">/botstats</div>
-              <div class="cmd-desc">Shows bot stats (servers, uptime, etc).</div>
-            </div>
-            <button class="btn small" data-copy="/botstats">Copy</button>
-          </div>
-          <div class="cmd-meta">
-            <span class="tag">Info</span>
-            
-            <span class="tag mono">/botstats</span>
           </div>
         </div>
         <div class="cmd-card">

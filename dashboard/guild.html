@@ -15,7 +15,7 @@
 
 <div class="dashboard-layout" id="dashboard" hidden>
   <aside class="dash-sidebar">
-    <a class="dash-brand" href="/dashboard/"><span class="dash-brand-mark"><img src="/assets/bot-logo.png" alt=""><span class="status-dot"></span></span><span><strong>Staff Rater</strong><small>Server operations</small></span></a>
+    <a class="dash-brand" href="/dashboard/"><span class="dash-brand-mark"><img src="/assets/bot-logo.png" alt=""></span><span><strong>Staff Rater</strong><small>Server operations</small></span></a>
     <div class="sidebar-server"><img id="side-icon" alt=""><span><strong id="side-name">Server</strong><small>Owner workspace</small></span></div>
     <nav class="dash-nav" id="tabs" aria-label="Server workspace">
       <button class="tab dash-nav-item active" data-tab="settings"><span class="nav-glyph">⚙</span> Setup</button>
@@ -30,7 +30,7 @@
     <div class="dash-shell">
       <header class="workspace-header compact">
         <div class="server-heading"><img class="dash-icon" id="g-icon" alt=""><div><div class="eyebrow" id="page-eyebrow">Setup</div><h1 class="dash-title" id="g-name">Server</h1><p class="dash-sub" id="g-sub"></p></div></div>
-        <div class="workspace-actions"><span class="live-badge"><i></i> Bot connected</span><a class="btn" href="/dashboard/">Switch server</a></div>
+        <div class="workspace-actions"><span class="live-badge">Connected to Discord</span><a class="btn" href="/dashboard/">Switch server</a></div>
       </header>
       <section data-panel="settings"></section>
       <section data-panel="staff" hidden></section>
@@ -145,7 +145,7 @@
   async function loadApps(){
     const target=panel("apps");target.innerHTML=skeletonCards(3);const result=await call("applications");if(handleAuth(result.status))return;if(result.status!==200||!result.j.ok){target.innerHTML=`<div class="error-state"><h2>Applications couldn’t load</h2><p>${failMessage(result.status,result.j)}</p><button class="btn" id="retry-apps">Try again</button></div>`;$("#retry-apps").onclick=loadApps;return}
     const applications=result.j.applications||[],pending=result.j.pending||[];
-    target.innerHTML=`<div class="section-intro"><div><h2>Applications</h2><p>Form structure and the current review queue from Discord.</p></div><span class="count-badge ${pending.length?"attention":""}">${pending.length} awaiting review</span></div>${pending.length?`<div class="queue-notice"><span><b>${pending.length} response${pending.length===1?" is":"s are"} waiting</b><small>Review responses with <code>/pendingapps</code> in Discord.</small></span><span class="queue-pulse"></span></div>`:""}<div class="application-grid">${applications.length?applications.map(app=>`<article class="application-card"><header><span class="application-icon">▤</span><div><h3>${esc(app.name)}</h3><p>${app.questions.length} question${app.questions.length===1?"":"s"}</p></div><span class="status-pill">Active</span></header><ol>${app.questions.length?app.questions.map(question=>`<li><span>${esc(question.text)}</span><small>${esc(question.type)}</small></li>`).join(""):`<li class="empty-question">No questions have been added yet.</li>`}</ol><footer>Manage questions with <code>/app_addq</code> and <code>/app_removeq</code>.</footer></article>`).join(""):`<div class="empty-state large"><div class="empty-icon">▤</div><h2>No application forms</h2><p>Create the first form with <code>/app_create</code> in Discord.</p></div>`}</div>`;
+    target.innerHTML=`<div class="section-intro"><div><h2>Applications</h2><p>Form structure and the current review queue from Discord.</p></div><span class="count-badge ${pending.length?"attention":""}">${pending.length} awaiting review</span></div>${pending.length?`<div class="queue-notice"><span><b>${pending.length} response${pending.length===1?" is":"s are"} waiting</b><small>Review responses with <code>/pendingapps</code> in Discord.</small></span></div>`:""}<div class="application-grid">${applications.length?applications.map(app=>`<article class="application-card"><header><span class="application-icon">▤</span><div><h3>${esc(app.name)}</h3><p>${app.questions.length} question${app.questions.length===1?"":"s"}</p></div><span class="status-pill">Active</span></header><ol>${app.questions.length?app.questions.map(question=>`<li><span>${esc(question.text)}</span><small>${esc(question.type)}</small></li>`).join(""):`<li class="empty-question">No questions have been added yet.</li>`}</ol><footer>Manage questions with <code>/app_addq</code> and <code>/app_removeq</code>.</footer></article>`).join(""):`<div class="empty-state large"><div class="empty-icon">▤</div><h2>No application forms</h2><p>Create the first form with <code>/app_create</code> in Discord.</p></div>`}</div>`;
   }
 
   const LOADED={settings:true};

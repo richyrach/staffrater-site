@@ -1,5 +1,5 @@
 User-agent: *
-Allow: /ads.txt
+Allow: /
+Disallow: /api/
 
-Sitemap: https://www.staffrater.xyz/sitemap.xml
-
+Sitemap: https://staffrater.xyz/sitemap.xml
