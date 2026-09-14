@@ -58,7 +58,9 @@
     {name:"/ping", desc:"Latency check.", usage:"/ping", cat:"Info"},
   ];
 
-  const state = { q:"", cat:"All" };
+  const initial = new URLSearchParams(location.search);
+  const state = { q:initial.get("q") || "", cat:initial.get("category") || "All" };
+  if (!uniqueCats().includes(state.cat)) state.cat = "All";
 
   function uniqueCats(){
     const s = new Set(COMMANDS.map(c=>c.cat));
@@ -81,6 +83,8 @@
     const rows = COMMANDS.filter(matches);
     if(count) count.textContent = rows.length.toLocaleString();
 
+    const params = new URLSearchParams(); if(state.q)params.set("q",state.q); if(state.cat!=="All")params.set("category",state.cat); history.replaceState(null,"",location.pathname+(params.size?"?"+params:""));
+    if (!rows.length) { list.innerHTML = '<div class="empty-result"><h3>No commands found</h3><p>Try a shorter search or choose a different category.</p><button class="btn" id="reset-search">Clear filters</button></div>'; document.getElementById("reset-search").onclick=()=>{state.q="";state.cat="All";input.value="";renderTabs();render();}; return; }
     list.innerHTML = rows.map(c=>{
       const tags = (c.tags||[]).map(t=>`<span class="tag">${t}</span>`).join("");
       return `
@@ -107,7 +111,8 @@
         const text = b.getAttribute('data-copy');
         try{
           await navigator.clipboard.writeText(text);
-          window.SR?.toast?.("Copied!");
+          window.SR?.toast?.("Command copied");
+          b.textContent = "Copied"; setTimeout(()=>b.textContent="Copy",1400);
         }catch(_){
           window.SR?.toast?.("Copy failed (browser blocked).");
         }
@@ -135,7 +140,7 @@
     const tabs = $('#sr-tabs');
     if(!tabs) return;
     tabs.innerHTML = uniqueCats().map(cat=>`
-      <button class="tab ${cat===state.cat?'active':''}" data-cat="${cat}">${cat}</button>
+      <button class="tab ${cat===state.cat?'active':''}" data-cat="${cat}" aria-pressed="${cat===state.cat}">${cat}</button>
     `).join("");
     $$('[data-cat]').forEach(btn=>{
       btn.addEventListener('click', ()=>{
@@ -148,6 +153,7 @@
 
   const input = $('#sr-search');
   if(input){
+    input.value = state.q;
     input.addEventListener('input', ()=>{
       state.q = input.value;
       render();

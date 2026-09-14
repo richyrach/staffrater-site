@@ -1,76 +1,27 @@
-(function(){
-  const $ = (s, el=document) => el.querySelector(s);
-
-  async function fetchStats(){
-    const endpoints = [
-      '/api/stats-get',
-      '/api/stats',
-      '/api/public-stats',
-      '/api/metrics'
-    ];
-    for(const url of endpoints){
-      try{
-        const r = await fetch(url, {credentials:'include'});
-        if(!r.ok) continue;
-        const j = await r.json();
-        if(j && (j.ok === true || j.guilds || j.total_ratings || j.avg_rating)){
-          return j.data || j;
-        }
-      }catch(_){}
-    }
-    return null;
+(() => {
+  const nodes = [...document.querySelectorAll("[data-public-stat]")], status = document.getElementById("stats-status"), button = document.getElementById("stats-refresh");
+  const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const number = value => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value)) ? Number(value).toLocaleString() : "—";
+  async function load() {
+    button.disabled = true; button.textContent = "Refreshing…"; status.textContent = "Loading the latest snapshot…";
+    nodes.forEach(node => node.classList.add("loading-number"));
+    try {
+      const response = await fetch("/api/stats-get", {cache:"no-store",signal:AbortSignal.timeout(12000)});
+      if (!response.ok) throw new Error("unavailable");
+      const payload = await response.json();
+      if (!payload.ok) throw new Error("unavailable");
+      const stats = payload.data || payload;
+      const values = {guilds:stats.guilds ?? stats.servers,total_ratings:stats.total_ratings ?? stats.ratings,cmds_24h:stats.cmds_24h ?? stats.commands_24h};
+      nodes.forEach(node => node.textContent = number(values[node.dataset.publicStat]));
+      const stamp = stats.updated_at || stats.ts;
+      const date = stamp ? new Date(typeof stamp === "number" && stamp < 1e12 ? stamp * 1000 : stamp) : null;
+      const hasValues = Object.values(values).some(value => number(value) !== "—");
+      status.textContent = hasValues ? (date && Number.isFinite(date.getTime()) ? "Latest snapshot: " + date.toLocaleString() : "Latest reported totals · update time unavailable") : "No statistics have been published yet. Please check back soon.";
+      const top = Array.isArray(stats.top_guilds) ? stats.top_guilds : [];
+      document.getElementById("public-leaderboard").hidden = !top.length;
+      document.getElementById("sr-top-guilds").innerHTML = top.slice(0,12).map((g,i) => "<tr><td>" + (i+1) + "</td><td>" + esc(g.name || g.guild_name || "Discord server") + "</td><td>" + number(g.members ?? g.member_count) + "</td><td>" + number(g.ratings ?? g.total_ratings) + "</td></tr>").join("");
+    } catch (_) { status.textContent = "Statistics are temporarily unavailable. You can try refreshing in a moment."; }
+    finally { nodes.forEach(node => node.classList.remove("loading-number")); button.disabled = false; button.textContent = "Refresh statistics"; }
   }
-
-  function fmt(n){
-    if(n === null || n === undefined) return "—";
-    if(typeof n === "number") return n.toLocaleString();
-    return String(n);
-  }
-
-  async function main(){
-    const box = $('#sr-stats-json');
-    const err = $('#sr-stats-err');
-    try{
-      const s = await fetchStats();
-      if(!s){
-        if(err) err.textContent = "No public stats endpoint detected. If you want live stats here, keep /api/stats-get (or add one later).";
-        if(box) box.textContent = JSON.stringify({hint:"Use /api/stats-get (recommended)."}, null, 2);
-        return;
-      }
-      if(err) err.textContent = "";
-      const normalized = {
-        guilds: s.guilds ?? s.servers ?? null,
-        total_ratings: s.total_ratings ?? s.ratings ?? null,
-        avg_rating: s.avg_rating ?? s.avg ?? null,
-        cmds_24h: s.cmds_24h ?? s.commands_24h ?? null,
-        ts: s.ts ?? null,
-        top_guilds: s.top_guilds ?? s.leaderboard ?? [],
-      };
-      if(box) box.textContent = JSON.stringify(normalized, null, 2);
-
-      // table of top guilds if provided
-      const tbody = $('#sr-top-guilds');
-      if(tbody && Array.isArray(normalized.top_guilds) && normalized.top_guilds.length){
-        tbody.innerHTML = normalized.top_guilds.slice(0,12).map((g, i)=>{
-          const name = g.name ?? g.guild_name ?? ("Guild " + (g.guild_id ?? ""));
-          const members = g.members ?? g.member_count ?? g.users ?? null;
-          const ratings = g.ratings ?? g.total_ratings ?? null;
-          return `<tr>
-            <td class="small muted">${i+1}</td>
-            <td>${escapeHtml(name)}</td>
-            <td class="small muted">${fmt(members)}</td>
-            <td class="small muted">${fmt(ratings)}</td>
-          </tr>`;
-        }).join("");
-      }
-    }catch(e){
-      if(err) err.textContent = "Error loading stats: " + (e?.message || String(e));
-    }
-  }
-
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, (c)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-  }
-
-  main();
+  button.addEventListener("click", load); load();
 })();

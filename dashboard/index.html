@@ -7,8 +7,8 @@
 <meta name="theme-color" content="#0b1020">
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="/assets/bot-logo.png">
-<link rel="stylesheet" href="/assets/site.css">
-<link rel="stylesheet" href="/assets/dashboard.css">
+<link rel="stylesheet" href="/assets/site.css?v=20260913-design">
+<link rel="stylesheet" href="/assets/dashboard.css?v=20260913-design">
 </head>
 <body class="dashboard-body auth-pending">
 <div class="auth-loader" id="auth-loader" aria-live="polite">
@@ -22,11 +22,11 @@
       <span><strong>Staff Rater</strong><small>Server operations</small></span>
     </a>
     <nav class="dash-nav" aria-label="Dashboard">
-      <a class="dash-nav-item active" href="/dashboard/"><span class="nav-glyph">⌂</span> Servers</a>
+      <a class="dash-nav-item active" href="/dashboard/"><span class="nav-glyph"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span> Servers</a>
     </nav>
     <div class="dash-sidebar-bottom">
       <div class="dash-user" id="dash-user"></div>
-      <a class="dash-account" href="/">View product site</a>
+      <a class="dash-account" href="/setup.html"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H5v17h14V4h-3M8 2h8v5H8ZM8 12h8M8 16h5"/></svg> Setup guide</a><a class="dash-account" href="https://discord.gg/BR7zmffNFC"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v5a3 3 0 0 0 0 6v5H4v-5a3 3 0 0 0 0-6ZM12 7v2m0 6v2"/></svg> Get support</a><a class="dash-account" href="/">View product site ↗</a>
       <a class="dash-account" href="/api/logout?redirect=/">Log out</a>
     </div>
   </aside>
@@ -34,12 +34,12 @@
   <main class="dash-main">
     <div class="dash-shell">
       <header class="workspace-header">
-        <div><div class="eyebrow">Owner workspace</div><h1 class="dash-title">Choose a server</h1><p class="dash-sub">Only servers you own where Staff Rater is installed appear here.</p></div>
+        <div><div class="eyebrow">Owner workspace</div><h1 class="dash-title">Your communities.</h1><p class="dash-sub">Choose a server to manage its staff, feedback and support. Only servers you own with Staff Rater installed are shown.</p></div>
         <a class="btn primary" href="https://discord.com/oauth2/authorize?client_id=1410293903630012508&permissions=8859859864780657&integration_type=0&scope=bot" target="_blank" rel="noreferrer">Add Staff Rater</a>
       </header>
 
       <div class="server-toolbar" id="server-toolbar" hidden>
-        <label class="search-control"><span aria-hidden="true">⌕</span><input id="server-search" type="search" placeholder="Search your servers" autocomplete="off"></label>
+        <label class="search-control"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="server-search" type="search" aria-label="Search your servers" placeholder="Search your servers" autocomplete="off"></label>
         <span class="result-count" id="result-count"></span>
       </div>
       <div id="state" aria-live="polite"></div>
@@ -50,7 +50,7 @@
 
 <script>
 (function(){
-  const api=(url,options={})=>fetch(url,Object.assign({credentials:"include",cache:"no-store"},options));
+  const api=(url,options={})=>fetch(url,Object.assign({credentials:"include",cache:"no-store",signal:AbortSignal.timeout(15000)},options));
   const esc=value=>String(value==null?"":value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
   let guilds=[];
   function avatarUrl(user){return user.avatar?`https://cdn.discordapp.com/avatars/${encodeURIComponent(user.id)}/${encodeURIComponent(user.avatar)}.png?size=80`:"/assets/bot-avatar.png"}
@@ -59,7 +59,7 @@
     const initials=esc((g.name||"?").split(/\s+/).slice(0,2).map(word=>word[0]||"").join("").toUpperCase());
     return `<span class="server-avatar server-initials">${initials}</span>`;
   }
-  function memberText(value){return Number.isFinite(Number(value))?`${Number(value).toLocaleString()} member${Number(value)===1?"":"s"}`:"Staff Rater installed"}
+  function memberText(value){return value!=null&&value!==""&&Number.isFinite(Number(value))?`${Number(value).toLocaleString()} member${Number(value)===1?"":"s"}`:"Staff Rater installed"}
   function render(items){
     const grid=document.getElementById("grid");
     document.getElementById("result-count").textContent=`${items.length} server${items.length===1?"":"s"}`;
@@ -89,7 +89,7 @@
       document.getElementById("server-search").addEventListener("input",event=>{const query=event.target.value.trim().toLocaleLowerCase();render(guilds.filter(g=>g.name.toLocaleLowerCase().includes(query)))})
     }catch(error){
       document.getElementById("auth-loader").remove();document.getElementById("dashboard").hidden=false;document.body.classList.remove("auth-pending");
-      document.getElementById("state").innerHTML=`<div class="error-state"><h2>Couldn’t load your servers</h2><p>${esc(error.message)}</p><button class="btn" onclick="location.reload()">Try again</button></div>`;
+      document.getElementById("state").innerHTML=`<div class="error-state"><h2>Couldn’t load your servers</h2><p>Check your connection, then try again. If this keeps happening, our support team can help.</p><button class="btn" onclick="location.reload()">Try again</button></div>`;
     }
   }
   main();

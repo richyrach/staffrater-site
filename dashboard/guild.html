@@ -7,8 +7,8 @@
 <meta name="theme-color" content="#0b1020">
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="/assets/bot-logo.png">
-<link rel="stylesheet" href="/assets/site.css">
-<link rel="stylesheet" href="/assets/dashboard.css">
+<link rel="stylesheet" href="/assets/site.css?v=20260913-design">
+<link rel="stylesheet" href="/assets/dashboard.css?v=20260913-design">
 </head>
 <body class="dashboard-body auth-pending">
 <div class="auth-loader" id="auth-loader"><div class="workspace-skeleton"><span class="skeleton skeleton-block"></span><div><span class="skeleton skeleton-line wide"></span><span class="skeleton skeleton-line"></span></div></div></div>
@@ -17,25 +17,25 @@
   <aside class="dash-sidebar">
     <a class="dash-brand" href="/dashboard/"><span class="dash-brand-mark"><img src="/assets/bot-logo.png" alt=""></span><span><strong>Staff Rater</strong><small>Server operations</small></span></a>
     <div class="sidebar-server"><img id="side-icon" alt=""><span><strong id="side-name">Server</strong><small>Owner workspace</small></span></div>
-    <nav class="dash-nav" id="tabs" aria-label="Server workspace">
-      <button class="tab dash-nav-item active" data-tab="settings"><span class="nav-glyph">⚙</span> Setup</button>
-      <button class="tab dash-nav-item" data-tab="staff"><span class="nav-glyph">♙</span> Staff</button>
-      <button class="tab dash-nav-item" data-tab="analytics"><span class="nav-glyph">↗</span> Analytics</button>
-      <button class="tab dash-nav-item" data-tab="apps"><span class="nav-glyph">▤</span> Applications</button>
+    <nav class="dash-nav" id="tabs" aria-label="Server workspace" role="tablist">
+      <button class="tab dash-nav-item active" data-tab="settings" role="tab" id="tab-settings" aria-controls="panel-settings" aria-selected="true"><span class="nav-glyph"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="3" fill="currentColor"/><circle cx="16" cy="17" r="3" fill="currentColor"/></svg></span> Setup</button>
+      <button class="tab dash-nav-item" data-tab="staff" role="tab" id="tab-staff" aria-controls="panel-staff" aria-selected="false"><span class="nav-glyph"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 4v2"/></svg></span> Staff</button>
+      <button class="tab dash-nav-item" data-tab="analytics" role="tab" id="tab-analytics" aria-controls="panel-analytics" aria-selected="false"><span class="nav-glyph"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M8 15v-4m5 4V7m5 8V4"/></svg></span> Analytics</button>
+      <button class="tab dash-nav-item" data-tab="apps" role="tab" id="tab-apps" aria-controls="panel-apps" aria-selected="false"><span class="nav-glyph"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H5v17h14V4h-3M8 2h8v5H8ZM8 12h8M8 16h5"/></svg></span> Applications</button>
     </nav>
-    <div class="dash-sidebar-bottom"><a class="dash-account" href="/dashboard/">← Switch server</a><a class="dash-account" href="/">View product site</a><a class="dash-account" href="/api/logout?redirect=/">Log out</a></div>
+    <div class="dash-sidebar-bottom"><a class="dash-account" href="/dashboard/">← Switch server</a><a class="dash-account" href="/setup.html"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H5v17h14V4h-3M8 2h8v5H8ZM8 12h8M8 16h5"/></svg> Setup guide</a><a class="dash-account" href="https://discord.gg/BR7zmffNFC"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v5a3 3 0 0 0 0 6v5H4v-5a3 3 0 0 0 0-6ZM12 7v2m0 6v2"/></svg> Get support</a><a class="dash-account" href="/">View product site ↗</a><a class="dash-account" href="/api/logout?redirect=/">Log out</a></div>
   </aside>
 
   <main class="dash-main">
     <div class="dash-shell">
       <header class="workspace-header compact">
         <div class="server-heading"><img class="dash-icon" id="g-icon" alt=""><div><div class="eyebrow" id="page-eyebrow">Setup</div><h1 class="dash-title" id="g-name">Server</h1><p class="dash-sub" id="g-sub"></p></div></div>
-        <div class="workspace-actions"><span class="live-badge">Connected to Discord</span><a class="btn" href="/dashboard/">Switch server</a></div>
+        <div class="workspace-actions"><a class="btn" href="/setup.html">Setup guide</a><a class="btn" href="/dashboard/">Switch server</a></div>
       </header>
-      <section data-panel="settings"></section>
-      <section data-panel="staff" hidden></section>
-      <section data-panel="analytics" hidden></section>
-      <section data-panel="apps" hidden></section>
+      <section data-panel="settings" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings"></section>
+      <section data-panel="staff" id="panel-staff" role="tabpanel" aria-labelledby="tab-staff" hidden></section>
+      <section data-panel="analytics" id="panel-analytics" role="tabpanel" aria-labelledby="tab-analytics" hidden></section>
+      <section data-panel="apps" id="panel-apps" role="tabpanel" aria-labelledby="tab-apps" hidden></section>
     </div>
   </main>
 </div>
@@ -54,12 +54,13 @@
   function skeletonCards(count=4){return `<div class="skeleton-grid">${Array.from({length:count},()=>`<div class="skeleton-card"><span class="skeleton skeleton-line wide"></span><span class="skeleton skeleton-line"></span><span class="skeleton skeleton-field"></span></div>`).join("")}</div>`}
   async function call(resource,options={},params={}){
     const query=new URLSearchParams({guild_id:gid,resource});Object.entries(params).forEach(([key,value])=>{if(value)query.set(key,value)});
-    const response=await api(`/api/bot?${query}`,options);const data=await response.json().catch(()=>({error:"invalid_response"}));return {status:response.status,j:data};
+    try { const response=await api(`/api/bot?${query}`,{...options,signal:AbortSignal.timeout(15000)});const data=await response.json().catch(()=>({error:"invalid_response"}));return {status:response.status,j:data}; } catch (_) { return {status:503,j:{error:"connection_unavailable"}}; }
   }
   function failMessage(status,data){
     if(status===401)return "Your session expired. Redirecting to Discord…";
     if(status===403)return "You no longer have permission to manage this server.";
     if(status===404)return "Staff Rater is no longer installed in this server.";
+    if(status===503)return "We couldn’t connect to Staff Rater. Check your connection and try again.";
     if(status===504)return "The bot is restarting or temporarily unavailable. Try again in a moment.";
     if(data&&data.error==="member_search_failed")return "Discord member search is temporarily unavailable.";
     return `We couldn’t load this section${data&&data.error?` (${esc(data.error)})`:""}.`;
@@ -75,23 +76,48 @@
     {title:"Moderation",icon:"△",desc:"Roles used by moderation commands.",fields:[["Mute role","mute_role","roles","Role applied by the mute command."]]}
   ];
   let OPTIONS={text:[],category:[],roles:[]},CURRENT={};
-  function optionsHtml(kind,selected){const list=OPTIONS[kind]||[],value=selected==null?"":String(selected),prefix=kind==="roles"?"@":kind==="text"?"#":"";return `<option value="">Not configured</option>`+list.map(item=>`<option value="${esc(item.id)}"${String(item.id)===value?" selected":""}>${esc(prefix+item.name)}</option>`).join("")}
+  function optionsHtml(kind,selected){const list=OPTIONS[kind]||[],value=selected==null?"":String(selected),prefix=kind==="roles"?"@":kind==="text"?"#":"";const missing=value&&!list.some(item=>String(item.id)===value)?`<option value="${esc(value)}" selected>Previously configured (${esc(value)})</option>`:"";return `<option value="">Not configured</option>`+missing+list.map(item=>`<option value="${esc(item.id)}"${String(item.id)===value?" selected":""}>${esc(prefix+item.name)}</option>`).join("")}
   function fieldHtml([label,key,kind,hint]){
-    const input=kind==="number"?`<input class="input" id="f-${key}" data-key="${key}" type="number" min="0" max="23" value="${esc(CURRENT[key]??"")}">`:kind==="weekday"?`<select class="input" id="f-${key}" data-key="${key}">${["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map((day,index)=>`<option value="${index}"${Number(CURRENT[key])===index?" selected":""}>${day}</option>`).join("")}</select>`:`<select class="input" id="f-${key}" data-key="${key}">${optionsHtml(kind,CURRENT[key])}</select>`;
+    const input=kind==="number"?`<input class="input" id="f-${key}" data-key="${key}" type="number" min="0" max="23" value="${esc(CURRENT[key]??"")}">`:kind==="weekday"?`<select class="input" id="f-${key}" data-key="${key}"><option value=""${CURRENT[key]==null?" selected":""}>Not configured</option>${["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map((day,index)=>`<option value="${index}"${CURRENT[key]!=null&&Number(CURRENT[key])===index?" selected":""}>${day}</option>`).join("")}</select>`:`<select class="input" id="f-${key}" data-key="${key}">${optionsHtml(kind,CURRENT[key])}</select>`;
     return `<div class="field"><label for="f-${key}">${esc(label)}</label>${input}<div class="hint">${esc(hint)}</div></div>`;
   }
   function setupProgress(){const keys=GROUPS.flatMap(group=>group.fields.map(field=>field[1])).filter(key=>!key.includes("hour")&&!key.includes("day")),configured=keys.filter(key=>CURRENT[key]).length;return {configured,total:keys.length,pct:Math.round(configured/keys.length*100)}}
+  let settingsCategory="Ratings";
+  function updateSaveState(){
+    const count=Object.keys(collectSettings()).length;
+    $("#save-status").textContent=count ? count+" unsaved change"+(count===1?"":"s") : "All changes saved.";
+    $("#save").disabled=!count;$("#revert").disabled=!count;
+    $(".savebar").classList.toggle("has-changes",count>0);
+  }
+  function filterSettings(){
+    const query=$("#settings-search").value.trim().toLowerCase();
+    let visible=0;
+    document.querySelectorAll("[data-config]").forEach(card=>{
+      const matchesCategory=settingsCategory==="All settings"||card.dataset.config===settingsCategory;
+      const matchesQuery=!query||card.textContent.toLowerCase().includes(query);
+      card.hidden=!(matchesCategory&&matchesQuery); if(!card.hidden)visible++;
+    });
+    $("#settings-empty").hidden=!!visible;
+  }
   function renderSettings(){
     const progress=setupProgress();
-    panel("settings").innerHTML=`<div class="section-intro"><div><h2>Configure your workflows</h2><p>Connect each feature to the Discord channels and roles it should use.</p></div><div class="setup-progress"><strong>${progress.pct}%</strong><span><b>${progress.configured} of ${progress.total}</b> destinations connected</span></div></div>
-      <div class="progress-track"><span style="width:${progress.pct}%"></span></div>
-      <div class="settings-grid">${GROUPS.map(group=>`<article class="config-card"><header><span class="config-icon">${group.icon}</span><div><h3>${esc(group.title)}</h3><p>${esc(group.desc)}</p></div></header><div class="config-fields">${group.fields.map(fieldHtml).join("")}</div></article>`).join("")}</div>
-      <div class="savebar"><span class="save-copy"><b>Unsaved changes are kept on this page.</b><small id="save-status">Nothing changed yet.</small></span><button class="btn" id="revert">Reset</button><button class="btn primary" id="save">Save changes</button></div>`;
-    $("#save").addEventListener("click",saveSettings);$("#revert").addEventListener("click",()=>{renderSettings();toast("Changes reset")});
-    document.querySelectorAll("[data-key]").forEach(input=>input.addEventListener("change",()=>{$("#save-status").textContent="Ready to save."}));
+    panel("settings").innerHTML=`<div class="section-intro"><div><h2>Make Staff Rater yours.</h2><p>Set up the features your team needs. Everything else can wait.</p></div><span class="count-badge">${progress.configured} destinations connected</span></div>
+      <div class="settings-controls"><div class="settings-categories" aria-label="Settings categories">${["Ratings","Tickets","Staff activity","Community","Recognition & reports","Moderation","All settings"].map(title=>`<button class="chip ${settingsCategory===title?"active":""}" data-category="${title}" aria-pressed="${settingsCategory===title}">${title}</button>`).join("")}</div><label class="search-control"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="settings-search" type="search" aria-label="Search settings" placeholder="Search settings in this category…"></label></div>
+      <div class="settings-grid">${GROUPS.map((group,index)=>`<article class="config-card" data-config="${esc(group.title)}"><header><span class="config-icon">${["<svg class=\"icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z\"/></svg>","<svg class=\"icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 4h16v5a3 3 0 0 0 0 6v5H4v-5a3 3 0 0 0 0-6ZM12 7v2m0 6v2\"/></svg>","<svg class=\"icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v6l4 2\"/></svg>","<svg class=\"icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M8 4H5v17h14V4h-3M8 2h8v5H8ZM8 12h8M8 16h5\"/></svg>","<svg class=\"icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 3v17h17M8 15v-4m5 4V7m5 8V4\"/></svg>","<svg class=\"icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 7h16M4 17h16\"/><circle cx=\"9\" cy=\"7\" r=\"3\" fill=\"currentColor\"/><circle cx=\"16\" cy=\"17\" r=\"3\" fill=\"currentColor\"/></svg>"][index]}</span><div><h3>${esc(group.title)}</h3><p>${esc(group.desc)}</p></div></header><div class="config-fields">${group.fields.map(fieldHtml).join("")}</div></article>`).join("")}</div>
+      <div class="empty-state" id="settings-empty" hidden><h2>No settings found</h2><p>Try another search or select All settings.</p></div>
+      <div class="savebar"><span class="save-copy"><b>Your server settings</b><small id="save-status">All changes saved.</small></span><button class="btn" id="revert" disabled>Discard changes</button><button class="btn primary" id="save" disabled>Save changes</button></div>`;
+    $("#save").addEventListener("click",saveSettings);
+    $("#revert").addEventListener("click",()=>{renderSettings();toast("Changes discarded")});
+    document.querySelectorAll("[data-key]").forEach(input=>input.addEventListener("input",updateSaveState));
+    document.querySelectorAll("[data-category]").forEach(button=>button.addEventListener("click",()=>{
+      settingsCategory=button.dataset.category;
+      document.querySelectorAll("[data-category]").forEach(b=>{b.classList.toggle("active",b===button);b.setAttribute("aria-pressed",String(b===button));});filterSettings();
+    }));
+    $("#settings-search").addEventListener("input",filterSettings);filterSettings();
   }
   function collectSettings(){const output={};document.querySelectorAll("[data-key]").forEach(input=>{const key=input.dataset.key,current=CURRENT[key]==null?"":String(CURRENT[key]);if(input.value!==current)output[key]=input.value});return output}
   async function saveSettings(){
+    const invalid=[...document.querySelectorAll("[data-key]")].find(input=>!input.checkValidity());if(invalid){settingsCategory="All settings";document.querySelectorAll("[data-config]").forEach(card=>card.hidden=false);invalid.reportValidity();invalid.focus();return}
     const patch=collectSettings(),button=$("#save"),status=$("#save-status");if(!Object.keys(patch).length){status.textContent="No changes to save.";return}
     button.disabled=true;button.textContent="Saving…";
     const result=await call("settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({settings:patch})});button.disabled=false;button.textContent="Save changes";
@@ -108,8 +134,8 @@
   }
   function renderStaff(){
     const target=panel("staff");target.innerHTML=`<div class="section-intro"><div><h2>Staff roster</h2><p>Registered staff, trusted scores, roles, and recent activity.</p></div><span class="count-badge">${STAFF.length} staff member${STAFF.length===1?"":"s"}</span></div>
-      <article class="member-picker"><div class="picker-copy"><span class="config-icon">＋</span><div><h3>Add a staff member</h3><p>Search the server by display name or username. Roles are shown before you add anyone.</p></div></div><label class="search-control member-search"><span>⌕</span><input id="member-search" type="search" placeholder="Start typing a member name…" autocomplete="off"></label><div class="member-results" id="member-results"><div class="picker-hint">Search results will appear here.</div></div></article>
-      ${STAFF.length?`<div class="data-panel"><div class="table-toolbar"><strong>Registered staff</strong><label class="search-control compact-search"><span>⌕</span><input id="staff-filter" type="search" placeholder="Filter staff"></label></div><div class="tbl-wrap"><table class="staff-table"><thead><tr><th>Member</th><th>Trust score</th><th>Rating</th><th>Shift activity</th><th></th></tr></thead><tbody id="staff-rows">${STAFF.map(staffRow).join("")}</tbody></table></div></div>`:`<div class="empty-state"><div class="empty-icon">♙</div><h2>No registered staff</h2><p>Use the member search above to build your roster.</p></div>`}`;
+      <article class="member-picker"><div class="picker-copy"><span class="config-icon">＋</span><div><h3>Add a staff member</h3><p>Search the server by display name or username. Roles are shown before you add anyone.</p></div></div><label class="search-control member-search"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="member-search" type="search" aria-label="Search server members" placeholder="Start typing a member name…" autocomplete="off"></label><div class="member-results" id="member-results"><div class="picker-hint">Search results will appear here.</div></div></article>
+      ${STAFF.length?`<div class="data-panel"><div class="table-toolbar"><strong>Registered staff</strong><label class="search-control compact-search"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="staff-filter" type="search" aria-label="Filter registered staff" placeholder="Filter staff"></label></div><div class="tbl-wrap"><table class="staff-table"><thead><tr><th>Member</th><th>Trust score</th><th>Rating</th><th>Shift activity</th><th></th></tr></thead><tbody id="staff-rows">${STAFF.map(staffRow).join("")}</tbody></table></div></div>`:`<div class="empty-state"><div class="empty-icon">♙</div><h2>No registered staff</h2><p>Use the member search above to build your roster.</p></div>`}`;
     wireStaff();
   }
   function wireStaff(){
@@ -121,8 +147,8 @@
   async function searchMembers(query,sequence){const box=$("#member-results");box.innerHTML=`<div class="picker-hint"><span class="spinner"></span> Searching Discord…</div>`;const result=await call("members",{}, {q:query});if(sequence!==undefined&&query!==$("#member-search").value.trim())return;if(result.status!==200||!result.j.ok){box.innerHTML=`<div class="picker-hint error-text">${failMessage(result.status,result.j)}</div>`;return}const existing=new Set(STAFF.map(item=>String(item.id))),members=result.j.members||[];box.innerHTML=members.length?members.map(member=>`<div class="member-result"><div class="member-cell">${member.avatar?`<img src="${esc(member.avatar)}" alt="">`:`<span class="ph">${esc(member.name.slice(0,2).toUpperCase())}</span>`}<span><b>${esc(member.name)}</b><small>${esc(member.username)}</small>${roleChips(member.roles)}</span></div><button class="btn small ${existing.has(String(member.id))?"":"primary"}" data-add="${esc(member.id)}" ${existing.has(String(member.id))?"disabled":""}>${existing.has(String(member.id))?"Added":"Add staff"}</button></div>`).join(""):`<div class="picker-hint">No members matched “${esc(query)}”.</div>`;box.querySelectorAll("[data-add]").forEach(button=>button.addEventListener("click",async()=>{button.disabled=true;button.textContent="Adding…";const add=await call("staff",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"add",user_id:button.dataset.add})});if(add.status===200&&add.j.ok){toast("Staff member added");loadStaff()}else{button.disabled=false;button.textContent="Add staff";toast(failMessage(add.status,add.j),true)}}))}
 
   const isoDate=date=>{const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,"0"),d=String(date.getDate()).padStart(2,"0");return `${y}-${m}-${d}`};
-  let RANGE={from:"",to:""};
-  function setPreset(days){const end=new Date(),start=new Date();start.setDate(end.getDate()-(days-1));RANGE={from:isoDate(start),to:isoDate(end)}}
+  let RANGE={from:"",to:""}, activePreset=30;
+  function setPreset(days){activePreset=days;const end=new Date(),start=new Date();start.setDate(end.getDate()-(days-1));RANGE={from:isoDate(start),to:isoDate(end)}}
   function deltaText(current,previous){if(!previous)return "No prior comparison";const difference=Number(current)-Number(previous);if(!difference)return "No change vs previous period";return `${difference>0?"+":""}${difference} vs previous period`}
   function chart(series){
     if(!series.length||!series.some(item=>item.count))return `<div class="chart-empty"><b>No approved ratings in this period</b><span>Choose a longer date range or check the moderation queue.</span></div>`;
@@ -134,27 +160,29 @@
   async function loadAnalytics(){
     const target=panel("analytics");if(!RANGE.from)setPreset(30);target.innerHTML=`<div class="analytics-loading">${skeletonCards(4)}</div>`;const result=await call("analytics",{},RANGE);if(handleAuth(result.status))return;if(result.status!==200||!result.j.ok){target.innerHTML=`<div class="error-state"><h2>Analytics couldn’t load</h2><p>${failMessage(result.status,result.j)}</p><button class="btn" id="retry-analytics">Try again</button></div>`;$("#retry-analytics").onclick=loadAnalytics;return}
     const data=result.j,totals=data.totals||{},previous=data.previous||{},breakdown=data.breakdown||{},maximum=Math.max(1,...[1,2,3,4,5].map(star=>Number(breakdown[star])||0));
-    target.innerHTML=`<div class="section-intro analytics-intro"><div><h2>Performance overview</h2><p>Approved ratings, review quality, and support activity for the selected period.</p></div><div class="date-presets"><button class="chip" data-days="7">7 days</button><button class="chip active" data-days="30">30 days</button><button class="chip" data-days="90">90 days</button></div></div>
+    target.innerHTML=`<div class="section-intro analytics-intro"><div><h2>Performance overview</h2><p>Approved ratings, review quality, and support activity for the selected period.</p></div><div class="date-presets">${[7,30,90].map(days=>`<button class="chip ${activePreset===days?"active":""}" aria-pressed="${activePreset===days}" data-days="${days}">${days} days</button>`).join("")}</div></div>
       <div class="date-range"><label>From<input type="date" id="date-from" value="${esc(RANGE.from)}"></label><span>to</span><label>Through<input type="date" id="date-to" value="${esc(RANGE.to)}"></label><button class="btn" id="apply-range">Apply range</button></div>
       <div class="metric-grid"><article class="metric-card"><span>Approved ratings</span><strong>${Number(totals.ratings||0).toLocaleString()}</strong><small>${esc(deltaText(totals.ratings,previous.ratings))}</small></article><article class="metric-card"><span>Trusted score</span><strong>${Number(totals.avg||0).toFixed(2)}<i>/ 5</i></strong><small>${previous.avg?`${(Number(totals.avg)-Number(previous.avg)>=0?"+":"")}${(Number(totals.avg)-Number(previous.avg)).toFixed(2)} vs previous period`:"Bayesian weighted score"}</small></article><article class="metric-card"><span>Held for review</span><strong>${Number(totals.held||0).toLocaleString()}</strong><small>Excluded from public scores</small></article><article class="metric-card"><span>Open tickets</span><strong>${Number(totals.tickets_open||0).toLocaleString()}</strong><small>${Number(totals.tickets_closed||0).toLocaleString()} closed overall</small></article></div>
       <article class="analytics-panel chart-panel-v2"><header><div><span class="panel-kicker">Rating activity</span><h3>Ratings received each day</h3><p>Daily count of approved staff ratings from ${formatDate(RANGE.from)} through ${formatDate(RANGE.to)}.</p></div><span class="chart-legend"><i></i> Approved ratings</span></header>${chart(data.series||[])}<footer>Hover or focus a point for its date, rating count, and daily average. Flagged ratings are excluded.</footer></article>
       <div class="analytics-split"><article class="analytics-panel"><header><div><span class="panel-kicker">Distribution</span><h3>Rating breakdown</h3><p>How approved ratings are distributed from one to five stars.</p></div></header><div class="rating-bars">${[5,4,3,2,1].map(star=>{const count=Number(breakdown[star])||0,percent=totals.ratings?Math.round(count/Number(totals.ratings)*100):0;return `<div class="rating-bar"><span>${star} star</span><div><i style="width:${count/maximum*100}%"></i></div><b>${count}</b><small>${percent}%</small></div>`}).join("")}</div></article><article class="analytics-panel"><header><div><span class="panel-kicker">Most reviewed</span><h3>Staff activity</h3><p>Staff with the most approved ratings in this period.</p></div></header><div class="rank-list">${(data.top_staff||[]).length?(data.top_staff||[]).map((staff,index)=>`<div class="rank-row"><span class="rank">${index+1}</span>${staff.avatar?`<img src="${esc(staff.avatar)}" alt="">`:`<span class="ph">${esc(staff.name.slice(0,2).toUpperCase())}</span>`}<span><b>${esc(staff.name)}</b><small>${staff.ratings} rating${staff.ratings===1?"":"s"}</small></span><strong>${Number(staff.avg).toFixed(2)}</strong></div>`).join(""):`<div class="picker-hint">No staff ratings in this period.</div>`}</div></article></div>`;
-    document.querySelectorAll("[data-days]").forEach(button=>button.addEventListener("click",()=>{setPreset(Number(button.dataset.days));loadAnalytics()}));$("#apply-range").onclick=()=>{const from=$("#date-from").value,to=$("#date-to").value;if(!from||!to||from>to){toast("Choose a valid date range",true);return}RANGE={from,to};loadAnalytics()};wireChart(data.series||[]);
+    document.querySelectorAll("[data-days]").forEach(button=>button.addEventListener("click",()=>{setPreset(Number(button.dataset.days));loadAnalytics()}));$("#apply-range").onclick=()=>{const from=$("#date-from").value,to=$("#date-to").value;if(!from||!to||from>to){toast("Choose a valid date range",true);return}activePreset=0;RANGE={from,to};loadAnalytics()};wireChart(data.series||[]);
   }
 
   async function loadApps(){
     const target=panel("apps");target.innerHTML=skeletonCards(3);const result=await call("applications");if(handleAuth(result.status))return;if(result.status!==200||!result.j.ok){target.innerHTML=`<div class="error-state"><h2>Applications couldn’t load</h2><p>${failMessage(result.status,result.j)}</p><button class="btn" id="retry-apps">Try again</button></div>`;$("#retry-apps").onclick=loadApps;return}
     const applications=result.j.applications||[],pending=result.j.pending||[];
-    target.innerHTML=`<div class="section-intro"><div><h2>Applications</h2><p>Form structure and the current review queue from Discord.</p></div><span class="count-badge ${pending.length?"attention":""}">${pending.length} awaiting review</span></div>${pending.length?`<div class="queue-notice"><span><b>${pending.length} response${pending.length===1?" is":"s are"} waiting</b><small>Review responses with <code>/pendingapps</code> in Discord.</small></span></div>`:""}<div class="application-grid">${applications.length?applications.map(app=>`<article class="application-card"><header><span class="application-icon">▤</span><div><h3>${esc(app.name)}</h3><p>${app.questions.length} question${app.questions.length===1?"":"s"}</p></div><span class="status-pill">Active</span></header><ol>${app.questions.length?app.questions.map(question=>`<li><span>${esc(question.text)}</span><small>${esc(question.type)}</small></li>`).join(""):`<li class="empty-question">No questions have been added yet.</li>`}</ol><footer>Manage questions with <code>/app_addq</code> and <code>/app_removeq</code>.</footer></article>`).join(""):`<div class="empty-state large"><div class="empty-icon">▤</div><h2>No application forms</h2><p>Create the first form with <code>/app_create</code> in Discord.</p></div>`}</div>`;
+    target.innerHTML=`<div class="section-intro"><div><h2>Applications</h2><p>Form structure and the current review queue from Discord.</p></div><span class="count-badge ${pending.length?"attention":""}">${pending.length} awaiting review</span></div>${pending.length?`<div class="queue-notice"><span><b>${pending.length} response${pending.length===1?" is":"s are"} waiting</b><small>Review responses with <code>/pendingapps</code> in Discord.</small></span></div>`:""}<div class="application-grid">${applications.length?applications.map(app=>`<article class="application-card"><header><span class="application-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H5v17h14V4h-3M8 2h8v5H8ZM8 12h8M8 16h5"/></svg></span><div><h3>${esc(app.name)}</h3><p>${app.questions.length} question${app.questions.length===1?"":"s"}</p></div><span class="status-pill">Active</span></header><ol>${app.questions.length?app.questions.map(question=>`<li><span>${esc(question.text)}</span><small>${esc(question.type)}</small></li>`).join(""):`<li class="empty-question">No questions have been added yet.</li>`}</ol><footer>Manage questions with <code>/app_addq</code> and <code>/app_removeq</code>.</footer></article>`).join(""):`<div class="empty-state large"><div class="empty-icon">▤</div><h2>No application forms</h2><p>Create the first form with <code>/app_create</code> in Discord.</p></div>`}</div>`;
   }
 
   const LOADED={settings:true};
-  function show(name){const valid=["settings","staff","analytics","apps"].includes(name)?name:"settings";document.querySelectorAll("#tabs .tab").forEach(button=>button.classList.toggle("active",button.dataset.tab===valid));document.querySelectorAll("[data-panel]").forEach(section=>section.hidden=section.dataset.panel!==valid);$("#page-eyebrow").textContent={settings:"Setup",staff:"Staff",analytics:"Analytics",apps:"Applications"}[valid];history.replaceState(null,"",`${location.pathname}${location.search}#${valid}`);window.scrollTo(0,0);if(!LOADED[valid]){LOADED[valid]=true;if(valid==="staff")loadStaff();if(valid==="analytics")loadAnalytics();if(valid==="apps")loadApps()}}
+  function show(name){const valid=["settings","staff","analytics","apps"].includes(name)?name:"settings";document.querySelectorAll("#tabs .tab").forEach(button=>{button.classList.toggle("active",button.dataset.tab===valid);button.setAttribute("aria-selected",String(button.dataset.tab===valid));button.tabIndex=button.dataset.tab===valid?0:-1});document.querySelectorAll("[data-panel]").forEach(section=>section.hidden=section.dataset.panel!==valid);$("#page-eyebrow").textContent={settings:"Setup",staff:"Staff",analytics:"Analytics",apps:"Applications"}[valid];history.replaceState(null,"",`${location.pathname}${location.search}#${valid}`);window.scrollTo(0,0);if(!LOADED[valid]){LOADED[valid]=true;if(valid==="staff")loadStaff();if(valid==="analytics")loadAnalytics();if(valid==="apps")loadApps()}}
   async function main(){
     if(!/^\d{1,20}$/.test(gid)){location.replace("/dashboard/");return}
     const result=await call("settings");if(handleAuth(result.status))return;if(result.status!==200||!result.j.ok){$("#auth-loader").innerHTML=`<div class="error-state"><h2>Workspace unavailable</h2><p>${failMessage(result.status,result.j)}</p><a class="btn" href="/dashboard/">Back to servers</a></div>`;return}
     CURRENT=result.j.settings||{};OPTIONS=result.j.options||OPTIONS;const guild=result.j.guild||{};$("#g-name").textContent=guild.name||"Server";$("#side-name").textContent=guild.name||"Server";$("#g-sub").textContent=`${Number(guild.members||0).toLocaleString()} members · ${OPTIONS.text.length} text channels`;const icon=guild.icon||"/assets/bot-logo.png";$("#g-icon").src=icon;$("#side-icon").src=icon;renderSettings();$("#auth-loader").remove();$("#dashboard").hidden=false;document.body.classList.remove("auth-pending");document.querySelectorAll("#tabs .tab").forEach(button=>button.addEventListener("click",()=>show(button.dataset.tab)));show(location.hash.slice(1)||"settings")
   }
+  window.addEventListener("beforeunload",event=>{if(Object.keys(collectSettings()).length){event.preventDefault();event.returnValue="";}});
+  $("#tabs").addEventListener("keydown",event=>{if(!["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Home","End"].includes(event.key))return;event.preventDefault();const tabs=[...document.querySelectorAll("#tabs .tab")],index=tabs.indexOf(document.activeElement);const next=event.key==="Home"?0:event.key==="End"?tabs.length-1:(index+((event.key==="ArrowUp"||event.key==="ArrowLeft")?-1:1)+tabs.length)%tabs.length;tabs[next].focus();show(tabs[next].dataset.tab);});
   main();
 })();
 </script>
