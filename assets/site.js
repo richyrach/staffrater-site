@@ -20,7 +20,9 @@
     const nav = document.getElementById("nav-auth");
     if (!nav) return;
     try {
-      const response = await fetch("/api/me", {credentials:"include", signal:AbortSignal.timeout(10000)});
+      const options = {credentials:"include"};
+      if (window.AbortSignal && typeof AbortSignal.timeout === "function") options.signal = AbortSignal.timeout(10000);
+      const response = await fetch("/api/me", options);
       if (!response.ok) return;
       const me = await response.json(), user = me?.ok && me.session?.user;
       if (!user) return;

@@ -15,6 +15,13 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
 /* Character artwork is the focus of the public pages. */
 .mobile-nav .btn{display:flex}
+
+/* Clear authentication and studio ownership cues. */
+.btn.discord-login{background:#f1f1f5;color:#191a20;border-color:#f1f1f5}.btn.discord-login:hover{background:#fff;border-color:#fff;transform:translateY(-1px)}
+.footer-wordmark{color:#484a57}
+.safeworld-credit{display:inline-flex;align-items:center;gap:9px;color:#b5b4c0;font-weight:650}.safeworld-credit:hover{color:#fff}.safeworld-credit img{width:30px;height:30px;border-radius:8px}.safeworld-credit span{margin:0}
+@media(max-width:760px){.safeworld-credit{margin-top:12px}.safeworld-credit span{display:inline;margin:0}}
+@media(max-width:760px){.header-invite{display:none}}
 .cmd-wrap>*,.command-sidebar{min-width:0}
 .hero.wrap{width:min(1440px,calc(100% - 64px));grid-template-columns:.87fr 1.25fr;gap:24px;padding-block:55px 50px}
 .hero h1{font-size:clamp(44px,5.1vw,74px);line-height:1.09}

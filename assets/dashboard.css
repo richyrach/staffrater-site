@@ -14,7 +14,7 @@
 
 .auth-pending{overflow:hidden}.auth-loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--bg)}
 .auth-loader-card,.workspace-skeleton{width:min(440px,calc(100vw - 40px));display:grid;grid-template-columns:48px 1fr;gap:16px;align-items:center;padding:22px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
-.auth-loader-card img{width:48px;height:48px;border-radius:12px}.workspace-skeleton{width:min(560px,calc(100vw - 40px))}
+.auth-loader-card img{width:48px;height:48px;border-radius:12px}.auth-loader-card>div{display:grid;gap:3px}.auth-loader-card strong{font-size:15px}.auth-loader-card span{color:var(--ink-3);font-size:12px}.auth-login-fallback{display:none;grid-column:1/-1;margin-top:4px}.auth-login-fallback.visible{display:inline-flex}.workspace-skeleton{width:min(560px,calc(100vw - 40px))}
 .skeleton{display:block;overflow:hidden;position:relative;background:#182131;border-radius:7px}.skeleton:after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);animation:shimmer 1.35s infinite}
 .skeleton-line{width:54%;height:11px;margin:7px 0}.skeleton-line.wide{width:78%;height:16px}.skeleton-block{width:48px;height:48px}.skeleton-field{width:100%;height:39px;margin-top:16px}
 @keyframes shimmer{to{transform:translateX(100%)}}

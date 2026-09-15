@@ -7,12 +7,16 @@
 <meta name="theme-color" content="#0b1020">
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="/assets/bot-logo.png">
-<link rel="stylesheet" href="/assets/site.css?v=20260913-design">
-<link rel="stylesheet" href="/assets/dashboard.css?v=20260913-design">
+<link rel="stylesheet" href="/assets/site.css?v=20260915-auth">
+<link rel="stylesheet" href="/assets/dashboard.css?v=20260915-auth">
 </head>
 <body class="dashboard-body auth-pending">
 <div class="auth-loader" id="auth-loader" aria-live="polite">
-  <div class="auth-loader-card"><img src="/assets/bot-logo.png" alt=""><span class="skeleton skeleton-line wide"></span><span class="skeleton skeleton-line"></span></div>
+  <div class="auth-loader-card">
+    <img src="/assets/bot-logo.png" alt="">
+    <div><strong>Opening your dashboard…</strong><span>Checking your Discord session</span></div>
+    <a class="btn auth-login-fallback" href="/api/login?return=%2Fdashboard%2F">Sign in with Discord</a>
+  </div>
 </div>
 
 <div class="dashboard-layout" id="dashboard" hidden>
@@ -50,7 +54,11 @@
 
 <script>
 (function(){
-  const api=(url,options={})=>fetch(url,Object.assign({credentials:"include",cache:"no-store",signal:AbortSignal.timeout(15000)},options));
+  const api=(url,options={})=>{
+    const request=Object.assign({credentials:"include",cache:"no-store"},options);
+    if(!request.signal&&window.AbortSignal&&typeof AbortSignal.timeout==="function")request.signal=AbortSignal.timeout(15000);
+    return fetch(url,request);
+  };
   const esc=value=>String(value==null?"":value).replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
   let guilds=[];
   function avatarUrl(user){return user.avatar?`https://cdn.discordapp.com/avatars/${encodeURIComponent(user.id)}/${encodeURIComponent(user.avatar)}.png?size=80`:"/assets/bot-avatar.png"}
@@ -78,9 +86,10 @@
     document.getElementById("auth-loader").remove();document.getElementById("dashboard").hidden=false;document.body.classList.remove("auth-pending");
   }
   async function main(){
+    const fallbackTimer=setTimeout(()=>document.querySelector(".auth-login-fallback")?.classList.add("visible"),2500);
     try{
       const response=await api("/api/servers");
-      if(response.status===401){location.replace(`/api/login?return=${encodeURIComponent("/dashboard/")}`);return}
+      if(response.status===401){clearTimeout(fallbackTimer);location.replace(`/api/login?return=${encodeURIComponent("/dashboard/")}`);return}
       const data=await response.json().catch(()=>({}));
       if(!response.ok||!data.ok)throw new Error(data.error||`HTTP ${response.status}`);
       reveal(data);guilds=data.guilds||[];
@@ -88,7 +97,7 @@
       document.getElementById("server-toolbar").hidden=false;render(guilds);
       document.getElementById("server-search").addEventListener("input",event=>{const query=event.target.value.trim().toLocaleLowerCase();render(guilds.filter(g=>g.name.toLocaleLowerCase().includes(query)))})
     }catch(error){
-      document.getElementById("auth-loader").remove();document.getElementById("dashboard").hidden=false;document.body.classList.remove("auth-pending");
+      clearTimeout(fallbackTimer);document.getElementById("auth-loader").remove();document.getElementById("dashboard").hidden=false;document.body.classList.remove("auth-pending");
       document.getElementById("state").innerHTML=`<div class="error-state"><h2>Couldn’t load your servers</h2><p>Check your connection, then try again. If this keeps happening, our support team can help.</p><button class="btn" onclick="location.reload()">Try again</button></div>`;
     }
   }
